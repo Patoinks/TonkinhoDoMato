@@ -29,3 +29,22 @@ def publish_completed(checkpoint, *, completed, config_path=None):
     if result.returncode:
         print("[site] Publication failed; training checkpoint is safe. See history/web-publications/latest.json", flush=True)
     return result.returncode == 0
+
+
+def publish_wins(wins_dir, *, config_path=None):
+    """Start a background deploy of the win archive; returns the process or None.
+
+    Only the real archive (history/wins) with an enabled local config is ever
+    published, so test runs and other directories never reach the site.
+    """
+    config_path = Path(config_path or CONFIG)
+    if not config_path.is_file() or Path(wins_dir).resolve() != (ROOT / "history/wins").resolve():
+        return None
+    if not json.loads(config_path.read_text(encoding="utf-8-sig")).get("enabled"):
+        return None
+    try:
+        return subprocess.Popen([sys.executable, str(ROOT / "scripts/publish_wins.py"), "--config", str(config_path)],
+                                cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError as error:
+        print(f"[site] Could not launch win publication: {error}", flush=True)
+        return None

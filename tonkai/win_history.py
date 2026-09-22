@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from datetime import datetime, timezone
+import json
 import os
 from pathlib import Path
 import tempfile
@@ -37,6 +38,104 @@ def _file_lock(path):
                 fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
 
 
+def build_win_game(board, self_color, opponent_name, result, termination):
+    """A validated PGN game for a TonkAI win; raises on anything inconsistent."""
+    if not opponent_name or opponent_name.strip().casefold() == "tonkai":
+        raise ValueError("an external opponent name is required")
+    root = board.root()
+    if not root.is_valid():
+        raise ValueError("game starts from an invalid position")
+    replay = root.copy()
+    game = chess.pgn.Game()
+    game.setup(root)
+    node = game
+    for move in board.move_stack:
+        if move not in replay.legal_moves:
+            raise ValueError(f"illegal move in win history: {move.uci()}")
+        replay.push(move)
+        node = node.add_variation(move)
+    if replay.fen(en_passant="fen", promoted=True) != board.fen(en_passant="fen", promoted=True):
+        raise ValueError("move history does not reproduce the final board")
+    outcome = replay.outcome()
+    if outcome is not None and outcome.result() != result:
+        raise ValueError("supplied result contradicts the final board")
+    if termination == "checkmate" and not replay.is_checkmate():
+        raise ValueError("checkmate termination requires a checkmated board")
+    plies = len(board.move_stack)
+    game.headers.update({
+        "Event": "TonkAI vs external opponent",
+        "Site": "local",
+        "Date": datetime.now(timezone.utc).strftime("%Y.%m.%d"),
+        "White": "TonkAI" if self_color else opponent_name,
+        "Black": opponent_name if self_color else "TonkAI",
+        "Result": result,
+        "Termination": str(termination),
+        "PlyCount": str(plies),
+        "TonkAIColor": "white" if self_color else "black",
+        "FinalFEN": board.fen(en_passant="fen"),
+    })
+    return game, plies
+
+
+class WinArchive:
+    """Every TonkAI win, kept as ``wins.pgn`` (all games) and ``wins.json``.
+
+    The JSON is what the website reads. Draws, losses and a disabled archive
+    (``directory`` falsy) do nothing. Writes are locked and atomic.
+    """
+
+    def __init__(self, directory):
+        self.directory = Path(directory) if directory else None
+
+    @property
+    def json_path(self):
+        return self.directory / "wins.json"
+
+    def load(self) -> list:
+        if self.directory is None or not self.json_path.exists():
+            return []
+        return json.loads(self.json_path.read_text(encoding="utf-8"))["wins"]
+
+    def add(self, board, self_color, opponent_name, result, termination, **meta) -> bool:
+        if result not in ("1-0", "0-1", "1/2-1/2"):
+            raise ValueError("result must be a completed PGN result")
+        if self.directory is None or result != ("1-0" if self_color else "0-1"):
+            return False
+        game, plies = build_win_game(board, self_color, opponent_name, result, termination)
+        exporter = chess.pgn.StringExporter(headers=True, variations=False, comments=False)
+        pgn = game.accept(exporter) + "\n"
+        self.directory.mkdir(parents=True, exist_ok=True)
+        with _file_lock(self.directory / ".wins.lock"):
+            wins = self.load()
+            entry = {"number": len(wins) + 1,
+                     "recorded_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                     "tonkai_color": "white" if self_color else "black",
+                     "opponent": opponent_name, "plies": plies, "termination": str(termination),
+                     "result": result, "final_fen": board.fen(en_passant="fen"),
+                     "moves": [move.uci() for move in board.move_stack], "pgn": pgn, **meta}
+            wins.append(entry)
+            _atomic_write(self.json_path, json.dumps({"format": "tonkai-wins-v1", "wins": wins},
+                                                     indent=1, allow_nan=False))
+            with (self.directory / "wins.pgn").open("a", encoding="utf-8", newline="\n") as stream:
+                stream.write(pgn + "\n")
+        return True
+
+
+def _atomic_write(path, text):
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="\n", dir=path.parent,
+                                         prefix="." + path.name + ".", suffix=".tmp", delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(text)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None and temporary.exists():
+            temporary.unlink()
+
+
 class LongestWinRecorder:
     def __init__(self, path):
         self.path = Path(path) if path else None
@@ -66,42 +165,7 @@ class LongestWinRecorder:
             raise ValueError("TonkAI's color is required")
         if self.path is None or result != ("1-0" if self_color else "0-1"):
             return False
-        if not opponent_name or opponent_name.strip().casefold() == "tonkai":
-            raise ValueError("an external opponent name is required")
-
-        root = board.root()
-        if not root.is_valid():
-            raise ValueError("game starts from an invalid position")
-        replay = root.copy()
-        game = chess.pgn.Game()
-        game.setup(root)
-        node = game
-        for move in board.move_stack:
-            if move not in replay.legal_moves:
-                raise ValueError(f"illegal move in win history: {move.uci()}")
-            replay.push(move)
-            node = node.add_variation(move)
-        if replay.fen(en_passant="fen", promoted=True) != board.fen(en_passant="fen", promoted=True):
-            raise ValueError("move history does not reproduce the final board")
-        outcome = replay.outcome()
-        if outcome is not None and outcome.result() != result:
-            raise ValueError("supplied result contradicts the final board")
-        if termination == "checkmate" and not replay.is_checkmate():
-            raise ValueError("checkmate termination requires a checkmated board")
-
-        plies = len(board.move_stack)
-        game.headers.update({
-            "Event": "TonkAI vs external opponent",
-            "Site": "local",
-            "Date": datetime.now(timezone.utc).strftime("%Y.%m.%d"),
-            "White": "TonkAI" if self_color else opponent_name,
-            "Black": opponent_name if self_color else "TonkAI",
-            "Result": result,
-            "Termination": str(termination),
-            "PlyCount": str(plies),
-            "TonkAIColor": "white" if self_color else "black",
-            "FinalFEN": board.fen(en_passant="fen"),
-        })
+        game, plies = build_win_game(board, self_color, opponent_name, result, termination)
         text = game.accept(chess.pgn.StringExporter(headers=True, variations=False, comments=False)) + "\n"
         self.path.parent.mkdir(parents=True, exist_ok=True)
         lock_path = self.path.with_name("." + self.path.name + ".lock")

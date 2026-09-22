@@ -22,9 +22,9 @@ from tonkai.cognitive_config import CognitiveConfig
 from tonkai.cognitive_pool import CognitivePool
 from tonkai.cognitive_trainer import CognitiveTrainer
 from tonkai.uci_opponent import UCIOpponent
-from tonkai.win_history import LongestWinRecorder
+from tonkai.win_history import LongestWinRecorder, WinArchive
 from tonkai.opening_history import OpeningHistory
-from tonkai.web_publish import publish_completed
+from tonkai.web_publish import publish_completed, publish_wins
 from tonkai.resign import (ResignController, add_resign_args, hope_threshold,
                            resign_config_from_args)
 
@@ -53,6 +53,7 @@ def main(argv=None):
     parser.add_argument("--experiments-every", type=int)
     parser.add_argument("--generalization-every", type=int)
     parser.add_argument("--win-pgn-path", default=None)
+    parser.add_argument("--wins-dir", type=Path, help="archive of every win (default: <history-dir>/wins)")
     parser.add_argument("--planning-nodes", type=int)
     parser.add_argument("--log-every", type=int)
     parser.add_argument("--stop-file", type=Path)
@@ -169,6 +170,15 @@ def main(argv=None):
     pool = None
     external = None
     recorder = LongestWinRecorder(cfg.win_pgn_path)
+    archive = WinArchive(args.wins_dir or args.history_dir / "wins")
+    # Deploys are throttled: at most one running, and one every 10 minutes.
+    site = {"process": None, "last": -1e9, "pending": False}
+
+    def publish_archive(force=False):
+        running = site["process"] is not None and site["process"].poll() is None
+        if not site["pending"] or running or (not force and time.monotonic() - site["last"] < 600):
+            return
+        site.update(process=publish_wins(archive.directory), last=time.monotonic(), pending=False)
 
     def record(kind, **data):
         history.write(json.dumps({"kind": kind, "run_id": run_id, **data,
@@ -264,10 +274,15 @@ def main(argv=None):
                     record("resign", game=completed, message=message, **resign.summary())
             if episode.terminated and not resigned:     # a resigned board has no outcome
                 try:
-                    recorder.consider(board, colour, stats["opponent"], stats["result"],
-                                      board.outcome(claim_draw=True).termination.name.lower())
+                    termination = board.outcome(claim_draw=True).termination.name.lower()
+                    recorder.consider(board, colour, stats["opponent"], stats["result"], termination)
+                    if archive.add(board, colour, stats["opponent"], stats["result"], termination,
+                                   run_id=run_id, game=trainer.games, objective=cfg.objective):
+                        site["pending"] = True
+                        record("win", game=completed, total_games=trainer.games, plies=len(board.move_stack))
                 except (OSError, ValueError) as error:
                     record("warning", component="win_history", error=str(error))
+                publish_archive()
             # The separate engine only plays legal experimental continuations; its
             # evaluations never become labels and branches never count as real games.
             if not stopping:
@@ -297,6 +312,7 @@ def main(argv=None):
             metrics(final=True)
             history.close()
     publish_completed(output, completed=status == "completed")
+    publish_archive(force=True)
     return 0
 
 
