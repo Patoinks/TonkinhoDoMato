@@ -58,6 +58,7 @@ class Config:
 
     # --- runtime ---------------------------------------------------------
     device: str = "auto"
+    inference_device: str = "cpu"  # "learner" restores the original shared device
     seed: int = 42
     num_workers: int = 1
     weight_refresh_games: int = 20
@@ -72,6 +73,8 @@ class Config:
         values = {k: v for k, v in d.items() if k in known}
         if "samples_per_game" not in d:
             values["samples_per_game"] = 0  # preserve old checkpoint schedules
+        if "inference_device" not in d:
+            values["inference_device"] = "learner"
         return cls(**values)
 
     def resolved_device(self) -> str:

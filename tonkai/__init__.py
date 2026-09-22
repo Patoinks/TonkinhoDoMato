@@ -47,8 +47,15 @@ def build(cfg, device: str | None = None):
 
     net = TonkAINet(cfg).to(device)
     metrics = Metrics()
-    agent = TonkAIAgent(net, cfg, device)
+    import copy
+    inference_device = device if cfg.inference_device == "learner" else cfg.inference_device
+    # Parallel workers own their CPU models; no parent replica is necessary.
+    inference_net = (copy.deepcopy(net).to(inference_device)
+                     if cfg.num_workers == 1 and inference_device != device else net)
+    agent = TonkAIAgent(inference_net, cfg,
+                       inference_device if cfg.num_workers == 1 else device)
     opponent = make_opponent(cfg)
     worker = GameWorker(agent, opponent, cfg, metrics, rng)
     trainer = Trainer(net, cfg, device, metrics, rng)
+    trainer.inference_net = inference_net
     return net, agent, opponent, worker, trainer, metrics

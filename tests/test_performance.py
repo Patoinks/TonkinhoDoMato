@@ -58,3 +58,33 @@ train.main()
     assert result.returncode == 0, result.stderr
     assert 'stopping after this game' in result.stdout
     assert (tmp_path/'latest.pt').exists()
+
+def test_single_worker_training_repeats_under_seed():
+    import numpy as np
+    cfg=Config(device='cpu', seed=19,max_plies=16,opponent_depth=1,
+               opponent_nodes=50,min_replay=1,samples_per_game=16)
+    records=[]
+    for _ in range(2):
+        _,_,_,worker,tr,_=tonkai.build(cfg)
+        run=[]
+        for game in range(3):
+            rec=worker.play_game(); run.append(rec.packed.copy())
+            tr.add_game(rec); tr.train(cfg.updates_per_game)
+        records.append(run)
+    for a,b in zip(*records): np.testing.assert_array_equal(a,b)
+
+def test_cpu_inference_replica_tracks_training_and_load(tmp_path):
+    import torch,pytest
+    if not torch.cuda.is_available(): pytest.skip('CUDA required for replica test')
+    cfg=Config(device='cuda',inference_device='cpu',max_plies=12,
+               min_replay=1,samples_per_game=12)
+    net,agent,_,worker,tr,_=tonkai.build(cfg)
+    assert agent.device == 'cpu' and next(net.parameters()).is_cuda
+    tr.add_game(worker.play_game()); tr.train(1)
+    for key,value in net.state_dict().items():
+        assert torch.equal(value.cpu(),agent.net.state_dict()[key])
+    path=str(tmp_path/'replica.pt'); tr.save(path)
+    with torch.no_grad(): next(agent.net.parameters()).zero_()
+    tr.load(path)
+    for key,value in net.state_dict().items():
+        assert torch.equal(value.cpu(),agent.net.state_dict()[key])

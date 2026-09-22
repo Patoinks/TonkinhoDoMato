@@ -18,7 +18,7 @@ def digest():
 def run(label):
     cfg=Config(device='cuda',temperature=.1)
     net,a,o,w,tr,m=tonkai.build(cfg)
-    state=torch.load('checkpoints/deployed_5020games.pt',map_location='cpu',weights_only=False)['model']; net.load_state_dict(state)
+    state=torch.load('checkpoints/deployed_5020games.pt',map_location='cpu',weights_only=False)['model']; net.load_state_dict(state); tr.sync_inference()
     rec=w.play_game(); game=hashlib.sha256(rec.packed.tobytes()+b''.join(p.tobytes() for p,i in rec.predict_samples)).hexdigest()
     for _ in range(64): tr.add_game(w.play_game())
     while not tr.ready(): tr.add_game(w.play_game())
@@ -29,6 +29,7 @@ def run(label):
     result['learner_ms_game']=(time.perf_counter()-start)*1000/30
     for workers in ([1,2,4] if hasattr(cfg,'weight_refresh_games') else [1]):
         cfg.num_workers=workers
+        if workers > 1: tr.inference_net = net
         times=dict(m.times); pos=m.tonkai_positions
         start=time.perf_counter()
         if workers==1:

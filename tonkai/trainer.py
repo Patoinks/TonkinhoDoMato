@@ -31,6 +31,7 @@ class Trainer:
     def __init__(self, net: TonkAINet, cfg: Config, device: str, metrics,
                  rng: np.random.Generator | None = None):
         self.net = net
+        self.inference_net = net
         self.cfg = cfg
         self.device = device
         self.metrics = metrics
@@ -195,7 +196,16 @@ class Trainer:
         self.metrics.predict_loss.add(out["predict"])
         self.metrics.piece_loss.add(out["piece"])
         self.metrics.train_batches += 1
+        self.sync_inference()
         return out
+
+    def sync_inference(self):
+        if self.inference_net is not self.net:
+            start = time.perf_counter()
+            self.inference_net.load_state_dict(self.net.state_dict())
+            self.metrics.inference_refresh_seconds = (
+                getattr(self.metrics, "inference_refresh_seconds", 0.0)
+                + time.perf_counter() - start)
 
     def train(self, n_steps: int) -> None:
         if not self.ready():
@@ -234,6 +244,7 @@ class Trainer:
     def load(self, path: str, load_optimizer: bool = True) -> dict:
         payload = torch.load(path, map_location=self.device, weights_only=False)
         self.net.load_state_dict(payload["model"])
+        self.sync_inference()
         if load_optimizer and "optimizer" in payload:
             self.opt.load_state_dict(payload["optimizer"])
         self.games = payload.get("games", 0)

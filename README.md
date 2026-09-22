@@ -262,3 +262,13 @@ Ctrl+C finishes the current learner iteration, stops actors, and saves latest.pt
 a second Ctrl+C forces exit. Worker failures also run cleanup and save a checkpoint.
 Parent timing percentages measure waiting, learning and publication; actor CPU
 work overlaps and is recorded separately in `metrics.actor_times`.
+
+Single-process self-play now defaults to `--inference_device cpu`, while
+`--device auto` still selects the GPU for training. Its CPU replica is refreshed
+immediately after each update and checkpoint load, without consuming RNG draws.
+`--inference_device learner` restores the original device path for exact legacy
+comparisons; old checkpoints retain it unless explicitly overridden. Both paths
+remain in-process and repeatable under a seed. CPU/GPU floating-point results
+can differ slightly, so device changes are not a promise of identical training
+trajectories. `inference_refresh_seconds` measures copy cost already included in
+training time. Parallel actors were already CPU-only in step 2.
