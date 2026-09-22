@@ -2,6 +2,83 @@
 
 Four steps implemented in order, separate local commits, no push.
 
+## Additional implementation, 2026-09-22
+
+Candidate encoding now gathers the same python-chess child bitboards before
+expanding them in one NumPy operation. Move order, board history, float32 values,
+castling, en passant, promotions and halfmove rounding are preserved. Each
+push/pop restores the board even if encoding raises.
+
+The learner no longer clones an advanced-indexing result that already owns its
+storage, or builds an autograd graph for the detached piece target. The model,
+losses, opponents, exploration and update schedule are unchanged.
+
+An additional grouped CUDA metric readback was tested and then removed: in an
+18-run learner-only comparison, baseline averaged 25.742 ms/update, the simple
+cleanup 24.582 ms, and grouped readback 24.368 ms. Its incremental mean gain of
+0.87% changed sign across blocks, so the final implementation keeps the simpler
+original metric path. All compared learning states were bit-identical. Evidence:
+`perf_results/implementation_learner_20260922T154913_6d59b18b.json`; the rejected
+candidate is preserved as `implementation_grouped_trainer_20260922.py`.
+
+`perf_results/implementation_20260922.py` loads the complete baseline package
+from git `e490be536d9d6ede9bbc924025114908507dfae2`, preserved in a source JSON
+snapshot. Verification passed 12 combinations: CPU/CUDA, legacy/consolidated
+updates and zero/one/two piece probes, with changing batch sizes. Losses, model
+and replica parameters, Adam state, RNG, replay and metric windows matched bit
+for bit within each device.
+
+The initial paired whole-loop A/B/B/A run, including the subsequently removed
+grouped readback candidate, used the same deployed checkpoint and 70-game
+replay corpus, a fresh optimizer per run, eight warm-up games and 60 timed games,
+CPU inference and CUDA learning at 1 x 2048 samples/game:
+
+| Run | Games/s | Environment time | Training time |
+|---|---:|---:|---:|
+| Baseline A1 | 12.854 | 1.410 s | 1.746 s |
+| Current B1 | 13.121 | 1.147 s | 1.834 s |
+| Current B2 | 13.165 | 1.081 s | 1.977 s |
+| Baseline A2 | 11.886 | 1.435 s | 2.010 s |
+
+Mean throughput: **12.370 -> 13.143 games/s (+6.25%)**. All four runs had the
+same 3,031 plies, 88,886 evaluated candidates and 60 updates, and identical
+games, final weights, optimizer, RNG and learning metrics. These short paired
+runs varied; the two pairwise gains were 2.08% and 10.77%. Environment cost fell
+21.7% on average. This combined run does not establish a separate learner speed
+gain or a general Elo improvement. Checkpoints were read only.
+
+Raw evidence: `perf_results/implementation_verify_20260922T154417_c74eb9e8.json`
+and `perf_results/implementation_bench_20260922T154435_c39f15a7.json`. Reproduce
+with `python -B -u perf_results/implementation_20260922.py --mode all`; every run
+writes a new timestamped result. The historical sections below describe earlier
+measurements and are not additional gains to multiply into this one.
+
+### Final retest after removing grouped readback
+
+The final simpler production code passed the same 12 CPU/CUDA equivalence
+configurations and a fresh A/B/B/A whole-loop run. Baseline: **12.897 / 12.801
+games/s**; final: **14.016 / 13.335 games/s**. Means: **12.849 -> 13.675 games/s
+(+6.43%)**; the paired gains were 8.68% and 4.17%. The 60-game windows again had
+identical game trajectories, model/replica weights, optimizer, RNG, replay and
+learning metrics. Existing checkpoints remained unchanged. These remain short
+measurements on this machine, not a universal throughput guarantee.
+
+Final raw evidence:
+`perf_results/implementation_all_20260922T155237_2564cfc8.json`.
+
+Final full suite: **156 passed in 17.73s**, using
+`python -m pytest --basetemp=perf_results/pytest-final-longest-win -p no:cacheprovider`.
+This includes legal PGN replay, only replacing with longer wins across restarts,
+atomic replacement failure, train/evaluate integration, human resignation/undo,
+draw/loss exclusions and explicit PGN export after a recording error. Tests use
+temporary output paths, not the user's real win record.
+
+The new longest-win recorder runs only at the train/evaluate/play entry points.
+Workers retain move strings only for wins, and neither the trainer nor benchmark
+loops write PGNs. The benchmark does not measure the cost of replacing a win PGN;
+its measured games were losses. No opponent strength, move choice, piece values,
+curriculum or training schedule was changed to obtain these gains.
+
 ## Conditions and limits
 
 RTX 5060 Ti; Python 3.13.14; PyTorch 2.11.0+cu128; NumPy 2.5.2.

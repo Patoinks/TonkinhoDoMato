@@ -1,0 +1,150 @@
+{
+  "source": "theory_events.json",
+  "source_sha256": "6f5635c23b217cf2c51013b2d9977305a1e73b5520a894c8afad14647d65132b",
+  "scope": "Partial authentic fragment; cannot associate to latest run; no opening or finish",
+  "events": [
+    {
+      "source_zero_based_index": 8757,
+      "fen": "rnbqk2r/pppp1p1p/5b2/1N1Pp1p1/8/3B4/PPPPNPPP/R1BQ1RK1 w kq - 1 8",
+      "ply": 14,
+      "tonkai_move": "e7f6",
+      "actual_move": "c2c4",
+      "actual_prob": 0.007499417290091515,
+      "surprise": 4.892929956112723,
+      "entropy": 2.907259941101074,
+      "top_predictions": [
+        [
+          "b5c7",
+          0.22481480240821838
+        ],
+        [
+          "e2c3",
+          0.0789463222026825
+        ],
+        [
+          "b5c3",
+          0.06948303431272507
+        ],
+        [
+          "e2g3",
+          0.06633760035037994
+        ],
+        [
+          "d3h7",
+          0.062487900257110596
+        ]
+      ],
+      "result": 0
+    },
+    {
+      "source_zero_based_index": 8758,
+      "fen": "rnbqk2r/pppp1pb1/8/1N1Pp1pp/2P5/3B4/PPQPNPPP/R1B2RK1 w kq - 2 10",
+      "ply": 18,
+      "tonkai_move": "f6g7",
+      "actual_move": "c2a4",
+      "actual_prob": 0.02844838984310627,
+      "surprise": 3.559663716035797,
+      "entropy": 3.0606346130371094,
+      "top_predictions": [
+        [
+          "c4c5",
+          0.16681073606014252
+        ],
+        [
+          "d3e4",
+          0.08542770892381668
+        ],
+        [
+          "e2c3",
+          0.07135138660669327
+        ],
+        [
+          "b5c7",
+          0.0689191147685051
+        ],
+        [
+          "g1h1",
+          0.05940382927656174
+        ]
+      ],
+      "result": 0
+    },
+    {
+      "source_zero_based_index": 8759,
+      "fen": "rnbqk2r/pppp1pb1/8/1N1Pp2p/Q1P3p1/3B4/PP1PNPPP/R1B2RK1 w kq - 0 11",
+      "ply": 20,
+      "tonkai_move": "g5g4",
+      "actual_move": "b5a7",
+      "actual_prob": 0.0005101327551528811,
+      "surprise": 7.580839561897832,
+      "entropy": 3.1939520835876465,
+      "top_predictions": [
+        [
+          "c4c5",
+          0.09857789427042007
+        ],
+        [
+          "a4a3",
+          0.07391597330570221
+        ],
+        [
+          "e2g3",
+          0.07176435738801956
+        ],
+        [
+          "d3e4",
+          0.06762449443340302
+        ],
+        [
+          "a4a5",
+          0.062043409794569016
+        ]
+      ],
+      "result": 0
+    },
+    {
+      "source_zero_based_index": 8760,
+      "fen": "rnbqk2r/Np1p1pb1/8/2pPp2p/Q1P3p1/3B4/PP1PNPPP/R1B2RK1 w kq c6 0 12",
+      "ply": 22,
+      "tonkai_move": "c7c5",
+      "actual_move": "f2f3",
+      "actual_prob": 0.0008264572243206203,
+      "surprise": 7.098362397250503,
+      "entropy": 1.043912649154663,
+      "top_predictions": [
+        [
+          "a7b5",
+          0.7122370004653931
+        ],
+        [
+          "a7c8",
+          0.19722355902194977
+        ],
+        [
+          "d5c6",
+          0.020371465012431145
+        ],
+        [
+          "d3e4",
+          0.007543116807937622
+        ],
+        [
+          "a7c6",
+          0.006780306808650494
+        ]
+      ],
+      "result": 0
+    }
+  ],
+  "recovered_uci": [
+    "c2c4",
+    "h7h5",
+    "d1c2",
+    "f6g7",
+    "c2a4",
+    "g5g4",
+    "b5a7",
+    "c7c5",
+    "f2f3"
+  ]
+}

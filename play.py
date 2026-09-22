@@ -6,6 +6,11 @@
 
 Type moves as SAN (e4, Nf3, O-O, exd5, e8=Q) or UCI (e2e4, e7e8q).
 Commands: help  eval  pieces  predict  fen  board  undo  resign  quit
+
+Completed TonkAI wins can replace the shared longest-win PGN when their retained
+move history has more plies (individual moves by either side). The default path
+is history/longest_external_win.pgn; --win_pgn_path "" disables this recording.
+The explicit --pgn export remains independent and also supports unfinished games.
 """
 
 from __future__ import annotations
@@ -24,6 +29,7 @@ import tonkai
 from tonkai import chess_env as env
 from tonkai.config import Config, add_config_args, config_from_args
 from tonkai.encoding import PIECE_NAMES
+from tonkai.win_history import LongestWinRecorder
 
 UNICODE = {
     "P": "♙", "N": "♘", "B": "♗", "R": "♖",
@@ -207,6 +213,7 @@ def main() -> int:
     observations = []  # (surprise, top1 hit), one per retained human move
     pgn_result = "*"
     outcome = "Game unfinished"
+    win_termination = None
 
     while True:
         result, reason = env.terminal(board, tonk, cfg.max_plies)
@@ -215,6 +222,8 @@ def main() -> int:
             outcome = {0: "TonkAI wins", 1: "Draw", 2: "You win"}[result]
             pgn_result = ("1/2-1/2" if result == 1 else
                           "1-0" if (tonk == chess.WHITE) == (result == 0) else "0-1")
+            if result == 0:
+                win_termination = reason
             print(f"\n  *** {outcome} - {reason} ***")
             break
 
@@ -242,6 +251,7 @@ def main() -> int:
             if low == "resign":
                 outcome = "TonkAI wins by resignation"
                 pgn_result = "1-0" if tonk == chess.WHITE else "0-1"
+                win_termination = "resignation"
                 print("  you resign - TonkAI wins")
                 break
             if low == "help":
@@ -329,6 +339,17 @@ def main() -> int:
         board.push(mv)
 
     print_summary(board, observations, outcome)
+    exit_code = 0
+    if win_termination is not None:
+        try:
+            if LongestWinRecorder(cfg.win_pgn_path).consider(
+                board, tonk, "Human", pgn_result, win_termination
+            ):
+                print(f"  Longest TonkAI win saved: {cfg.win_pgn_path} "
+                      f"({len(board.move_stack)} plies)")
+        except (OSError, ValueError) as error:
+            print(f"  Could not save longest win: {error}")
+            exit_code = 1
     if args.pgn:
         try:
             export_pgn(board, human, args.pgn, pgn_result)
@@ -336,7 +357,7 @@ def main() -> int:
         except OSError as error:
             print(f"  Could not export PGN: {error}")
             return 1
-    return 0
+    return exit_code
 
 
 if __name__ == "__main__":

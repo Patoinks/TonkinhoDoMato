@@ -1,0 +1,38 @@
+{
+  "equivalence": {
+    "comparisons": 2502,
+    "candidate_rows": 51456,
+    "random_positions": 300,
+    "float_and_packed_byte_identical": true,
+    "board_and_history_restored": true,
+    "sha256": "1e585e11d0f82886ee6618c03f03117086279cd3899a86625ef5cad70a36f532"
+  },
+  "benchmark": {
+    "cases": 90,
+    "candidate_rows_per_pass": 1648,
+    "repeats": 5,
+    "loops_per_block": 5,
+    "milliseconds_per_candidate_batch": {
+      "reference": 0.1654673333460879,
+      "batched": 0.12368911110873644
+    },
+    "blocks_ms": {
+      "reference": [
+        0.16368599999825367,
+        0.16942288889873047,
+        0.16483777778274897,
+        0.1654673333460879,
+        0.1662857777814174
+      ],
+      "batched": [
+        0.12368911110873644,
+        0.14226488888703492,
+        0.12871511110764308,
+        0.12127266666438016,
+        0.12215377777465619
+      ]
+    },
+    "encoder_speedup": 1.3377679883286069,
+    "scope": "encoder only, model/learner/opponent unchanged; not games/s"
+  }
+}

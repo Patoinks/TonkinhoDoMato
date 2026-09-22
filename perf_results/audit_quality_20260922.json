@@ -1,0 +1,514 @@
+{
+  "scope": "Read-only frozen checkpoint inference. No training, no search. Each child is checked for immediate mate with python-chess.",
+  "limitations": "Three positions per checkpoint; two are colour mirrors. This is a diagnostic, not an estimate of playing strength.",
+  "runtime": {
+    "python": "3.13.14",
+    "torch": "2.11.0+cu128",
+    "numpy": "2.5.2",
+    "python_chess": "1.11.2",
+    "device": "cpu",
+    "torch_threads": 1
+  },
+  "checkpoints": [
+    {
+      "checkpoint": "checkpoints/latest.pt",
+      "sha256": "76a6a2430246d2941147020533b2a14d01a01c29c3a9afded2c4e48b8f787357",
+      "games": 2500,
+      "steps": 9904,
+      "saved_at": 1790087233.9607146,
+      "stored_config": {
+        "latent_size": 128,
+        "hidden_size": 128,
+        "piece_hidden": 32,
+        "head_hidden": 32,
+        "type_embed": 16,
+        "square_embed": 16,
+        "side_embed": 8,
+        "learning_rate": 0.0003,
+        "weight_decay": 0.0001,
+        "batch_size": 512,
+        "replay_capacity": 200000,
+        "predict_capacity": 20000,
+        "min_replay": 2000,
+        "updates_per_game": 4,
+        "grad_clip": 1.0,
+        "value_weight": 1.0,
+        "predict_weight": 1.0,
+        "piece_value_weight": 0.1,
+        "pieces_per_position": 1,
+        "temperature": 0.1,
+        "draw_weight": 0.1,
+        "max_plies": 300,
+        "opponent_depth": 2,
+        "opponent_nodes": 1000,
+        "opponent_randomness": 0.35,
+        "opponent_quiescence": true,
+        "max_predict_candidates": 48,
+        "surprise_threshold": 3.0,
+        "theory_capacity": 10000,
+        "log_every": 1000,
+        "checkpoint_every": 2500,
+        "checkpoint_dir": "checkpoints",
+        "log_sacrifices": true,
+        "device": "cuda",
+        "seed": 42,
+        "num_workers": 1,
+        "tonkai_plays_white_prob": 0.5
+      },
+      "stored_metrics": {
+        "games": 2500,
+        "wins": 1,
+        "draws": 466,
+        "losses": 2033,
+        "termination": {
+          "checkmate": 2034,
+          "threefold_repetition": 14,
+          "stalemate": 346,
+          "ply_limit": 79,
+          "insufficient_material": 27
+        }
+      },
+      "stored_metrics_note": "Checkpoint metrics may cover only the current resumed run.",
+      "initial_wdl": [
+        2.165168780265958e-06,
+        0.13855671882629395,
+        0.8614411354064941
+      ],
+      "positions": [
+        {
+          "name": "queen_endgame_white",
+          "fen": "7k/5Q2/6K1/8/8/8/8/8 w - - 0 1",
+          "legal_moves": 26,
+          "mate_count": 4,
+          "mates": [
+            {
+              "move": "f7f8",
+              "san": "Qf8#",
+              "utility_rank": 1,
+              "utility": 0.04541068524122238,
+              "wdl": [
+                0.00027589520323090255,
+                0.9498716592788696,
+                0.04985237866640091
+              ]
+            },
+            {
+              "move": "f7e8",
+              "san": "Qe8#",
+              "utility_rank": 12,
+              "utility": -0.5246625542640686,
+              "wdl": [
+                0.0011703481432050467,
+                0.429997056722641,
+                0.5688326358795166
+              ]
+            },
+            {
+              "move": "f7h7",
+              "san": "Qh7#",
+              "utility_rank": 24,
+              "utility": -0.878061056137085,
+              "wdl": [
+                9.408645564690232e-05,
+                0.11068257689476013,
+                0.8892233967781067
+              ]
+            },
+            {
+              "move": "f7g7",
+              "san": "Qg7#",
+              "utility_rank": 16,
+              "utility": -0.6936586499214172,
+              "wdl": [
+                0.0003321732801850885,
+                0.2778881788253784,
+                0.7217796444892883
+              ]
+            }
+          ],
+          "argmax": "f7f8",
+          "argmax_san": "Qf8#",
+          "argmax_is_mate": true,
+          "argmax_utility": 0.04541068524122238,
+          "argmax_wdl": [
+            0.00027589520323090255,
+            0.9498716592788696,
+            0.04985237866640091
+          ]
+        },
+        {
+          "name": "queen_endgame_black",
+          "fen": "8/8/8/8/8/6k1/5q2/7K b - - 0 1",
+          "legal_moves": 26,
+          "mate_count": 4,
+          "mates": [
+            {
+              "move": "f2h2",
+              "san": "Qh2#",
+              "utility_rank": 24,
+              "utility": -0.878061056137085,
+              "wdl": [
+                9.408645564690232e-05,
+                0.11068257689476013,
+                0.8892233967781067
+              ]
+            },
+            {
+              "move": "f2g2",
+              "san": "Qg2#",
+              "utility_rank": 16,
+              "utility": -0.6936586499214172,
+              "wdl": [
+                0.0003321732801850885,
+                0.2778881788253784,
+                0.7217796444892883
+              ]
+            },
+            {
+              "move": "f2f1",
+              "san": "Qf1#",
+              "utility_rank": 1,
+              "utility": 0.04541068524122238,
+              "wdl": [
+                0.00027589520323090255,
+                0.9498716592788696,
+                0.04985237866640091
+              ]
+            },
+            {
+              "move": "f2e1",
+              "san": "Qe1#",
+              "utility_rank": 12,
+              "utility": -0.5246626138687134,
+              "wdl": [
+                0.0011703481432050467,
+                0.42999696731567383,
+                0.5688326358795166
+              ]
+            }
+          ],
+          "argmax": "f2f1",
+          "argmax_san": "Qf1#",
+          "argmax_is_mate": true,
+          "argmax_utility": 0.04541068524122238,
+          "argmax_wdl": [
+            0.00027589520323090255,
+            0.9498716592788696,
+            0.04985237866640091
+          ]
+        },
+        {
+          "name": "scholars_mate",
+          "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+          "legal_moves": 42,
+          "mate_count": 1,
+          "mates": [
+            {
+              "move": "f3f7",
+              "san": "Qxf7#",
+              "utility_rank": 15,
+              "utility": -0.8910189270973206,
+              "wdl": [
+                8.712160592949658e-07,
+                0.09907208383083344,
+                0.9009270071983337
+              ]
+            }
+          ],
+          "argmax": "f3e2",
+          "argmax_san": "Qe2",
+          "argmax_is_mate": false,
+          "argmax_utility": -0.7151970267295837,
+          "argmax_wdl": [
+            4.985031409887597e-07,
+            0.2589109241962433,
+            0.7410886287689209
+          ]
+        }
+      ]
+    },
+    {
+      "checkpoint": "checkpoints/deployed_5020games.pt",
+      "sha256": "c647c9b6f2ede30eca333245bb8687b9b93d79f3ab3c92f4495b821293de4911",
+      "games": 5020,
+      "steps": 19848,
+      "saved_at": 1790050429.3066146,
+      "stored_config": {
+        "latent_size": 128,
+        "hidden_size": 128,
+        "piece_hidden": 32,
+        "head_hidden": 32,
+        "type_embed": 16,
+        "square_embed": 16,
+        "side_embed": 8,
+        "learning_rate": 0.0003,
+        "weight_decay": 0.0001,
+        "batch_size": 512,
+        "replay_capacity": 200000,
+        "predict_capacity": 20000,
+        "min_replay": 2000,
+        "updates_per_game": 4,
+        "grad_clip": 1.0,
+        "value_weight": 1.0,
+        "predict_weight": 1.0,
+        "piece_value_weight": 0.1,
+        "pieces_per_position": 1,
+        "temperature": 1.0,
+        "draw_weight": 0.1,
+        "max_plies": 300,
+        "opponent_depth": 2,
+        "opponent_nodes": 1000,
+        "opponent_randomness": 0.35,
+        "opponent_quiescence": true,
+        "max_predict_candidates": 48,
+        "surprise_threshold": 3.0,
+        "theory_capacity": 10000,
+        "log_every": 1000,
+        "checkpoint_every": 0,
+        "checkpoint_dir": "checkpoints",
+        "log_sacrifices": true,
+        "device": "cpu",
+        "seed": 42,
+        "num_workers": 1,
+        "tonkai_plays_white_prob": 0.5
+      },
+      "stored_metrics": {
+        "games": 20,
+        "wins": 0,
+        "draws": 0,
+        "losses": 20,
+        "termination": {
+          "checkmate": 20
+        }
+      },
+      "stored_metrics_note": "Checkpoint metrics may cover only the current resumed run.",
+      "initial_wdl": [
+        4.791025531858395e-08,
+        0.006938605103641748,
+        0.993061363697052
+      ],
+      "positions": [
+        {
+          "name": "queen_endgame_white",
+          "fen": "7k/5Q2/6K1/8/8/8/8/8 w - - 0 1",
+          "legal_moves": 26,
+          "mate_count": 4,
+          "mates": [
+            {
+              "move": "f7f8",
+              "san": "Qf8#",
+              "utility_rank": 3,
+              "utility": -0.977462112903595,
+              "wdl": [
+                0.01033400185406208,
+                0.0016998627688735723,
+                0.9879661202430725
+              ]
+            },
+            {
+              "move": "f7e8",
+              "san": "Qe8#",
+              "utility_rank": 1,
+              "utility": -0.4943397045135498,
+              "wdl": [
+                0.2056618183851242,
+                0.08576066792011261,
+                0.708577573299408
+              ]
+            },
+            {
+              "move": "f7h7",
+              "san": "Qh7#",
+              "utility_rank": 23,
+              "utility": -0.998989999294281,
+              "wdl": [
+                0.0004466870450414717,
+                0.0001060632785083726,
+                0.9994472861289978
+              ]
+            },
+            {
+              "move": "f7g7",
+              "san": "Qg7#",
+              "utility_rank": 15,
+              "utility": -0.9977567195892334,
+              "wdl": [
+                0.0009930492378771305,
+                0.00023377557226922363,
+                0.9987731575965881
+              ]
+            }
+          ],
+          "argmax": "f7e8",
+          "argmax_san": "Qe8#",
+          "argmax_is_mate": true,
+          "argmax_utility": -0.4943397045135498,
+          "argmax_wdl": [
+            0.2056618183851242,
+            0.08576066792011261,
+            0.708577573299408
+          ]
+        },
+        {
+          "name": "queen_endgame_black",
+          "fen": "8/8/8/8/8/6k1/5q2/7K b - - 0 1",
+          "legal_moves": 26,
+          "mate_count": 4,
+          "mates": [
+            {
+              "move": "f2h2",
+              "san": "Qh2#",
+              "utility_rank": 23,
+              "utility": -0.998989999294281,
+              "wdl": [
+                0.0004466870450414717,
+                0.000106063176644966,
+                0.9994472861289978
+              ]
+            },
+            {
+              "move": "f2g2",
+              "san": "Qg2#",
+              "utility_rank": 15,
+              "utility": -0.9977567195892334,
+              "wdl": [
+                0.0009930492378771305,
+                0.00023377533943857998,
+                0.9987731575965881
+              ]
+            },
+            {
+              "move": "f2f1",
+              "san": "Qf1#",
+              "utility_rank": 3,
+              "utility": -0.977462112903595,
+              "wdl": [
+                0.010334006510674953,
+                0.0016998627688735723,
+                0.9879661202430725
+              ]
+            },
+            {
+              "move": "f2e1",
+              "san": "Qe1#",
+              "utility_rank": 1,
+              "utility": -0.4943397045135498,
+              "wdl": [
+                0.2056618183851242,
+                0.08576066792011261,
+                0.708577573299408
+              ]
+            }
+          ],
+          "argmax": "f2e1",
+          "argmax_san": "Qe1#",
+          "argmax_is_mate": true,
+          "argmax_utility": -0.4943397045135498,
+          "argmax_wdl": [
+            0.2056618183851242,
+            0.08576066792011261,
+            0.708577573299408
+          ]
+        },
+        {
+          "name": "scholars_mate",
+          "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+          "legal_moves": 42,
+          "mate_count": 1,
+          "mates": [
+            {
+              "move": "f3f7",
+              "san": "Qxf7#",
+              "utility_rank": 35,
+              "utility": -0.9999848008155823,
+              "wdl": [
+                2.5358413147102965e-09,
+                1.385636096529197e-05,
+                0.9999861717224121
+              ]
+            }
+          ],
+          "argmax": "f3g4",
+          "argmax_san": "Qg4",
+          "argmax_is_mate": false,
+          "argmax_utility": -0.9992808103561401,
+          "argmax_wdl": [
+            7.169381976979139e-09,
+            0.0006538067827932537,
+            0.9993461966514587
+          ]
+        }
+      ]
+    }
+  ],
+  "history": [
+    {
+      "path": "history/20260922T142140Z-4cfa262e.jsonl",
+      "sha256": "f4a6903fb42bc06cea699105701b213c4386726731f819d13772430e2fd74eb5",
+      "run": {
+        "kind": "run",
+        "schema_version": 1,
+        "run_id": "20260922T142140Z-4cfa262e",
+        "config": {
+          "latent_size": 128,
+          "hidden_size": 128,
+          "piece_hidden": 32,
+          "head_hidden": 32,
+          "type_embed": 16,
+          "square_embed": 16,
+          "side_embed": 8,
+          "learning_rate": 0.0003,
+          "weight_decay": 0.0001,
+          "batch_size": 512,
+          "replay_capacity": 200000,
+          "predict_capacity": 20000,
+          "min_replay": 2000,
+          "updates_per_game": 4,
+          "grad_clip": 1.0,
+          "value_weight": 1.0,
+          "predict_weight": 1.0,
+          "piece_value_weight": 0.1,
+          "pieces_per_position": 1,
+          "temperature": 0.1,
+          "draw_weight": 0.1,
+          "max_plies": 300,
+          "opponent_depth": 2,
+          "opponent_nodes": 1000,
+          "opponent_randomness": 0.35,
+          "opponent_quiescence": true,
+          "max_predict_candidates": 48,
+          "surprise_threshold": 3.0,
+          "theory_capacity": 10000,
+          "log_every": 1000,
+          "checkpoint_every": 2500,
+          "checkpoint_dir": "checkpoints",
+          "log_sacrifices": true,
+          "device": "cuda",
+          "seed": 42,
+          "num_workers": 1,
+          "tonkai_plays_white_prob": 0.5
+        },
+        "resume": null,
+        "initial_games": 0,
+        "no_train": false,
+        "timestamp": "2026-09-22T14:21:40.604533+00:00"
+      },
+      "last_metrics": {
+        "games": 4000,
+        "wins": 1,
+        "draws": 779,
+        "losses": 3220,
+        "termination": {
+          "checkmate": 3221,
+          "threefold_repetition": 19,
+          "stalemate": 563,
+          "ply_limit": 127,
+          "insufficient_material": 69,
+          "fifty_move": 1
+        },
+        "final": false,
+        "timestamp": "2026-09-22T14:30:41.275008+00:00"
+      }
+    }
+  ]
+}

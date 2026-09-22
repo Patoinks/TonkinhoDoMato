@@ -1,0 +1,19 @@
+{
+  "positions": 16,
+  "measured_repeats": 2,
+  "checkpoint": "checkpoints\\cognitive-1000-500\\latest.pt",
+  "threads": 1,
+  "scope": "Full candidate evaluation; no training or strength test",
+  "latency_ms": {
+    "0": {
+      "mean": 6.678912499864964,
+      "median": 6.5561000010347925,
+      "maximum": 9.611200002836995
+    },
+    "0.08": {
+      "mean": 20.793481249484103,
+      "median": 19.201149996661115,
+      "maximum": 34.735100001853425
+    }
+  }
+}

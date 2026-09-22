@@ -1,0 +1,515 @@
+{
+  "snapshot": {
+    "games": 12575,
+    "plies": 645640,
+    "wins": 0,
+    "draws": 68,
+    "losses": 12507,
+    "truncated": 0,
+    "timestamp": "2026-09-22T20:12:22.975495+00:00",
+    "loss": {
+      "loss": 1.0801619291305542,
+      "survival_loss": 0.07217072695493698,
+      "future_loss": 0.00011680048919515684,
+      "novelty_loss": 8.28000975161558e-06,
+      "reply_loss": 1.0079643726348877,
+      "piece_loss": 3.0997605790616944e-05,
+      "learned_positions": 245,
+      "gradient_norm": 4.0351033210754395
+    },
+    "gps": 4.103877892186891
+  },
+  "first_1000": {
+    "start": 1,
+    "end": 1000,
+    "games": 1000,
+    "mean_plies": 50.793,
+    "wins": 0,
+    "draws": 6,
+    "losses": 994,
+    "truncated": 0,
+    "nonloss_percent": 0.6,
+    "mean_logged_training_losses": {
+      "survival_loss": 0.07616378832608461,
+      "reply_loss": 1.6262362539768218,
+      "future_loss": 0.00014271786694735055,
+      "piece_loss": 1.9266255822003587e-05
+    }
+  },
+  "last_1000": {
+    "start": 11576,
+    "end": 12575,
+    "games": 1000,
+    "mean_plies": 51.204,
+    "wins": 0,
+    "draws": 7,
+    "losses": 993,
+    "truncated": 0,
+    "nonloss_percent": 0.7,
+    "mean_logged_training_losses": {
+      "survival_loss": 0.06251680050045252,
+      "reply_loss": 1.3989609748125076,
+      "future_loss": 0.0001402622121531749,
+      "piece_loss": 0.0001463310308281507
+    }
+  },
+  "duration_change_plies": 0.41100000000000136,
+  "duration_change_percent": 0.8091666174472989,
+  "approximate_95_percent_block_bootstrap_interval_plies": [
+    -1.3230499999999863,
+    1.9889999999999903
+  ],
+  "block_size_games": 100,
+  "bootstrap_repetitions": 20000,
+  "windows_500": [
+    {
+      "start": 1,
+      "end": 500,
+      "games": 500,
+      "mean_plies": 50.842,
+      "wins": 0,
+      "draws": 2,
+      "losses": 498,
+      "truncated": 0,
+      "nonloss_percent": 0.4,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.08197032865136862,
+        "reply_loss": 1.620989629626274,
+        "future_loss": 0.00014756772434338928,
+        "piece_loss": 1.8020166862697806e-05
+      }
+    },
+    {
+      "start": 501,
+      "end": 1000,
+      "games": 500,
+      "mean_plies": 50.744,
+      "wins": 0,
+      "draws": 4,
+      "losses": 496,
+      "truncated": 0,
+      "nonloss_percent": 0.8,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.0703572480008006,
+        "reply_loss": 1.6314828783273696,
+        "future_loss": 0.00013786800955131184,
+        "piece_loss": 2.0512344781309368e-05
+      }
+    },
+    {
+      "start": 1001,
+      "end": 1500,
+      "games": 500,
+      "mean_plies": 52.082,
+      "wins": 0,
+      "draws": 1,
+      "losses": 499,
+      "truncated": 0,
+      "nonloss_percent": 0.2,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.0740957485511899,
+        "reply_loss": 1.4652484148740768,
+        "future_loss": 0.00012925228948006405,
+        "piece_loss": 2.5496627768006874e-05
+      }
+    },
+    {
+      "start": 1501,
+      "end": 2000,
+      "games": 500,
+      "mean_plies": 51.558,
+      "wins": 0,
+      "draws": 4,
+      "losses": 496,
+      "truncated": 0,
+      "nonloss_percent": 0.8,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.08283442445099354,
+        "reply_loss": 1.4470572859048842,
+        "future_loss": 0.0001419679196260404,
+        "piece_loss": 2.9991143310326152e-05
+      }
+    },
+    {
+      "start": 2001,
+      "end": 2500,
+      "games": 500,
+      "mean_plies": 52.228,
+      "wins": 0,
+      "draws": 2,
+      "losses": 498,
+      "truncated": 0,
+      "nonloss_percent": 0.4,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.09156307857483625,
+        "reply_loss": 1.3114700257778167,
+        "future_loss": 0.00016214234346989542,
+        "piece_loss": 4.38296332504251e-05
+      }
+    },
+    {
+      "start": 2501,
+      "end": 3000,
+      "games": 500,
+      "mean_plies": 50.968,
+      "wins": 0,
+      "draws": 3,
+      "losses": 497,
+      "truncated": 0,
+      "nonloss_percent": 0.6,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.08544279318302869,
+        "reply_loss": 1.3317826867103577,
+        "future_loss": 0.00015206831485556905,
+        "piece_loss": 5.560191475524334e-05
+      }
+    },
+    {
+      "start": 3001,
+      "end": 3500,
+      "games": 500,
+      "mean_plies": 52.47,
+      "wins": 0,
+      "draws": 6,
+      "losses": 494,
+      "truncated": 0,
+      "nonloss_percent": 1.2,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.10548523552715779,
+        "reply_loss": 1.2328652799129487,
+        "future_loss": 0.00015725065350125078,
+        "piece_loss": 0.00010969487939291867
+      }
+    },
+    {
+      "start": 3501,
+      "end": 4000,
+      "games": 500,
+      "mean_plies": 50.664,
+      "wins": 0,
+      "draws": 1,
+      "losses": 499,
+      "truncated": 0,
+      "nonloss_percent": 0.2,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.09312533363699912,
+        "reply_loss": 1.0676607280969619,
+        "future_loss": 0.00016713175937184134,
+        "piece_loss": 0.00014060814428376033
+      }
+    },
+    {
+      "start": 4001,
+      "end": 4500,
+      "games": 500,
+      "mean_plies": 50.144,
+      "wins": 0,
+      "draws": 0,
+      "losses": 500,
+      "truncated": 0,
+      "nonloss_percent": 0.0,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.08172389026731253,
+        "reply_loss": 1.4018879741430283,
+        "future_loss": 0.0001497679390013218,
+        "piece_loss": 0.000182518775909557
+      }
+    },
+    {
+      "start": 4501,
+      "end": 5000,
+      "games": 500,
+      "mean_plies": 49.8,
+      "wins": 0,
+      "draws": 4,
+      "losses": 496,
+      "truncated": 0,
+      "nonloss_percent": 0.8,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.08952364437282086,
+        "reply_loss": 1.4672003656625747,
+        "future_loss": 0.00015244411406456493,
+        "piece_loss": 0.0002212114919529995
+      }
+    },
+    {
+      "start": 5001,
+      "end": 5500,
+      "games": 500,
+      "mean_plies": 49.704,
+      "wins": 0,
+      "draws": 3,
+      "losses": 497,
+      "truncated": 0,
+      "nonloss_percent": 0.6,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.08963072821497917,
+        "reply_loss": 1.4591664344072341,
+        "future_loss": 0.0001446319973183563,
+        "piece_loss": 0.00028315160125202965
+      }
+    },
+    {
+      "start": 5501,
+      "end": 6000,
+      "games": 500,
+      "mean_plies": 51.24,
+      "wins": 0,
+      "draws": 3,
+      "losses": 497,
+      "truncated": 0,
+      "nonloss_percent": 0.6,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.08714258875697851,
+        "reply_loss": 1.270171146094799,
+        "future_loss": 0.00016064504998212215,
+        "piece_loss": 0.0002480800025296048
+      }
+    },
+    {
+      "start": 6001,
+      "end": 6500,
+      "games": 500,
+      "mean_plies": 50.41,
+      "wins": 0,
+      "draws": 3,
+      "losses": 497,
+      "truncated": 0,
+      "nonloss_percent": 0.6,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.06657265778630972,
+        "reply_loss": 1.2753442615270614,
+        "future_loss": 0.0001492319643148221,
+        "piece_loss": 0.00025168742868117986
+      }
+    },
+    {
+      "start": 6501,
+      "end": 7000,
+      "games": 500,
+      "mean_plies": 50.446,
+      "wins": 0,
+      "draws": 2,
+      "losses": 498,
+      "truncated": 0,
+      "nonloss_percent": 0.4,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.08049288345500827,
+        "reply_loss": 1.35291930437088,
+        "future_loss": 0.00015061231279105413,
+        "piece_loss": 0.00018447246839059517
+      }
+    },
+    {
+      "start": 7001,
+      "end": 7500,
+      "games": 500,
+      "mean_plies": 51.354,
+      "wins": 0,
+      "draws": 6,
+      "losses": 494,
+      "truncated": 0,
+      "nonloss_percent": 1.2,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.05838197059929371,
+        "reply_loss": 1.182974898815155,
+        "future_loss": 0.00014918158049113118,
+        "piece_loss": 0.00014325053962238599
+      }
+    },
+    {
+      "start": 7501,
+      "end": 8000,
+      "games": 500,
+      "mean_plies": 52.04,
+      "wins": 0,
+      "draws": 1,
+      "losses": 499,
+      "truncated": 0,
+      "nonloss_percent": 0.2,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.06407169178128243,
+        "reply_loss": 1.3807929128408432,
+        "future_loss": 0.00015114437701413408,
+        "piece_loss": 0.000148175331105449
+      }
+    },
+    {
+      "start": 8001,
+      "end": 8500,
+      "games": 500,
+      "mean_plies": 51.274,
+      "wins": 0,
+      "draws": 2,
+      "losses": 498,
+      "truncated": 0,
+      "nonloss_percent": 0.4,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.0843246903270483,
+        "reply_loss": 1.4176303699612618,
+        "future_loss": 0.0001496880689956015,
+        "piece_loss": 0.00023098339570424287
+      }
+    },
+    {
+      "start": 8501,
+      "end": 9000,
+      "games": 500,
+      "mean_plies": 51.288,
+      "wins": 0,
+      "draws": 2,
+      "losses": 498,
+      "truncated": 0,
+      "nonloss_percent": 0.4,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.07648037988692521,
+        "reply_loss": 1.084178876876831,
+        "future_loss": 0.0001579361101903487,
+        "piece_loss": 0.00011288950227026363
+      }
+    },
+    {
+      "start": 9001,
+      "end": 9500,
+      "games": 500,
+      "mean_plies": 53.442,
+      "wins": 0,
+      "draws": 2,
+      "losses": 498,
+      "truncated": 0,
+      "nonloss_percent": 0.4,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.07075378596782685,
+        "reply_loss": 1.412854292988777,
+        "future_loss": 0.00015326546563301235,
+        "piece_loss": 0.00010777026582218241
+      }
+    },
+    {
+      "start": 9501,
+      "end": 10000,
+      "games": 500,
+      "mean_plies": 53.07,
+      "wins": 0,
+      "draws": 2,
+      "losses": 498,
+      "truncated": 0,
+      "nonloss_percent": 0.4,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.09158257283270359,
+        "reply_loss": 1.30395650267601,
+        "future_loss": 0.00013941587567387615,
+        "piece_loss": 7.260000493261031e-05
+      }
+    },
+    {
+      "start": 10001,
+      "end": 10500,
+      "games": 500,
+      "mean_plies": 51.774,
+      "wins": 0,
+      "draws": 1,
+      "losses": 499,
+      "truncated": 0,
+      "nonloss_percent": 0.2,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.0646396679803729,
+        "reply_loss": 1.2351866692304612,
+        "future_loss": 0.00015306106506614016,
+        "piece_loss": 0.00011525272584549384
+      }
+    },
+    {
+      "start": 10501,
+      "end": 11000,
+      "games": 500,
+      "mean_plies": 52.772,
+      "wins": 0,
+      "draws": 1,
+      "losses": 499,
+      "truncated": 0,
+      "nonloss_percent": 0.2,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.0651668319478631,
+        "reply_loss": 1.1565707623958588,
+        "future_loss": 0.0001445782087102998,
+        "piece_loss": 0.00020301782042224658
+      }
+    },
+    {
+      "start": 11001,
+      "end": 11500,
+      "games": 500,
+      "mean_plies": 50.91,
+      "wins": 0,
+      "draws": 4,
+      "losses": 496,
+      "truncated": 0,
+      "nonloss_percent": 0.8,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.07871937658637762,
+        "reply_loss": 1.1628321081399917,
+        "future_loss": 0.00014230375927581917,
+        "piece_loss": 0.00014181911828927695
+      }
+    },
+    {
+      "start": 11501,
+      "end": 12000,
+      "games": 500,
+      "mean_plies": 51.374,
+      "wins": 0,
+      "draws": 4,
+      "losses": 496,
+      "truncated": 0,
+      "nonloss_percent": 0.8,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.0626271003857255,
+        "reply_loss": 1.3366128534078598,
+        "future_loss": 0.00014211880625225604,
+        "piece_loss": 0.00012164808995294152
+      }
+    },
+    {
+      "start": 12001,
+      "end": 12500,
+      "games": 500,
+      "mean_plies": 51.562,
+      "wins": 0,
+      "draws": 4,
+      "losses": 496,
+      "truncated": 0,
+      "nonloss_percent": 0.8,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.05987517721951008,
+        "reply_loss": 1.4370500653982163,
+        "future_loss": 0.0001423346508090617,
+        "piece_loss": 0.0001680875937381643
+      }
+    },
+    {
+      "start": 12501,
+      "end": 12575,
+      "games": 75,
+      "mean_plies": 47.46666666666667,
+      "wins": 0,
+      "draws": 1,
+      "losses": 74,
+      "truncated": 0,
+      "nonloss_percent": 1.3333333333333333,
+      "mean_logged_training_losses": {
+        "survival_loss": 0.07111163437366486,
+        "reply_loss": 1.299888809521993,
+        "future_loss": 0.00013463874590039873,
+        "piece_loss": 7.851125580297473e-05
+      }
+    }
+  ],
+  "limitations": [
+    "Cumulative logs have no individual-game duration variance.",
+    "Block interval assumes approximately independent 100-game blocks; training is nonstationary.",
+    "Exploratory training policy and changing replay; no frozen-checkpoint evaluation.",
+    "Synthetic counterfactual/generalization branches are excluded.",
+    "Training loss snapshots are not held-out predictive accuracy."
+  ]
+}

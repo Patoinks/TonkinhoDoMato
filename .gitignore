@@ -12,3 +12,7 @@ history/
 
 perf_results/pytest*/
 perf_results/export/
+engines/
+web_publish.local.json
+dist/tonkinho-tracker-build/
+desktop/*.spec

@@ -1,0 +1,227 @@
+{
+  "environment": {
+    "python": "3.13.14",
+    "torch": "2.11.0+cu128",
+    "numpy": "2.5.2",
+    "gpu": "NVIDIA GeForce RTX 5060 Ti",
+    "parent_torch_threads": 6
+  },
+  "config": {
+    "latent_size": 128,
+    "hidden_size": 128,
+    "piece_hidden": 32,
+    "head_hidden": 32,
+    "type_embed": 16,
+    "square_embed": 16,
+    "side_embed": 8,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "batch_size": 512,
+    "replay_capacity": 200000,
+    "predict_capacity": 20000,
+    "min_replay": 2000,
+    "updates_per_game": 1,
+    "samples_per_game": 2048,
+    "grad_clip": 1.0,
+    "value_weight": 1.0,
+    "predict_weight": 1.0,
+    "piece_value_weight": 0.1,
+    "pieces_per_position": 1,
+    "temperature": 0.1,
+    "draw_weight": 0.1,
+    "max_plies": 300,
+    "opponent_depth": 2,
+    "opponent_nodes": 1000,
+    "opponent_randomness": 0.35,
+    "opponent_quiescence": true,
+    "max_predict_candidates": 48,
+    "surprise_threshold": 3.0,
+    "theory_capacity": 10000,
+    "log_every": 100,
+    "checkpoint_every": 1000,
+    "checkpoint_dir": "checkpoints",
+    "log_sacrifices": true,
+    "device": "cuda",
+    "inference_device": "cpu",
+    "seed": 42,
+    "num_workers": 1,
+    "weight_refresh_games": 20,
+    "tonkai_plays_white_prob": 0.5
+  },
+  "checkpoint_sha256": {
+    "checkpoints\\deployed_5020games.pt": "c647c9b6f2ede30eca333245bb8687b9b93d79f3ab3c92f4495b821293de4911",
+    "checkpoints\\latest.pt": "76a6a2430246d2941147020533b2a14d01a01c29c3a9afded2c4e48b8f787357"
+  },
+  "method": {
+    "warmup_games": 15,
+    "timed_games": 120,
+    "repeats": 2,
+    "same_initial_weights": true,
+    "same_70_game_replay": true,
+    "includes_startup_in_timed_window": false,
+    "includes_checkpoint_writes": false,
+    "curriculum": false,
+    "quality_claim": false
+  },
+  "windows": [
+    {
+      "repeat": 1,
+      "workers": 1,
+      "seconds": 9.627495100001397,
+      "games_s": 12.464301332127667,
+      "positions_s": 18548.438419872484,
+      "plies_s": 630.5897782278922,
+      "mean_plies": 50.59166666666667,
+      "games": 120,
+      "plies": 6071,
+      "tonkai_positions": 178575,
+      "wins": 0,
+      "draws": 0,
+      "losses": 120,
+      "train_batches": 120,
+      "times": {
+        "env": 2.7628575998242013,
+        "inference": 0.8221962999086827,
+        "opponent": 1.719442899855494,
+        "training": 3.8584912000151235
+      },
+      "actor_times": {}
+    },
+    {
+      "repeat": 1,
+      "workers": 2,
+      "seconds": 4.3717995999977575,
+      "games_s": 27.44865066552034,
+      "positions_s": 43243.51921348293,
+      "plies_s": 1466.2154230498782,
+      "mean_plies": 53.416666666666664,
+      "games": 120,
+      "plies": 6410,
+      "tonkai_positions": 189052,
+      "wins": 0,
+      "draws": 1,
+      "losses": 119,
+      "train_batches": 120,
+      "times": {
+        "weight_publish": 0.005175799997232389,
+        "actor_start": 0.0,
+        "actor_wait": 0.03564300003927201,
+        "training": 4.285402899957262
+      },
+      "actor_times": {
+        "weight_load": 0.005799699945782777,
+        "env": 3.6315870994803845,
+        "inference": 1.3945449003076646,
+        "opponent": 2.110136999748647
+      }
+    },
+    {
+      "repeat": 1,
+      "workers": 4,
+      "seconds": 4.592065899996669,
+      "games_s": 26.13202915926948,
+      "positions_s": 38714.165665638415,
+      "plies_s": 1314.4410667112547,
+      "mean_plies": 50.3,
+      "games": 120,
+      "plies": 6036,
+      "tonkai_positions": 177778,
+      "wins": 0,
+      "draws": 0,
+      "losses": 120,
+      "train_batches": 120,
+      "times": {
+        "weight_publish": 0.006157000003440771,
+        "actor_start": 0.0,
+        "actor_wait": 0.03777190004620934,
+        "training": 4.50068210002064
+      },
+      "actor_times": {
+        "weight_load": 0.054519599965715315,
+        "env": 3.7939539002036327,
+        "inference": 3.2979604997235583,
+        "opponent": 2.0956656000271323
+      }
+    },
+    {
+      "repeat": 2,
+      "workers": 4,
+      "seconds": 4.5471346999984235,
+      "games_s": 26.39024526808973,
+      "positions_s": 40251.50167644329,
+      "plies_s": 1357.558200332649,
+      "mean_plies": 51.44166666666667,
+      "games": 120,
+      "plies": 6173,
+      "tonkai_positions": 183029,
+      "wins": 0,
+      "draws": 0,
+      "losses": 120,
+      "train_batches": 120,
+      "times": {
+        "weight_publish": 0.0059252999999444,
+        "actor_start": 0.0,
+        "actor_wait": 0.03590270003769547,
+        "training": 4.4582324999864795
+      },
+      "actor_times": {
+        "weight_load": 0.010888900054851547,
+        "env": 3.835927099957189,
+        "inference": 2.4578257001412567,
+        "opponent": 2.0930564997688634
+      }
+    },
+    {
+      "repeat": 2,
+      "workers": 2,
+      "seconds": 3.831710500002373,
+      "games_s": 31.317606066514077,
+      "positions_s": 49211.18127266745,
+      "plies_s": 1682.0164258223601,
+      "mean_plies": 53.708333333333336,
+      "games": 120,
+      "plies": 6445,
+      "tonkai_positions": 188563,
+      "wins": 0,
+      "draws": 1,
+      "losses": 119,
+      "train_batches": 120,
+      "times": {
+        "weight_publish": 0.005400300011388026,
+        "actor_start": 0.0,
+        "actor_wait": 0.15551539999432862,
+        "training": 3.6289951000071596
+      },
+      "actor_times": {
+        "weight_load": 0.00982050003221957,
+        "env": 3.6209769008055446,
+        "inference": 1.3253391000907868,
+        "opponent": 2.1016159003120265
+      }
+    },
+    {
+      "repeat": 2,
+      "workers": 1,
+      "seconds": 9.292809999999008,
+      "games_s": 12.913209244567877,
+      "positions_s": 19216.469507072572,
+      "plies_s": 653.3007776980965,
+      "mean_plies": 50.59166666666667,
+      "games": 120,
+      "plies": 6071,
+      "tonkai_positions": 178575,
+      "wins": 0,
+      "draws": 0,
+      "losses": 120,
+      "train_batches": 120,
+      "times": {
+        "env": 2.8253080998838414,
+        "inference": 0.8763148001162335,
+        "opponent": 1.7472738000069512,
+        "training": 3.3657128999839188
+      },
+      "actor_times": {}
+    }
+  ],
+  "checkpoints_unchanged": true
+}

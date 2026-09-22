@@ -1,0 +1,12 @@
+[Event "Recovered fragment from a recorded TonkAI win"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "TinyOpponent"]
+[Black "TonkAI"]
+[Result "*"]
+[FEN "rnbqk2r/pppp1p1p/5b2/1N1Pp1p1/8/3B4/PPPPNPPP/R1BQ1RK1 w kq - 1 8"]
+[SetUp "1"]
+[Source "theory_events.json indices 8757-8760 (zero-based)"]
+
+{ FRAGMENT ONLY: opening and finish were not saved. Source events say TonkAI eventually won (result=0). This older export has no run ID and cannot be confirmed as the one win in the current history. Missing moves between snapshots were recovered only where exactly one legal sequence matches the recorded FEN and moves. } 8. c4 h5 9. Qc2 Bg7 10. Qa4 g4 11. Nxa7 c5 12. f3 { End of recoverable evidence. The eventual win and its final move cannot be replayed from these events. } *

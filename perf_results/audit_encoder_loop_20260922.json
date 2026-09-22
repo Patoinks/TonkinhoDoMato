@@ -1,0 +1,147 @@
+{
+  "checkpoint": "checkpoints/deployed_5020games.pt",
+  "cfg": {
+    "latent_size": 128,
+    "hidden_size": 128,
+    "piece_hidden": 32,
+    "head_hidden": 32,
+    "type_embed": 16,
+    "square_embed": 16,
+    "side_embed": 8,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "batch_size": 512,
+    "replay_capacity": 200000,
+    "predict_capacity": 20000,
+    "min_replay": 2000,
+    "updates_per_game": 1,
+    "samples_per_game": 2048,
+    "grad_clip": 1.0,
+    "value_weight": 1.0,
+    "predict_weight": 1.0,
+    "piece_value_weight": 0.1,
+    "pieces_per_position": 1,
+    "temperature": 0.1,
+    "draw_weight": 0.1,
+    "max_plies": 300,
+    "opponent_depth": 2,
+    "opponent_nodes": 1000,
+    "opponent_randomness": 0.35,
+    "opponent_quiescence": true,
+    "max_predict_candidates": 48,
+    "surprise_threshold": 3.0,
+    "theory_capacity": 10000,
+    "log_every": 100,
+    "checkpoint_every": 1000,
+    "checkpoint_dir": "checkpoints",
+    "log_sacrifices": true,
+    "device": "cuda",
+    "inference_device": "cpu",
+    "seed": 42,
+    "num_workers": 1,
+    "weight_refresh_games": 20,
+    "tonkai_plays_white_prob": 0.5
+  },
+  "corpus": {
+    "games": 70,
+    "value": 3208,
+    "predict": 1625
+  },
+  "warmup_games": 8,
+  "measured_games": 60,
+  "order": [
+    "reference",
+    "batched",
+    "batched",
+    "reference"
+  ],
+  "runs": [
+    {
+      "encoder": "reference",
+      "wall_s": 4.696104700000433,
+      "games_s": 12.77654648542961,
+      "plies": 3209,
+      "plies_s": 683.3322945290603,
+      "candidate_positions": 91926,
+      "candidate_positions_s": 19574.946870326705,
+      "actual_updates": 60,
+      "times_s": {
+        "env": 1.454882599406119,
+        "inference": 0.43833899998571724,
+        "opponent": 0.9196150001589558,
+        "training": 1.6326445999657153
+      },
+      "inference_refresh_s": 0.05078720003803028,
+      "games_sha256": "366e84f2731030aa2addb91695fd0d50fd11ff4ee0c84bb762c0171ae5073333",
+      "parameters_sha256": "cfd93246c7634d7795aa7a27f0c0e56f07f2578286f18dfe31e6df7164eb6cf3",
+      "games_weights_rng_identical": true
+    },
+    {
+      "encoder": "batched",
+      "wall_s": 4.370728900001268,
+      "games_s": 13.727687388705942,
+      "plies": 3209,
+      "plies_s": 734.2024805059561,
+      "candidate_positions": 91926,
+      "candidate_positions_s": 21032.189848236372,
+      "actual_updates": 60,
+      "times_s": {
+        "env": 1.1428188995050732,
+        "inference": 0.43693010008428246,
+        "opponent": 0.9206510998265003,
+        "training": 1.6191546999907587
+      },
+      "inference_refresh_s": 0.04752119996555848,
+      "games_sha256": "366e84f2731030aa2addb91695fd0d50fd11ff4ee0c84bb762c0171ae5073333",
+      "parameters_sha256": "cfd93246c7634d7795aa7a27f0c0e56f07f2578286f18dfe31e6df7164eb6cf3",
+      "games_weights_rng_identical": true
+    },
+    {
+      "encoder": "batched",
+      "wall_s": 4.443336600001203,
+      "games_s": 13.503365916501522,
+      "plies": 3209,
+      "plies_s": 722.2050204342231,
+      "candidate_positions": 91926,
+      "candidate_positions_s": 20688.50692067198,
+      "actual_updates": 60,
+      "times_s": {
+        "env": 1.1434634001197992,
+        "inference": 0.49422979999508243,
+        "opponent": 0.9187859000667231,
+        "training": 1.6337611000126344
+      },
+      "inference_refresh_s": 0.04795469999226043,
+      "games_sha256": "366e84f2731030aa2addb91695fd0d50fd11ff4ee0c84bb762c0171ae5073333",
+      "parameters_sha256": "cfd93246c7634d7795aa7a27f0c0e56f07f2578286f18dfe31e6df7164eb6cf3",
+      "games_weights_rng_identical": true
+    },
+    {
+      "encoder": "reference",
+      "wall_s": 4.715847899999062,
+      "games_s": 12.723056653292812,
+      "plies": 3209,
+      "plies_s": 680.4714800069439,
+      "candidate_positions": 91926,
+      "candidate_positions_s": 19492.995098509917,
+      "actual_updates": 60,
+      "times_s": {
+        "env": 1.4593203001786605,
+        "inference": 0.44356320006772876,
+        "opponent": 0.9198151998934918,
+        "training": 1.6417889000222203
+      },
+      "inference_refresh_s": 0.048239699986879714,
+      "games_sha256": "366e84f2731030aa2addb91695fd0d50fd11ff4ee0c84bb762c0171ae5073333",
+      "parameters_sha256": "cfd93246c7634d7795aa7a27f0c0e56f07f2578286f18dfe31e6df7164eb6cf3",
+      "games_weights_rng_identical": true
+    }
+  ],
+  "notes": "Identical frozen start weights and corpus, fresh optimizer, seeded single worker; monkeypatch only in audit process.",
+  "mean_games_s": {
+    "reference": 12.74980156936121,
+    "batched": 13.615526652603732
+  },
+  "mean_speedup": 1.0679010632857948,
+  "all_runs_games_weights_rng_identical": true
+}

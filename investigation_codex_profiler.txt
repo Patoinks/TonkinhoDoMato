@@ -1,0 +1,92 @@
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                            aten::copy_        19.76%       7.283ms        19.76%       7.283ms      80.920us            90  
+                                            aten::addmm        11.84%       4.364ms        11.89%       4.380ms      62.574us            70  
+                                               aten::mm         7.55%       2.781ms         7.55%       2.781ms      30.904us            90  
+                              Optimizer.step#AdamW.step         5.41%       1.993ms         8.83%       3.254ms     650.880us             5  
+                                              aten::mul         3.06%       1.126ms         3.06%       1.126ms      22.520us            50  
+                                              aten::add         2.37%     874.400us         2.37%     874.400us      17.488us            50  
+                                              aten::sum         2.26%     831.500us         2.26%     831.500us      16.630us            50  
+                                             aten::silu         2.13%     784.800us         2.13%     784.800us      15.696us            50  
+                                            aten::fill_         2.03%     749.100us         2.03%     749.100us      12.485us            60  
+    autograd::engine::evaluate_function: AddmmBackward0         1.80%     664.700us        14.23%       5.243ms     104.850us            50  
+                                    aten::silu_backward         1.70%     626.300us         1.70%     626.300us      17.894us            35  
+                                            aten::index         1.58%     580.700us         1.73%     637.500us      42.500us            15  
+                                                aten::t         1.55%     571.700us         3.17%       1.167ms       4.490us           260  
+                                         aten::_to_copy         1.40%     516.900us        20.67%       7.618ms     126.958us            60  
+                              aten::_local_scalar_dense         1.32%     486.100us         1.32%     486.100us       2.371us           205  
+                                 aten::_index_put_impl_         1.30%     478.900us         3.33%       1.227ms     122.690us            10  
+                                 aten::nll_loss_forward         1.19%     438.300us         1.22%     448.900us      44.890us            10  
+                                        aten::transpose         1.18%     435.700us         1.62%     595.700us       2.291us           260  
+                    Optimizer.zero_grad#AdamW.zero_grad         1.07%     394.300us         1.07%     394.300us      78.860us             5  
+                                    aten::empty_strided         1.06%     390.200us         1.06%     390.200us       2.365us           165  
+                                           aten::gather         0.92%     338.300us         0.96%     352.400us      17.620us            20  
+                                               aten::to         0.89%     328.100us        21.56%       7.946ms      40.747us           195  
+                                         aten::mse_loss         0.87%     321.900us         1.16%     428.100us      85.620us             5  
+                                           aten::arange         0.85%     313.500us         1.35%     499.100us      24.955us            20  
+                                            aten::zeros         0.81%     298.100us         2.21%     815.200us      27.173us            30  
+                                     aten::index_select         0.80%     296.500us         2.07%     763.600us      38.180us            20  
+                                         AddmmBackward0         0.79%     291.200us         9.44%       3.481ms      69.610us            50  
+                                       aten::as_strided         0.79%     289.900us         0.79%     289.900us       0.532us           545  
+                                             aten::div_         0.78%     288.000us         0.78%     288.000us      57.600us             5  
+                                    aten::_foreach_mul_         0.76%     279.300us         0.76%     279.300us      18.620us            15  
+                                    aten::_foreach_norm         0.68%     249.200us         1.18%     436.600us      87.320us             5  
+                                            aten::empty         0.65%     238.000us         0.65%     238.000us       2.070us           115  
+                                           aten::linear         0.61%     223.500us        14.16%       5.220ms      74.567us            70  
+                                     aten::_log_softmax         0.60%     221.000us         0.60%     221.000us      22.100us            10  
+                                aten::nll_loss_backward         0.60%     220.900us         0.94%     346.600us      34.660us            10  
+                       aten::_log_softmax_backward_data         0.60%     219.500us         0.60%     219.500us      21.950us            10  
+                                              aten::div         0.56%     207.900us         0.56%     207.900us      20.790us            10  
+                                              aten::cat         0.53%     195.400us         0.53%     195.400us      19.540us            10  
+                        torch::autograd::AccumulateGrad         0.53%     193.800us         1.00%     367.500us       3.868us            95  
+                                             aten::add_         0.51%     189.100us         0.51%     189.100us       1.891us           100  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+Self CPU time total: 36.851ms
+
+
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                    Optimizer.zero_grad#AdamW.zero_grad         1.07%     394.300us         1.07%     394.300us      78.860us             5  
+                                       aten::lift_fresh         0.11%      42.000us         0.11%      42.000us       0.700us            60  
+                                               aten::to         0.89%     328.100us        21.56%       7.946ms      40.747us           195  
+                                         aten::_to_copy         1.40%     516.900us        20.67%       7.618ms     126.958us            60  
+                                    aten::empty_strided         1.06%     390.200us         1.06%     390.200us       2.365us           165  
+                                            aten::copy_        19.76%       7.283ms        19.76%       7.283ms      80.920us            90  
+                                           aten::linear         0.61%     223.500us        14.16%       5.220ms      74.567us            70  
+                                                aten::t         1.55%     571.700us         3.17%       1.167ms       4.490us           260  
+                                        aten::transpose         1.18%     435.700us         1.62%     595.700us       2.291us           260  
+                                       aten::as_strided         0.79%     289.900us         0.79%     289.900us       0.532us           545  
+                                            aten::addmm        11.84%       4.364ms        11.89%       4.380ms      62.574us            70  
+                                             aten::silu         2.13%     784.800us         2.13%     784.800us      15.696us            50  
+                               aten::cross_entropy_loss         0.50%     186.000us         2.86%       1.054ms     105.390us            10  
+                                      aten::log_softmax         0.09%      31.700us         0.69%     255.400us      25.540us            10  
+                                     aten::_log_softmax         0.60%     221.000us         0.60%     221.000us      22.100us            10  
+                                      aten::nll_loss_nd         0.06%      21.000us         1.66%     612.500us      61.250us            10  
+                                         aten::nll_loss         0.39%     142.600us         1.61%     591.500us      59.150us            10  
+                                 aten::nll_loss_forward         1.19%     438.300us         1.22%     448.900us      44.890us            10  
+                                          aten::resize_         0.20%      75.300us         0.20%      75.300us       1.673us            45  
+                                            aten::zeros         0.81%     298.100us         2.21%     815.200us      27.173us            30  
+                                            aten::empty         0.65%     238.000us         0.65%     238.000us       2.070us           115  
+                                            aten::zero_         0.17%      61.300us         1.81%     667.500us      13.350us            50  
+                                            aten::fill_         2.03%     749.100us         2.03%     749.100us      12.485us            60  
+                                          aten::softmax         0.05%      17.700us         0.42%     154.300us      15.430us            10  
+                                         aten::_softmax         0.37%     136.600us         0.37%     136.600us      13.660us            10  
+                                           aten::select         0.24%      87.600us         0.28%     103.500us       3.450us            30  
+                                              aten::mul         3.06%       1.126ms         3.06%       1.126ms      22.520us            50  
+                                              aten::add         2.37%     874.400us         2.37%     874.400us      17.488us            50  
+                                              aten::sub         0.50%     182.500us         0.50%     182.500us      12.167us            15  
+                                            aten::index         1.58%     580.700us         1.73%     637.500us      42.500us            15  
+                                          aten::reshape         0.10%      37.400us         0.24%      88.600us       2.531us            35  
+                                             aten::view         0.51%     186.400us         0.51%     186.400us       1.491us           125  
+                                            aten::clone         0.13%      48.800us         1.20%     442.500us      17.700us            25  
+                                           aten::arange         0.85%     313.500us         1.35%     499.100us      24.955us            20  
+                                       aten::index_put_         0.04%      16.400us         0.67%     245.300us      49.060us             5  
+                                 aten::_index_put_impl_         1.30%     478.900us         3.33%       1.227ms     122.690us            10  
+                                           aten::detach         0.36%     131.400us         0.64%     236.600us       1.893us           125  
+                                                 detach         0.29%     105.200us         0.29%     105.200us       0.842us           125  
+                                        aten::embedding         0.20%      72.300us         1.73%     637.900us      42.527us            15  
+                                     aten::index_select         0.80%     296.500us         2.07%     763.600us      38.180us            20  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+Self CPU time total: 36.851ms

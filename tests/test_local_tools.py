@@ -85,7 +85,7 @@ def test_quiet_still_scores_hint_and_undo(tmp_path, monkeypatch, capsys):
     commands = iter(["hint", "e4", "moves", "pgn", "undo", "resign"])
     monkeypatch.setattr("builtins.input", lambda _: next(commands))
     path = tmp_path / "quiet.pgn"
-    monkeypatch.setattr("sys.argv", ["play.py", "--quiet", "--checkpoint", str(tmp_path / "absent.pt"), "--pgn", str(path)])
+    monkeypatch.setattr("sys.argv", ["play.py", "--quiet", "--checkpoint", str(tmp_path / "absent.pt"), "--pgn", str(path), "--win_pgn_path", ""])
     with patch("play.tonkai.build", return_value=(net, Agent(), None, None, None, None)):
         assert main() == 0
     output = capsys.readouterr().out

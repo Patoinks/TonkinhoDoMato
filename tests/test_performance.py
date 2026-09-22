@@ -49,7 +49,8 @@ def test_parallel_cli_sigint_checkpoints(tmp_path):
 import signal, threading, sys
 import train
 sys.argv=['train.py','--games','100000','--workers','2','--max_plies','12',
-          '--device','cpu','--no-history','--checkpoint_dir',sys.argv[1]]
+          '--device','cpu','--no-history','--win_pgn_path=',
+          '--checkpoint_dir',sys.argv[1]]
 threading.Timer(3, lambda: signal.raise_signal(signal.SIGINT)).start()
 train.main()
 """
@@ -135,3 +136,66 @@ def test_piece_probe_preserves_float64_rng_and_rounding():
         tr._piece_loss(x,x_np,latent,vlogits)
         assert tr._probe_scores.tobytes()==expected.tobytes()
         assert tr.rng.bit_generator.state==rng.bit_generator.state
+
+
+def test_piece_probes_do_not_modify_replay_inputs_and_keep_gradients():
+    import chess
+    import numpy as np
+    import torch
+    from tonkai.encoding import encode
+
+    cfg = Config(device='cpu', pieces_per_position=2)
+    net, _, _, _, trainer, _ = tonkai.build(cfg)
+    positions = np.stack([
+        encode(chess.Board(), True),
+        encode(chess.Board('7k/8/8/8/8/8/8/K7 w - - 0 1'), True),
+    ])
+    before = positions.copy()
+    x = torch.from_numpy(positions)
+    latent = net.encode(x)
+    loss = trainer._piece_loss(x, positions, latent, net.value_logits(latent))
+    loss.backward()
+    assert positions.tobytes() == before.tobytes()
+    # Target computation must be detached, while PieceHead still trains the
+    # encoder. The king-only row must contribute neither a probe nor a metric.
+    assert net.encoder[0].weight.grad is not None
+    assert net.piece_head[-1].weight.grad is not None
+    assert all(p.grad is None for p in net.value_head.parameters())
+    assert sum(len(w.values) for w in trainer.metrics.piece_value.values()) == 2
+
+
+def test_cuda_piece_metrics_preserve_pre_update_values_and_probe_order():
+    import chess
+    import numpy as np
+    import pytest
+    import torch
+    from tonkai.encoding import encode, pack_many, PIECE_NAMES
+
+    if not torch.cuda.is_available():
+        pytest.skip('CUDA required for GPU metric verification')
+    cfg = Config(device='cuda', pieces_per_position=2, replay_capacity=32,
+                 predict_capacity=64, min_replay=1)
+    net, _, _, _, trainer, metrics = tonkai.build(cfg)
+    rows = np.stack([encode(chess.Board(), color) for color in (True, False)])
+    trainer.replay.add_many(pack_many(rows), 2)
+    expected = {name: [] for name in PIECE_NAMES}
+    original = net.piece_values
+
+    def capture(latent, types, squares, sides):
+        values = original(latent, types, squares, sides)
+        # Observe the original predictions to detect stale or mutated metrics.
+        predictions = values.detach().cpu().numpy().copy()
+        piece_types = types.cpu().numpy()
+        for index, name in enumerate(PIECE_NAMES):
+            expected[name].extend(map(float, predictions[piece_types == index]))
+        return values
+
+    net.piece_values = capture
+    for size in (7, 3, 8):
+        trainer.train_step(size)
+        for name in PIECE_NAMES:
+            assert list(metrics.piece_value[name].values) == expected[name]
+    trainer.cfg.piece_value_weight = 0.0
+    trainer.train_step(5)
+    for name in PIECE_NAMES:
+        assert list(metrics.piece_value[name].values) == expected[name]

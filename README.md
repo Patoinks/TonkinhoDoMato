@@ -1,5 +1,15 @@
 # TonkAI
 
+**Próximo adversário — V3 opt-in:** [memória associativa, contrafactuais e análise adaptativa](docs/cognitive_next_opponent.md).
+`train_cognitive.py` prepara os nove módulos selecionados, com checkpoints próprios;
+não altera nem substitui o treino V2 já em execução.
+
+**Novo treino V2:** [sobrevivência, memória temporal e população de adversários](docs/survival_training.md).
+`train_survival.py` usa sequências, previsão futura, curiosidade e incerteza, sem
+bónus de vitória. Importa pesos compatíveis do legado e guarda checkpoints
+separados. [Stockfish 11 nominal 1600](docs/opponent_1600.md) é o adversário externo.
+O modelo e o caminho de treino descritos abaixo continuam disponíveis como legado.
+
 A small chess network that is **not** trying to imitate an engine.
 
 It has no piece values, no centipawns, no opening book, no tablebases, no MCTS
@@ -66,6 +76,20 @@ it was. Commands inside the game: `eval`, `pieces`, `predict`, `undo`, `fen`,
 Use `--pgn filename.pgn` to save on exit (including resignation or an unfinished
 game). Quiet mode still scores predictions, and undo removes the corresponding
 prediction observation from the final hit count and mean surprise.
+
+Training and evaluation against TinyOpponent, and local human games in `play.py`,
+automatically keep **only TonkAI's longest completed win** in
+`history/longest_external_win.pgn`. The full legal move sequence, colours,
+opponent, result and termination are stored. Length counts individual moves by
+either side (`PlyCount`); shorter wins and ties leave the existing file intact,
+including across restarts. Draws, losses and unfinished games are not saved in
+this record. A human resignation counts as a completed TonkAI win. This is
+recording only and has no effect on training or move selection.
+
+Use `--win_pgn_path path/to/record.pgn` to choose its location, or
+`--win_pgn_path=` to disable it. The optional `play.py --pgn` export remains
+independent and can still save any requested game. Old runs that recorded only
+aggregate metrics cannot supply a complete historical game afterwards.
 
 ## Run histories and plots
 

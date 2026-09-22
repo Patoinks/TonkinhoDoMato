@@ -1,0 +1,95 @@
+{
+  "timestamp_utc": "2026-09-22T16:56:26.121819+00:00",
+  "cpu_count": 12,
+  "torch_version": "2.11.0+cu128",
+  "torch_threads_parent": 1,
+  "engine": {
+    "engine_name": "Stockfish 11 64",
+    "engine_author": "T. Romstad, M. Costalba, J. Kiiski, G. Linscott",
+    "path": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\engines\\stockfish-11\\stockfish-11-win\\Windows\\stockfish_20011801_x64.exe",
+    "sha256": "95ccc04678193f8f8e7e595de49a3e5270f5e853aa89a147061d65a3dbe59d81",
+    "elo": 1600,
+    "elo_is_nominal": true,
+    "elo_range": [1350, 2850],
+    "move_time": 0.02,
+    "threads": 1,
+    "hash_mb": 16,
+    "timeout": 5.0,
+    "options": {"Threads": 1, "Hash": 16, "UCI_Elo": 1600, "UCI_LimitStrength": true},
+    "seedable": false
+  },
+  "learner_updates": 0,
+  "net_seed": 20260922,
+  "first_game_seed": 1000,
+  "legacy_process_waited": 30676,
+  "legacy_exit": "Waited for natural exit before starting any benchmark actor; did not interrupt training.",
+  "conditions": [
+    {
+      "workers": 1,
+      "games": 8,
+      "max_plies": 100,
+      "startup_seconds": 2.4186082999949576,
+      "actor_wall_seconds": 3.4773933999967994,
+      "games_per_second": 2.3005737573457647,
+      "plies": 286,
+      "plies_per_second": 82.24551182511108,
+      "close_seconds": 0.32283779999852413,
+      "initial_model_sha256": "20543a107eea20d58dc27d22df36dfb89ed877e15290d417badadde698a9229b",
+      "details": [
+        {"worker": 0, "seed": 1000, "self_color": "black", "plies": 39, "lost": true, "terminated": true, "result": "1-0", "opponent": "Stockfish", "epistemic_mean": 0.022007587316789125, "surprise_mean": 1.7701852568938263, "actor_seconds": 0.4798923999987892, "opponent_kind": "external"},
+        {"worker": 0, "seed": 1001, "self_color": "white", "plies": 24, "lost": true, "terminated": true, "result": "0-1", "opponent": "Stockfish", "epistemic_mean": 0.022009712333480518, "surprise_mean": 1.690831943479398, "actor_seconds": 0.29181059999973513, "opponent_kind": "external"},
+        {"worker": 0, "seed": 1002, "self_color": "white", "plies": 42, "lost": true, "terminated": true, "result": "0-1", "opponent": "Stockfish", "epistemic_mean": 0.022004543404494013, "surprise_mean": 1.8143437255634414, "actor_seconds": 0.48798500000702916, "opponent_kind": "external"},
+        {"worker": 0, "seed": 1003, "self_color": "black", "plies": 15, "lost": true, "terminated": true, "result": "1-0", "opponent": "Stockfish", "epistemic_mean": 0.021971324724810466, "surprise_mean": 1.672922968261496, "actor_seconds": 0.19263669999781996, "opponent_kind": "external"},
+        {"worker": 0, "seed": 1004, "self_color": "white", "plies": 10, "lost": true, "terminated": true, "result": "0-1", "opponent": "Stockfish", "epistemic_mean": 0.021928320452570916, "surprise_mean": 1.4888207516843337, "actor_seconds": 0.11993199999415083, "opponent_kind": "external"},
+        {"worker": 0, "seed": 1005, "self_color": "black", "plies": 35, "lost": true, "terminated": true, "result": "1-0", "opponent": "Stockfish", "epistemic_mean": 0.02196039434741525, "surprise_mean": 1.8268790696339903, "actor_seconds": 0.4360674999988987, "opponent_kind": "external"},
+        {"worker": 0, "seed": 1006, "self_color": "white", "plies": 78, "lost": true, "terminated": true, "result": "0-1", "opponent": "Stockfish", "epistemic_mean": 0.021982531899060957, "surprise_mean": 1.8452642678211253, "actor_seconds": 0.8652369999981602, "opponent_kind": "external"},
+        {"worker": 0, "seed": 1007, "self_color": "black", "plies": 43, "lost": true, "terminated": true, "result": "1-0", "opponent": "Stockfish", "epistemic_mean": 0.02196925106857504, "surprise_mean": 1.8333103414694756, "actor_seconds": 0.51763039999787, "opponent_kind": "external"}
+      ]
+    },
+    {
+      "workers": 2,
+      "games": 8,
+      "max_plies": 100,
+      "startup_seconds": 2.5305560999986483,
+      "actor_wall_seconds": 1.5278298999983235,
+      "games_per_second": 5.236184996777965,
+      "plies": 232,
+      "plies_per_second": 151.849364906561,
+      "close_seconds": 0.43377300000429386,
+      "initial_model_sha256": "20543a107eea20d58dc27d22df36dfb89ed877e15290d417badadde698a9229b",
+      "details": [
+        {"worker": 1, "seed": 1001, "self_color": "white", "plies": 36, "lost": true, "terminated": true, "result": "0-1", "opponent": "Stockfish", "epistemic_mean": 0.022017246215707727, "surprise_mean": 1.7819127108829824, "actor_seconds": 0.43042830000194954, "opponent_kind": "external"},
+        {"worker": 0, "seed": 1000, "self_color": "black", "plies": 39, "lost": true, "terminated": true, "result": "1-0", "opponent": "Stockfish", "epistemic_mean": 0.02201688799418901, "surprise_mean": 1.7963831723694448, "actor_seconds": 0.4815381000007619, "opponent_kind": "external"},
+        {"worker": 1, "seed": 1002, "self_color": "white", "plies": 34, "lost": true, "terminated": true, "result": "0-1", "opponent": "Stockfish", "epistemic_mean": 0.02200704484301455, "surprise_mean": 1.8131580704359664, "actor_seconds": 0.4064026999985799, "opponent_kind": "external"},
+        {"worker": 0, "seed": 1003, "self_color": "black", "plies": 31, "lost": true, "terminated": true, "result": "1-0", "opponent": "Stockfish", "epistemic_mean": 0.022018382201592128, "surprise_mean": 1.864149896661131, "actor_seconds": 0.3869418999966001, "opponent_kind": "external"},
+        {"worker": 1, "seed": 1004, "self_color": "white", "plies": 22, "lost": true, "terminated": true, "result": "0-1", "opponent": "Stockfish", "epistemic_mean": 0.022000225430185146, "surprise_mean": 1.7347729440359807, "actor_seconds": 0.264692600001581, "opponent_kind": "external"},
+        {"worker": 1, "seed": 1006, "self_color": "white", "plies": 14, "lost": true, "terminated": true, "result": "0-1", "opponent": "Stockfish", "epistemic_mean": 0.02190474420785904, "surprise_mean": 1.6489071010884873, "actor_seconds": 0.16652040000190027, "opponent_kind": "external"},
+        {"worker": 0, "seed": 1005, "self_color": "black", "plies": 41, "lost": true, "terminated": true, "result": "1-0", "opponent": "Stockfish", "epistemic_mean": 0.022058589197695256, "surprise_mean": 1.8429079917995392, "actor_seconds": 0.49308949999976903, "opponent_kind": "external"},
+        {"worker": 1, "seed": 1007, "self_color": "black", "plies": 15, "lost": true, "terminated": true, "result": "1-0", "opponent": "Stockfish", "epistemic_mean": 0.02201047433274133, "surprise_mean": 1.7445789691354086, "actor_seconds": 0.19520009999541799, "opponent_kind": "external"}
+      ]
+    },
+    {
+      "workers": 4,
+      "games": 8,
+      "max_plies": 100,
+      "startup_seconds": 3.10123150000436,
+      "actor_wall_seconds": 1.0065121000006911,
+      "games_per_second": 7.948240264567616,
+      "plies": 224,
+      "plies_per_second": 222.55072740789325,
+      "close_seconds": 0.5318740000002435,
+      "initial_model_sha256": "20543a107eea20d58dc27d22df36dfb89ed877e15290d417badadde698a9229b",
+      "details": [
+        {"worker": 3, "seed": 1003, "self_color": "black", "plies": 13, "lost": true, "terminated": true, "result": "1-0", "opponent": "Stockfish", "epistemic_mean": 0.021982721984386444, "surprise_mean": 1.701552189796768, "actor_seconds": 0.17668589999811957, "opponent_kind": "external"},
+        {"worker": 1, "seed": 1001, "self_color": "white", "plies": 18, "lost": true, "terminated": true, "result": "0-1", "opponent": "Stockfish", "epistemic_mean": 0.022038668394088745, "surprise_mean": 1.7036589589835354, "actor_seconds": 0.2263600000005681, "opponent_kind": "external"},
+        {"worker": 3, "seed": 1004, "self_color": "white", "plies": 10, "lost": true, "terminated": true, "result": "0-1", "opponent": "Stockfish", "epistemic_mean": 0.02190944254398346, "surprise_mean": 1.5764202450084097, "actor_seconds": 0.1278710000042338, "opponent_kind": "external"},
+        {"worker": 2, "seed": 1002, "self_color": "white", "plies": 32, "lost": true, "terminated": true, "result": "0-1", "opponent": "Stockfish", "epistemic_mean": 0.021963124978356063, "surprise_mean": 1.7322740079226235, "actor_seconds": 0.3938953000033507, "opponent_kind": "external"},
+        {"worker": 0, "seed": 1000, "self_color": "black", "plies": 37, "lost": true, "terminated": true, "result": "1-0", "opponent": "Stockfish", "epistemic_mean": 0.021994939384361107, "surprise_mean": 1.7861708337702937, "actor_seconds": 0.4625082000056864, "opponent_kind": "external"},
+        {"worker": 3, "seed": 1006, "self_color": "white", "plies": 16, "lost": true, "terminated": true, "result": "0-1", "opponent": "Stockfish", "epistemic_mean": 0.02190927555784583, "surprise_mean": 1.7073761543834787, "actor_seconds": 0.20187949999672128, "opponent_kind": "external"},
+        {"worker": 2, "seed": 1007, "self_color": "black", "plies": 37, "lost": true, "terminated": true, "result": "1-0", "opponent": "Stockfish", "epistemic_mean": 0.022036126504341762, "surprise_mean": 1.840640807640019, "actor_seconds": 0.4604951000001165, "opponent_kind": "external"},
+        {"worker": 1, "seed": 1005, "self_color": "black", "plies": 61, "lost": true, "terminated": true, "result": "1-0", "opponent": "Stockfish", "epistemic_mean": 0.02198462337255478, "surprise_mean": 1.7669083895827027, "actor_seconds": 0.7344618999995873, "opponent_kind": "external"}
+      ]
+    }
+  ],
+  "note": "Fresh untrained seeded networks; Stockfish randomness is not seedable. Actor-only timings exclude startup and shutdown; no full training throughput claim. All 24 games ended in losses; differing short game lengths affect games/second."
+}

@@ -1,0 +1,306 @@
+{
+  "status": "passed",
+  "baseline_ref": "e490be536d9d6ede9bbc924025114908507dfae2",
+  "baseline_snapshot": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\perf_results\\implementation_baseline_e490be536d9d.json",
+  "baseline_source_sha256": {
+    "tonkai/__init__.py": "015d3963249ae2fe051e243e6e6fc0d9067207d54715e8be5849d2d61d2087ab",
+    "tonkai/agent.py": "9c8e47be2b0863f0d380ddb7711ee6721a7356e93aed8b3774f2679043ac7e45",
+    "tonkai/chess_env.py": "6135af0fdf14da2c019250390aaf4656ca5c7abcfb07fbb4d771e3703003df10",
+    "tonkai/config.py": "dd3ec66142f8306c47de276ed451c4b31ab61fab2efaede66715ed3450fe76fe",
+    "tonkai/curriculum.py": "97f187055f9b3aede6b18fc5d3245d1b765f60e9df94cc32542c94d42046ae36",
+    "tonkai/encoding.py": "b3d9e1799bb097d17b8f18a6abb4c4d17026966eecbc1e6216bb2d69c47af7d9",
+    "tonkai/history.py": "3a62d42ae6a2f57f5dbbe95e15acd57ef37d97f76e45e44719a57b144e324207",
+    "tonkai/metrics.py": "d92d6ab24b33336d14cb6bb978552ad6c12db3bffe4eaa8f31da08924990e482",
+    "tonkai/model.py": "7acc038b32fa6bc5cdff778a89e7e03d3fe6676c76809f8a96a03d617488c451",
+    "tonkai/parallel.py": "29d9112f1400a9c65a027a437399d0e639b32133628ce5781c9b850a5d12d96a",
+    "tonkai/replay.py": "8cec6c318a5fcc678b09f438e7c4c06035cd901c74a77f3b7ea882eea9392e61",
+    "tonkai/theory_buffer.py": "0cd253346e75c2f88ebb8122fbcb933c41dbf2d314d5097582e2940b11a39125",
+    "tonkai/trainer.py": "b2e812eef9f95e3f1ab2fd8e870ae4824584de48d00e3f7821a94f96541ef2c2"
+  },
+  "production_source_sha256": {
+    "tonkai\\__init__.py": "6c9b3382029a8d459e4891ba11f3c0452b957cebd14361d541f63346788905a2",
+    "tonkai\\agent.py": "0593247e60fea9ad58b8758fb9ac4aa86fbb027c14c80ebad2a4bb58da6da606",
+    "tonkai\\chess_env.py": "6135af0fdf14da2c019250390aaf4656ca5c7abcfb07fbb4d771e3703003df10",
+    "tonkai\\config.py": "ba0b43a0655775e31f4b8d6a92c8f3f268183ee69eb28fda1672b48b833c65cb",
+    "tonkai\\curriculum.py": "97f187055f9b3aede6b18fc5d3245d1b765f60e9df94cc32542c94d42046ae36",
+    "tonkai\\encoding.py": "0eec3af89c0d0707bdbdc6d46c3c59ef91e1ae0a797f18a1f1b2cc44d45c3900",
+    "tonkai\\history.py": "3a62d42ae6a2f57f5dbbe95e15acd57ef37d97f76e45e44719a57b144e324207",
+    "tonkai\\metrics.py": "a0f2244287e961c7d0b3241b28ba65d923f18a81445f8bfc4ee8241c06e69db2",
+    "tonkai\\model.py": "7acc038b32fa6bc5cdff778a89e7e03d3fe6676c76809f8a96a03d617488c451",
+    "tonkai\\parallel.py": "477bfceea59d5bc52a1778bd8ef457df7d11d72b71bc472958c685f2d3ce6f0c",
+    "tonkai\\replay.py": "3e8252344dffd26cde96eefa0cdb9206c8939bf77e30220952c574682f2e206a",
+    "tonkai\\theory_buffer.py": "0cd253346e75c2f88ebb8122fbcb933c41dbf2d314d5097582e2940b11a39125",
+    "tonkai\\trainer.py": "50dee61655bd79f4244aa07dd331df682577b8197f765f4e8f295cbc4e5b8c62"
+  },
+  "environment": {
+    "python": "3.13.14",
+    "torch": "2.11.0+cu128",
+    "numpy": "2.5.2",
+    "torch_threads": 6,
+    "gpu": "NVIDIA GeForce RTX 5060 Ti"
+  },
+  "arguments": {
+    "mode": "bench",
+    "devices": "cpu,cuda",
+    "checkpoint": "checkpoints/deployed_5020games.pt",
+    "bench_schedule": "consolidated",
+    "seed": 42,
+    "games": 60,
+    "warmup": 8,
+    "corpus_games": 70
+  },
+  "benchmark": {
+    "config": {
+      "latent_size": 128,
+      "hidden_size": 128,
+      "piece_hidden": 32,
+      "head_hidden": 32,
+      "type_embed": 16,
+      "square_embed": 16,
+      "side_embed": 8,
+      "learning_rate": 0.0003,
+      "weight_decay": 0.0001,
+      "batch_size": 512,
+      "replay_capacity": 200000,
+      "predict_capacity": 20000,
+      "min_replay": 2000,
+      "updates_per_game": 1,
+      "samples_per_game": 2048,
+      "grad_clip": 1.0,
+      "value_weight": 1.0,
+      "predict_weight": 1.0,
+      "piece_value_weight": 0.1,
+      "pieces_per_position": 1,
+      "temperature": 0.1,
+      "draw_weight": 0.1,
+      "max_plies": 300,
+      "opponent_depth": 2,
+      "opponent_nodes": 1000,
+      "opponent_randomness": 0.35,
+      "opponent_quiescence": true,
+      "max_predict_candidates": 48,
+      "surprise_threshold": 3.0,
+      "theory_capacity": 10000,
+      "log_every": 100,
+      "checkpoint_every": 1000,
+      "checkpoint_dir": "checkpoints",
+      "log_sacrifices": true,
+      "device": "cuda",
+      "inference_device": "cpu",
+      "seed": 42,
+      "num_workers": 1,
+      "weight_refresh_games": 20,
+      "tonkai_plays_white_prob": 0.5
+    },
+    "checkpoint": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\checkpoints\\deployed_5020games.pt",
+    "checkpoint_sha256": "c647c9b6f2ede30eca333245bb8687b9b93d79f3ab3c92f4495b821293de4911",
+    "checkpoint_games": 5020,
+    "corpus_games": 70,
+    "corpus_sha256": "e0ea0205a1e9778a20e6478b1ac8d74ed04e0e2c068ecce7052294d88012e9ed",
+    "warmup_games": 8,
+    "timed_games": 60,
+    "order": [
+      "baseline",
+      "current",
+      "current",
+      "baseline"
+    ],
+    "runs": [
+      {
+        "label": "baseline",
+        "sequence": 0,
+        "wall_seconds": 4.667892800003756,
+        "games_per_second": 12.853765622027936,
+        "plies_per_second": 649.3293933394446,
+        "candidate_positions_per_second": 19041.99685132625,
+        "plies": 3031,
+        "candidate_positions": 88886,
+        "updates": 60,
+        "times": {
+          "env": 1.4100328001804883,
+          "inference": 0.41967849974753335,
+          "opponent": 0.8584623999995529,
+          "training": 1.7458903000078863
+        },
+        "wdl": [
+          0,
+          0,
+          60
+        ],
+        "warmup_games_sha256": "c319bd15cb22c17fd85abb116f29691c812fce32a9abef04c63458adc40c0285",
+        "games_sha256": "9d01670ab5d209f9430c62d9b3df93ab25c4f86694d42a6f30fe50789bf96928",
+        "warmup_state": {
+          "parameters": "cdea177161f9183290bd3d77d6fc2fd94fe7ce580e922ea3fc432338f179c485",
+          "inference_parameters": "cdea177161f9183290bd3d77d6fc2fd94fe7ce580e922ea3fc432338f179c485",
+          "optimizer": "ff488745eacb01553db820965db23a51b29940c4c7312822c8ae2d11ffb5776a",
+          "rng": "76ffafdef44921b50e69b5f1c6067c3c9370c34877598bafa8dce7058680378d",
+          "losses": "5b76cd9bddb4b3394a213a0df1c50a7444856875a3cd64e2ccb280c2e48b235e",
+          "piece_metrics": "fd8e3358f93ed0f161ddd0c68abd46f5bd40d7d82cbc90be174a7081ac6e0014",
+          "metrics": "20cdab849fe434c913570098d86d2165f85e78ab6df28ea179eafdd75c804d83",
+          "counters": "3a01d995b4a104b00013088cb4391393240a99e77d7cdc1b341b3ee54a4a1447",
+          "replay": "5b05f23d9b793774c13fff5dc491d3d32066449eadc753d9dc169f3399f714f7"
+        },
+        "final_state": {
+          "parameters": "ea4a25d838e8363498094be3848e0fa057d5d79c666b28609a6236d2039d7329",
+          "inference_parameters": "ea4a25d838e8363498094be3848e0fa057d5d79c666b28609a6236d2039d7329",
+          "optimizer": "8d66106e6943df313dae9caa7a34d9185705637e872421d41804d0461fa5064b",
+          "rng": "95db9916e95e93ca0ae21d4b57898a52a26f635ebd4aa139fb75fbc63728393a",
+          "losses": "80ee13013075a69bb0045968c9680c3ccba01551d78830a47b22bb2a05ce3476",
+          "piece_metrics": "813341aff7e0dd97ed8ea4f969af5ff80ee2f16e2c600a9eb63b357308c82db8",
+          "metrics": "4e78de98187009512b8810a328ae0e05f50d4f94858462a114ccd403927cf4f7",
+          "counters": "e185876ffc2ab88589d75be6601fc95bef7ba2a4f521fd361a66f504424bd3da",
+          "replay": "ea6e8d2b11d55946c3756f13482a4e1756c0aa3888f3ce0bdfec731232d2a507"
+        }
+      },
+      {
+        "label": "current",
+        "sequence": 1,
+        "wall_seconds": 4.572826800002076,
+        "games_per_second": 13.120986782174379,
+        "plies_per_second": 662.8285156128424,
+        "candidate_positions_per_second": 19437.867185339197,
+        "plies": 3031,
+        "candidate_positions": 88886,
+        "updates": 60,
+        "times": {
+          "env": 1.146683399878384,
+          "inference": 0.46655549996648915,
+          "opponent": 0.8798064000584418,
+          "training": 1.834071799974481
+        },
+        "wdl": [
+          0,
+          0,
+          60
+        ],
+        "warmup_games_sha256": "c319bd15cb22c17fd85abb116f29691c812fce32a9abef04c63458adc40c0285",
+        "games_sha256": "9d01670ab5d209f9430c62d9b3df93ab25c4f86694d42a6f30fe50789bf96928",
+        "warmup_state": {
+          "parameters": "cdea177161f9183290bd3d77d6fc2fd94fe7ce580e922ea3fc432338f179c485",
+          "inference_parameters": "cdea177161f9183290bd3d77d6fc2fd94fe7ce580e922ea3fc432338f179c485",
+          "optimizer": "ff488745eacb01553db820965db23a51b29940c4c7312822c8ae2d11ffb5776a",
+          "rng": "76ffafdef44921b50e69b5f1c6067c3c9370c34877598bafa8dce7058680378d",
+          "losses": "5b76cd9bddb4b3394a213a0df1c50a7444856875a3cd64e2ccb280c2e48b235e",
+          "piece_metrics": "fd8e3358f93ed0f161ddd0c68abd46f5bd40d7d82cbc90be174a7081ac6e0014",
+          "metrics": "20cdab849fe434c913570098d86d2165f85e78ab6df28ea179eafdd75c804d83",
+          "counters": "3a01d995b4a104b00013088cb4391393240a99e77d7cdc1b341b3ee54a4a1447",
+          "replay": "5b05f23d9b793774c13fff5dc491d3d32066449eadc753d9dc169f3399f714f7"
+        },
+        "final_state": {
+          "parameters": "ea4a25d838e8363498094be3848e0fa057d5d79c666b28609a6236d2039d7329",
+          "inference_parameters": "ea4a25d838e8363498094be3848e0fa057d5d79c666b28609a6236d2039d7329",
+          "optimizer": "8d66106e6943df313dae9caa7a34d9185705637e872421d41804d0461fa5064b",
+          "rng": "95db9916e95e93ca0ae21d4b57898a52a26f635ebd4aa139fb75fbc63728393a",
+          "losses": "80ee13013075a69bb0045968c9680c3ccba01551d78830a47b22bb2a05ce3476",
+          "piece_metrics": "813341aff7e0dd97ed8ea4f969af5ff80ee2f16e2c600a9eb63b357308c82db8",
+          "metrics": "4e78de98187009512b8810a328ae0e05f50d4f94858462a114ccd403927cf4f7",
+          "counters": "e185876ffc2ab88589d75be6601fc95bef7ba2a4f521fd361a66f504424bd3da",
+          "replay": "ea6e8d2b11d55946c3756f13482a4e1756c0aa3888f3ce0bdfec731232d2a507"
+        }
+      },
+      {
+        "label": "current",
+        "sequence": 2,
+        "wall_seconds": 4.557374900003197,
+        "games_per_second": 13.165473834500188,
+        "plies_per_second": 665.0758532061678,
+        "candidate_positions_per_second": 19503.771787556398,
+        "plies": 3031,
+        "candidate_positions": 88886,
+        "updates": 60,
+        "times": {
+          "env": 1.0811541000875877,
+          "inference": 0.4392772999708541,
+          "opponent": 0.8154449001449393,
+          "training": 1.9771580999949947
+        },
+        "wdl": [
+          0,
+          0,
+          60
+        ],
+        "warmup_games_sha256": "c319bd15cb22c17fd85abb116f29691c812fce32a9abef04c63458adc40c0285",
+        "games_sha256": "9d01670ab5d209f9430c62d9b3df93ab25c4f86694d42a6f30fe50789bf96928",
+        "warmup_state": {
+          "parameters": "cdea177161f9183290bd3d77d6fc2fd94fe7ce580e922ea3fc432338f179c485",
+          "inference_parameters": "cdea177161f9183290bd3d77d6fc2fd94fe7ce580e922ea3fc432338f179c485",
+          "optimizer": "ff488745eacb01553db820965db23a51b29940c4c7312822c8ae2d11ffb5776a",
+          "rng": "76ffafdef44921b50e69b5f1c6067c3c9370c34877598bafa8dce7058680378d",
+          "losses": "5b76cd9bddb4b3394a213a0df1c50a7444856875a3cd64e2ccb280c2e48b235e",
+          "piece_metrics": "fd8e3358f93ed0f161ddd0c68abd46f5bd40d7d82cbc90be174a7081ac6e0014",
+          "metrics": "20cdab849fe434c913570098d86d2165f85e78ab6df28ea179eafdd75c804d83",
+          "counters": "3a01d995b4a104b00013088cb4391393240a99e77d7cdc1b341b3ee54a4a1447",
+          "replay": "5b05f23d9b793774c13fff5dc491d3d32066449eadc753d9dc169f3399f714f7"
+        },
+        "final_state": {
+          "parameters": "ea4a25d838e8363498094be3848e0fa057d5d79c666b28609a6236d2039d7329",
+          "inference_parameters": "ea4a25d838e8363498094be3848e0fa057d5d79c666b28609a6236d2039d7329",
+          "optimizer": "8d66106e6943df313dae9caa7a34d9185705637e872421d41804d0461fa5064b",
+          "rng": "95db9916e95e93ca0ae21d4b57898a52a26f635ebd4aa139fb75fbc63728393a",
+          "losses": "80ee13013075a69bb0045968c9680c3ccba01551d78830a47b22bb2a05ce3476",
+          "piece_metrics": "813341aff7e0dd97ed8ea4f969af5ff80ee2f16e2c600a9eb63b357308c82db8",
+          "metrics": "4e78de98187009512b8810a328ae0e05f50d4f94858462a114ccd403927cf4f7",
+          "counters": "e185876ffc2ab88589d75be6601fc95bef7ba2a4f521fd361a66f504424bd3da",
+          "replay": "ea6e8d2b11d55946c3756f13482a4e1756c0aa3888f3ce0bdfec731232d2a507"
+        }
+      },
+      {
+        "label": "baseline",
+        "sequence": 3,
+        "wall_seconds": 5.048128999995242,
+        "games_per_second": 11.88559167169788,
+        "plies_per_second": 600.4204726152713,
+        "candidate_positions_per_second": 17607.711688842297,
+        "plies": 3031,
+        "candidate_positions": 88886,
+        "updates": 60,
+        "times": {
+          "env": 1.4350904996681493,
+          "inference": 0.5104042001621565,
+          "opponent": 0.8371541000888101,
+          "training": 2.0104327999943052
+        },
+        "wdl": [
+          0,
+          0,
+          60
+        ],
+        "warmup_games_sha256": "c319bd15cb22c17fd85abb116f29691c812fce32a9abef04c63458adc40c0285",
+        "games_sha256": "9d01670ab5d209f9430c62d9b3df93ab25c4f86694d42a6f30fe50789bf96928",
+        "warmup_state": {
+          "parameters": "cdea177161f9183290bd3d77d6fc2fd94fe7ce580e922ea3fc432338f179c485",
+          "inference_parameters": "cdea177161f9183290bd3d77d6fc2fd94fe7ce580e922ea3fc432338f179c485",
+          "optimizer": "ff488745eacb01553db820965db23a51b29940c4c7312822c8ae2d11ffb5776a",
+          "rng": "76ffafdef44921b50e69b5f1c6067c3c9370c34877598bafa8dce7058680378d",
+          "losses": "5b76cd9bddb4b3394a213a0df1c50a7444856875a3cd64e2ccb280c2e48b235e",
+          "piece_metrics": "fd8e3358f93ed0f161ddd0c68abd46f5bd40d7d82cbc90be174a7081ac6e0014",
+          "metrics": "20cdab849fe434c913570098d86d2165f85e78ab6df28ea179eafdd75c804d83",
+          "counters": "3a01d995b4a104b00013088cb4391393240a99e77d7cdc1b341b3ee54a4a1447",
+          "replay": "5b05f23d9b793774c13fff5dc491d3d32066449eadc753d9dc169f3399f714f7"
+        },
+        "final_state": {
+          "parameters": "ea4a25d838e8363498094be3848e0fa057d5d79c666b28609a6236d2039d7329",
+          "inference_parameters": "ea4a25d838e8363498094be3848e0fa057d5d79c666b28609a6236d2039d7329",
+          "optimizer": "8d66106e6943df313dae9caa7a34d9185705637e872421d41804d0461fa5064b",
+          "rng": "95db9916e95e93ca0ae21d4b57898a52a26f635ebd4aa139fb75fbc63728393a",
+          "losses": "80ee13013075a69bb0045968c9680c3ccba01551d78830a47b22bb2a05ce3476",
+          "piece_metrics": "813341aff7e0dd97ed8ea4f969af5ff80ee2f16e2c600a9eb63b357308c82db8",
+          "metrics": "4e78de98187009512b8810a328ae0e05f50d4f94858462a114ccd403927cf4f7",
+          "counters": "e185876ffc2ab88589d75be6601fc95bef7ba2a4f521fd361a66f504424bd3da",
+          "replay": "ea6e8d2b11d55946c3756f13482a4e1756c0aa3888f3ce0bdfec731232d2a507"
+        }
+      }
+    ],
+    "mean_games_per_second": {
+      "baseline": 12.369678646862909,
+      "current": 13.143230308337284
+    },
+    "paired_speedups": [
+      1.0207893288242704,
+      1.1076835043769828
+    ],
+    "mean_speedup": 1.062536116220817,
+    "all_games_parameters_optimizer_rng_metrics_bit_identical": true,
+    "checkpoint_unchanged": true
+  }
+}

@@ -67,6 +67,8 @@ class GameRecord:
     theory_events: list = field(default_factory=list)
     sacrifices: list = field(default_factory=list)
     tonkai_positions: int = 0
+    self_color: bool | None = None
+    moves_uci: tuple[str, ...] = ()         # complete history, retained only for wins
 
 
 class TonkAIAgent:
@@ -225,6 +227,9 @@ class GameWorker:
             theory_events=theory_events,
             sacrifices=sacrifices,
             tonkai_positions=n_positions,
+            self_color=self_color if result == env.RESULT_WIN else None,
+            moves_uci=(tuple(move.uci() for move in board.move_stack)
+                       if result == env.RESULT_WIN else ()),
         )
 
     # ------------------------------------------------------------- one turn

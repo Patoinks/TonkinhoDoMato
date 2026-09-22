@@ -18,6 +18,8 @@ import tonkai
 from tonkai.config import Config, add_config_args, config_from_args
 from tonkai.curriculum import Curriculum
 from tonkai.history import RunHistory
+from tonkai.win_history import LongestWinRecorder
+from tonkai.web_publish import publish_completed
 
 _stop = False
 
@@ -80,6 +82,7 @@ def main() -> int:
         initial_games=trainer.games, no_train=args.no_train)
     if history:
         print(f"history: {history.path}")
+    win_recorder = LongestWinRecorder(cfg.win_pgn_path)
     curriculum = None
     if args.curriculum:
         curriculum = Curriculum(opponent, start=args.curriculum_start,
@@ -96,6 +99,11 @@ def main() -> int:
             if _stop:
                 break
             record = pool.next_game() if pool else worker.play_game()
+            try:
+                if win_recorder.consider_record(record, "TinyOpponent"):
+                    print(f"[longest external win] {cfg.win_pgn_path} ({record.plies} plies)", flush=True)
+            except (OSError, ValueError) as exc:
+                print(f"[win recording failed] {exc}", file=sys.stderr, flush=True)
             trainer.add_game(record)
             if curriculum is not None:
                 msg = curriculum.update(record.result, metrics.games)
@@ -154,6 +162,7 @@ def main() -> int:
     if args.dump_sacrifices:
         n = trainer.sacrifice_log.dump_json(args.dump_sacrifices)
         print(f"sacrifices written: {n} -> {args.dump_sacrifices}")
+    publish_completed(path, completed=played == args.games and not args.no_train)
     return 0
 
 

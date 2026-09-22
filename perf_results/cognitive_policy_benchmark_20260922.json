@@ -1,0 +1,24 @@
+{
+  "source": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\perf_results\\cognitive-validation\\verified\\latest.pt",
+  "positions": 16,
+  "measured_repeats": 2,
+  "torch_threads": 1,
+  "planning_nodes_cap": 96,
+  "archive_entries": 64,
+  "production_training_concurrent": true,
+  "identical_selected_moves": 10,
+  "max_planning_nodes_observed": 96,
+  "latency_ms": {
+    "v2": {
+      "mean": 1.2592750003932451,
+      "median": 1.2734000010823365,
+      "max": 1.7216999985976145
+    },
+    "v3": {
+      "mean": 8.363728125232228,
+      "median": 8.261999995738734,
+      "max": 12.30780000332743
+    }
+  },
+  "scope": "candidate evaluation only; identical weights/positions; V3 intentionally changes policy; no strength claim"
+}

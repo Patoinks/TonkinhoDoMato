@@ -55,6 +55,7 @@ class Config:
     checkpoint_every: int = 1000      # games
     checkpoint_dir: str = "checkpoints"
     log_sacrifices: bool = True
+    win_pgn_path: str = "history/longest_external_win.pgn"  # empty disables recording
 
     # --- runtime ---------------------------------------------------------
     device: str = "auto"

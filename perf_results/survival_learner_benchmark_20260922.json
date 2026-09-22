@@ -1,0 +1,1360 @@
+{
+  "created_utc": "2026-09-22T16:57:52.406870+00:00",
+  "source": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\perf_results\\survival-smoke\\checkpoints\\latest.pt",
+  "source_sha256": "e16816b168d9b82299a4df17e8f63582584fa43d7b43ec7c6978244b82235cb8",
+  "source_games": 4,
+  "source_steps": 8,
+  "python": "3.13.14 (tags/v3.13.14:fd17997, Jun 10 2026, 13:03:48) [MSC v.1944 64 bit (AMD64)]",
+  "torch": "2.11.0+cu128",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "gpu": "NVIDIA GeForce RTX 5060 Ti",
+  "cuda": "12.8",
+  "config": {
+    "latent_size": 128,
+    "hidden_size": 128,
+    "piece_hidden": 32,
+    "head_hidden": 32,
+    "type_embed": 16,
+    "square_embed": 16,
+    "side_embed": 8,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "batch_size": 512,
+    "replay_capacity": 200000,
+    "predict_capacity": 20000,
+    "min_replay": 256,
+    "updates_per_game": 2,
+    "samples_per_game": 2048,
+    "grad_clip": 1.0,
+    "value_weight": 1.0,
+    "predict_weight": 1.0,
+    "piece_value_weight": 0.1,
+    "pieces_per_position": 1,
+    "temperature": 0.08,
+    "draw_weight": 0.1,
+    "max_plies": 24,
+    "opponent_depth": 2,
+    "opponent_nodes": 1000,
+    "opponent_randomness": 0.35,
+    "opponent_quiescence": true,
+    "max_predict_candidates": 48,
+    "surprise_threshold": 3.0,
+    "theory_capacity": 10000,
+    "log_every": 1,
+    "checkpoint_every": 4,
+    "checkpoint_dir": "perf_results\\survival-smoke\\checkpoints",
+    "log_sacrifices": true,
+    "win_pgn_path": "history/longest_external_win.pgn",
+    "device": "cpu",
+    "inference_device": "cpu",
+    "seed": 42,
+    "num_workers": 1,
+    "weight_refresh_games": 20,
+    "tonkai_plays_white_prob": 0.5,
+    "objective": "survival",
+    "memory_size": 64,
+    "ensemble_size": 5,
+    "future_horizons": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "sequence_length": 48,
+    "burn_in": 16,
+    "sequence_batch_size": 8,
+    "survival_gamma": 0.985,
+    "target_tau": 0.01,
+    "future_weight": 0.2,
+    "novelty_weight": 0.05,
+    "curiosity_bonus": 0.025,
+    "uncertainty_bonus": 0.04,
+    "novelty_scale": 0.1,
+    "bootstrap_probability": 0.7,
+    "external_probability": 1.0,
+    "historical_probability": 0.0,
+    "population_size": 8,
+    "snapshot_every": 100,
+    "opponent_elo": 1600,
+    "opponent_move_time": 0.02,
+    "opponent_path": ""
+  },
+  "corpus": {
+    "policy": "uniform legal random moves for both sides; independent diagnostic data",
+    "seed": 20260922,
+    "episodes": 12,
+    "positions": 972,
+    "plies": [
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80
+    ],
+    "terminated": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "packed_sha256": "25d26ca0d588a1ff82f1547265e76f4a7148f8bb050c2d1b3ac8c3c28730033f"
+  },
+  "method": "Identical initial model, optimizer, replay and RNG; 3 warmup + 10 timed full updates per device; torch threads=1; CUDA synchronized around every timed update. Replay priorities evolve normally, so device numeric differences may later change samples.",
+  "limitations": "Learner timing only, without actors or checkpoint I/O. Random legal episodes are a diagnostic workload, not evidence of playing strength. CPU/CUDA floating-point results are not claimed bit-identical.",
+  "source_file_sha256": {
+    "tonkai/survival_trainer.py": "d26c792ef764ce961c77a37790e8df756ca0eead1a211dd7cd7b82260ba08e8b",
+    "tonkai/temporal_model.py": "514b1010cb4f279bbcf0d2c08034dbedee690c39d92b15d1fb13dcfc57a2ac54",
+    "tonkai/sequence_replay.py": "47a26a7bce1c5b01853139ae27ec5aebd34be7fc135e3a8af8c0b92358faf859"
+  },
+  "results": [
+    {
+      "device": "cpu",
+      "threads": 1,
+      "warmup_updates": 3,
+      "measured_updates": 10,
+      "mean_update_seconds": 0.05507218999919132,
+      "median_update_seconds": 0.0547302499981015,
+      "min_update_seconds": 0.0493717999997898,
+      "max_update_seconds": 0.060955100001592655,
+      "updates_per_second": 18.15798500140786,
+      "learned_positions_per_second": 4911.734942880827,
+      "learner_seconds_per_game_at_two_updates": 0.11014437999838264,
+      "learner_only_games_per_second_at_two_updates": 9.07899250070393,
+      "peak_cuda_allocated_bytes": null,
+      "all_losses_and_gradients_finite": true,
+      "sample_keys": [
+        [
+          [
+            7,
+            67
+          ],
+          [
+            0,
+            42
+          ],
+          [
+            0,
+            19
+          ],
+          [
+            10,
+            5
+          ],
+          [
+            7,
+            3
+          ],
+          [
+            2,
+            56
+          ],
+          [
+            9,
+            1
+          ],
+          [
+            3,
+            13
+          ]
+        ],
+        [
+          [
+            5,
+            3
+          ],
+          [
+            5,
+            33
+          ],
+          [
+            11,
+            37
+          ],
+          [
+            10,
+            56
+          ],
+          [
+            3,
+            27
+          ],
+          [
+            3,
+            27
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        [
+          [
+            3,
+            57
+          ],
+          [
+            11,
+            34
+          ],
+          [
+            10,
+            4
+          ],
+          [
+            6,
+            34
+          ],
+          [
+            5,
+            66
+          ],
+          [
+            11,
+            27
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            11,
+            25
+          ]
+        ],
+        [
+          [
+            11,
+            78
+          ],
+          [
+            0,
+            32
+          ],
+          [
+            1,
+            34
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            1,
+            41
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            3,
+            48
+          ],
+          [
+            6,
+            49
+          ]
+        ],
+        [
+          [
+            0,
+            49
+          ],
+          [
+            5,
+            33
+          ],
+          [
+            6,
+            53
+          ],
+          [
+            1,
+            34
+          ],
+          [
+            4,
+            7
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            3,
+            52
+          ],
+          [
+            5,
+            1
+          ]
+        ],
+        [
+          [
+            4,
+            78
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            7,
+            4
+          ],
+          [
+            0,
+            71
+          ],
+          [
+            6,
+            78
+          ],
+          [
+            0,
+            80
+          ],
+          [
+            6,
+            37
+          ],
+          [
+            10,
+            16
+          ]
+        ],
+        [
+          [
+            3,
+            37
+          ],
+          [
+            0,
+            80
+          ],
+          [
+            3,
+            68
+          ],
+          [
+            5,
+            7
+          ],
+          [
+            7,
+            27
+          ],
+          [
+            1,
+            66
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            10,
+            9
+          ]
+        ],
+        [
+          [
+            5,
+            37
+          ],
+          [
+            6,
+            71
+          ],
+          [
+            9,
+            49
+          ],
+          [
+            9,
+            12
+          ],
+          [
+            10,
+            27
+          ],
+          [
+            3,
+            69
+          ],
+          [
+            2,
+            26
+          ],
+          [
+            0,
+            12
+          ]
+        ],
+        [
+          [
+            4,
+            60
+          ],
+          [
+            7,
+            22
+          ],
+          [
+            6,
+            64
+          ],
+          [
+            10,
+            44
+          ],
+          [
+            9,
+            75
+          ],
+          [
+            5,
+            77
+          ],
+          [
+            1,
+            38
+          ],
+          [
+            6,
+            0
+          ]
+        ],
+        [
+          [
+            11,
+            2
+          ],
+          [
+            10,
+            46
+          ],
+          [
+            8,
+            7
+          ],
+          [
+            7,
+            73
+          ],
+          [
+            9,
+            76
+          ],
+          [
+            8,
+            19
+          ],
+          [
+            7,
+            39
+          ],
+          [
+            4,
+            66
+          ]
+        ],
+        [
+          [
+            4,
+            64
+          ],
+          [
+            5,
+            67
+          ],
+          [
+            10,
+            46
+          ],
+          [
+            7,
+            56
+          ],
+          [
+            9,
+            73
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            6,
+            35
+          ],
+          [
+            8,
+            31
+          ]
+        ],
+        [
+          [
+            8,
+            26
+          ],
+          [
+            2,
+            51
+          ],
+          [
+            11,
+            9
+          ],
+          [
+            2,
+            56
+          ],
+          [
+            7,
+            72
+          ],
+          [
+            4,
+            28
+          ],
+          [
+            3,
+            30
+          ],
+          [
+            11,
+            74
+          ]
+        ],
+        [
+          [
+            8,
+            12
+          ],
+          [
+            3,
+            32
+          ],
+          [
+            8,
+            58
+          ],
+          [
+            9,
+            2
+          ],
+          [
+            4,
+            28
+          ],
+          [
+            11,
+            16
+          ],
+          [
+            11,
+            51
+          ],
+          [
+            3,
+            15
+          ]
+        ]
+      ],
+      "warmup_metrics": [
+        {
+          "loss": 3.6319074630737305,
+          "survival_loss": 0.2905488610267639,
+          "future_loss": 0.023939156904816628,
+          "novelty_loss": 0.039981771260499954,
+          "reply_loss": 3.3344223499298096,
+          "piece_loss": 0.0014928466407582164,
+          "learned_positions": 318,
+          "gradient_norm": 3.77951979637146
+        },
+        {
+          "loss": 3.709789276123047,
+          "survival_loss": 0.28956273198127747,
+          "future_loss": 0.022408271208405495,
+          "novelty_loss": 0.03687715530395508,
+          "reply_loss": 3.4137983322143555,
+          "piece_loss": 0.0010264390148222446,
+          "learned_positions": 357,
+          "gradient_norm": 2.9095473289489746
+        },
+        {
+          "loss": 3.9800877571105957,
+          "survival_loss": 0.28675177693367004,
+          "future_loss": 0.020962461829185486,
+          "novelty_loss": 0.03193875774741173,
+          "reply_loss": 3.6873862743377686,
+          "piece_loss": 0.0016014776192605495,
+          "learned_positions": 325,
+          "gradient_norm": 4.485171318054199
+        }
+      ],
+      "records": [
+        {
+          "step": 0,
+          "seconds": 0.05516479999641888,
+          "loss": 3.8993072509765625,
+          "survival_loss": 0.2930329442024231,
+          "future_loss": 0.02200644463300705,
+          "novelty_loss": 0.038612328469753265,
+          "reply_loss": 3.5998148918151855,
+          "piece_loss": 0.001275329734198749,
+          "learned_positions": 299,
+          "gradient_norm": 4.371847629547119
+        },
+        {
+          "step": 1,
+          "seconds": 0.05170469999575289,
+          "loss": 4.029330253601074,
+          "survival_loss": 0.2986423671245575,
+          "future_loss": 0.020856782793998718,
+          "novelty_loss": 0.03494042158126831,
+          "reply_loss": 3.724705934524536,
+          "piece_loss": 0.0006321517867036164,
+          "learned_positions": 328,
+          "gradient_norm": 7.778985977172852
+        },
+        {
+          "step": 2,
+          "seconds": 0.050530199994682334,
+          "loss": 4.200418472290039,
+          "survival_loss": 0.30538851022720337,
+          "future_loss": 0.02045419067144394,
+          "novelty_loss": 0.03517672047019005,
+          "reply_loss": 3.889077663421631,
+          "piece_loss": 0.0010275085223838687,
+          "learned_positions": 205,
+          "gradient_norm": 4.849087715148926
+        },
+        {
+          "step": 3,
+          "seconds": 0.0493717999997898,
+          "loss": 3.7855873107910156,
+          "survival_loss": 0.3031060993671417,
+          "future_loss": 0.019378548488020897,
+          "novelty_loss": 0.0313439816236496,
+          "reply_loss": 3.4769532680511475,
+          "piece_loss": 0.0008505342993885279,
+          "learned_positions": 265,
+          "gradient_norm": 3.2302987575531006
+        },
+        {
+          "step": 4,
+          "seconds": 0.060955100001592655,
+          "loss": 3.6186091899871826,
+          "survival_loss": 0.30884239077568054,
+          "future_loss": 0.018515825271606445,
+          "novelty_loss": 0.02792249619960785,
+          "reply_loss": 3.304600715637207,
+          "piece_loss": 0.0006676944904029369,
+          "learned_positions": 290,
+          "gradient_norm": 3.920947790145874
+        },
+        {
+          "step": 5,
+          "seconds": 0.06076790000224719,
+          "loss": 4.048123359680176,
+          "survival_loss": 0.30599039793014526,
+          "future_loss": 0.018594643101096153,
+          "novelty_loss": 0.029834803193807602,
+          "reply_loss": 3.7368338108062744,
+          "piece_loss": 0.0008874214254319668,
+          "learned_positions": 224,
+          "gradient_norm": 3.256711721420288
+        },
+        {
+          "step": 6,
+          "seconds": 0.057618699996965006,
+          "loss": 3.9675257205963135,
+          "survival_loss": 0.30938413739204407,
+          "future_loss": 0.017644764855504036,
+          "novelty_loss": 0.025854839012026787,
+          "reply_loss": 3.65320086479187,
+          "piece_loss": 0.0011908385204151273,
+          "learned_positions": 249,
+          "gradient_norm": 2.737793207168579
+        },
+        {
+          "step": 7,
+          "seconds": 0.05429569999978412,
+          "loss": 3.9131920337677,
+          "survival_loss": 0.3102407455444336,
+          "future_loss": 0.017187008634209633,
+          "novelty_loss": 0.023955348879098892,
+          "reply_loss": 3.5982396602630615,
+          "piece_loss": 0.0007643976132385433,
+          "learned_positions": 241,
+          "gradient_norm": 1.9726489782333374
+        },
+        {
+          "step": 8,
+          "seconds": 0.056326400001125876,
+          "loss": 3.4394009113311768,
+          "survival_loss": 0.3014588952064514,
+          "future_loss": 0.01673280820250511,
+          "novelty_loss": 0.0222029872238636,
+          "reply_loss": 3.133347749710083,
+          "piece_loss": 0.0013750323560088873,
+          "learned_positions": 263,
+          "gradient_norm": 1.9318300485610962
+        },
+        {
+          "step": 9,
+          "seconds": 0.053986600003554486,
+          "loss": 3.7600362300872803,
+          "survival_loss": 0.30202817916870117,
+          "future_loss": 0.01659320667386055,
+          "novelty_loss": 0.023938558995723724,
+          "reply_loss": 3.453385829925537,
+          "piece_loss": 0.0010659049730747938,
+          "learned_positions": 341,
+          "gradient_norm": 1.8395253419876099
+        }
+      ]
+    },
+    {
+      "device": "cuda",
+      "threads": 1,
+      "warmup_updates": 3,
+      "measured_updates": 10,
+      "mean_update_seconds": 0.1572636600008991,
+      "median_update_seconds": 0.14958340000157477,
+      "min_update_seconds": 0.12764890000107698,
+      "max_update_seconds": 0.18258369999966817,
+      "updates_per_second": 6.3587481048977414,
+      "learned_positions_per_second": 1720.041362374839,
+      "learner_seconds_per_game_at_two_updates": 0.3145273200017982,
+      "learner_only_games_per_second_at_two_updates": 3.1793740524488707,
+      "peak_cuda_allocated_bytes": 38948864,
+      "all_losses_and_gradients_finite": true,
+      "sample_keys": [
+        [
+          [
+            7,
+            67
+          ],
+          [
+            0,
+            42
+          ],
+          [
+            0,
+            19
+          ],
+          [
+            10,
+            5
+          ],
+          [
+            7,
+            3
+          ],
+          [
+            2,
+            56
+          ],
+          [
+            9,
+            1
+          ],
+          [
+            3,
+            13
+          ]
+        ],
+        [
+          [
+            5,
+            3
+          ],
+          [
+            5,
+            33
+          ],
+          [
+            11,
+            37
+          ],
+          [
+            10,
+            56
+          ],
+          [
+            3,
+            27
+          ],
+          [
+            3,
+            27
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        [
+          [
+            3,
+            57
+          ],
+          [
+            11,
+            34
+          ],
+          [
+            10,
+            4
+          ],
+          [
+            6,
+            34
+          ],
+          [
+            5,
+            66
+          ],
+          [
+            11,
+            27
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            11,
+            25
+          ]
+        ],
+        [
+          [
+            11,
+            78
+          ],
+          [
+            0,
+            32
+          ],
+          [
+            1,
+            34
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            1,
+            41
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            3,
+            48
+          ],
+          [
+            6,
+            49
+          ]
+        ],
+        [
+          [
+            0,
+            49
+          ],
+          [
+            5,
+            33
+          ],
+          [
+            6,
+            53
+          ],
+          [
+            1,
+            34
+          ],
+          [
+            4,
+            7
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            3,
+            52
+          ],
+          [
+            5,
+            1
+          ]
+        ],
+        [
+          [
+            4,
+            78
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            7,
+            4
+          ],
+          [
+            0,
+            71
+          ],
+          [
+            6,
+            78
+          ],
+          [
+            0,
+            80
+          ],
+          [
+            6,
+            37
+          ],
+          [
+            10,
+            16
+          ]
+        ],
+        [
+          [
+            3,
+            37
+          ],
+          [
+            0,
+            80
+          ],
+          [
+            3,
+            68
+          ],
+          [
+            5,
+            7
+          ],
+          [
+            7,
+            27
+          ],
+          [
+            1,
+            66
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            10,
+            9
+          ]
+        ],
+        [
+          [
+            5,
+            37
+          ],
+          [
+            6,
+            71
+          ],
+          [
+            9,
+            49
+          ],
+          [
+            9,
+            12
+          ],
+          [
+            10,
+            27
+          ],
+          [
+            3,
+            69
+          ],
+          [
+            2,
+            26
+          ],
+          [
+            0,
+            12
+          ]
+        ],
+        [
+          [
+            4,
+            60
+          ],
+          [
+            7,
+            22
+          ],
+          [
+            6,
+            64
+          ],
+          [
+            10,
+            44
+          ],
+          [
+            9,
+            75
+          ],
+          [
+            5,
+            77
+          ],
+          [
+            1,
+            38
+          ],
+          [
+            6,
+            0
+          ]
+        ],
+        [
+          [
+            11,
+            2
+          ],
+          [
+            10,
+            46
+          ],
+          [
+            8,
+            7
+          ],
+          [
+            7,
+            73
+          ],
+          [
+            9,
+            76
+          ],
+          [
+            8,
+            19
+          ],
+          [
+            7,
+            39
+          ],
+          [
+            4,
+            66
+          ]
+        ],
+        [
+          [
+            4,
+            64
+          ],
+          [
+            5,
+            67
+          ],
+          [
+            10,
+            46
+          ],
+          [
+            7,
+            56
+          ],
+          [
+            9,
+            73
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            6,
+            35
+          ],
+          [
+            8,
+            31
+          ]
+        ],
+        [
+          [
+            8,
+            26
+          ],
+          [
+            2,
+            51
+          ],
+          [
+            11,
+            9
+          ],
+          [
+            2,
+            56
+          ],
+          [
+            7,
+            72
+          ],
+          [
+            4,
+            28
+          ],
+          [
+            3,
+            30
+          ],
+          [
+            11,
+            74
+          ]
+        ],
+        [
+          [
+            8,
+            12
+          ],
+          [
+            3,
+            32
+          ],
+          [
+            8,
+            58
+          ],
+          [
+            9,
+            2
+          ],
+          [
+            4,
+            28
+          ],
+          [
+            11,
+            16
+          ],
+          [
+            11,
+            51
+          ],
+          [
+            3,
+            15
+          ]
+        ]
+      ],
+      "warmup_metrics": [
+        {
+          "loss": 3.6319081783294678,
+          "survival_loss": 0.2905488610267639,
+          "future_loss": 0.023939156904816628,
+          "novelty_loss": 0.039981771260499954,
+          "reply_loss": 3.334423065185547,
+          "piece_loss": 0.0014928465243428946,
+          "learned_positions": 318,
+          "gradient_norm": 3.7795279026031494
+        },
+        {
+          "loss": 3.7097878456115723,
+          "survival_loss": 0.2895626723766327,
+          "future_loss": 0.022408271208405495,
+          "novelty_loss": 0.03687715902924538,
+          "reply_loss": 3.413796901702881,
+          "piece_loss": 0.001026438781991601,
+          "learned_positions": 357,
+          "gradient_norm": 2.909543514251709
+        },
+        {
+          "loss": 3.9800875186920166,
+          "survival_loss": 0.28675177693367004,
+          "future_loss": 0.020962461829185486,
+          "novelty_loss": 0.03193875774741173,
+          "reply_loss": 3.6873860359191895,
+          "piece_loss": 0.0016014778520911932,
+          "learned_positions": 325,
+          "gradient_norm": 4.485175609588623
+        }
+      ],
+      "records": [
+        {
+          "step": 0,
+          "seconds": 0.12764890000107698,
+          "loss": 3.8993077278137207,
+          "survival_loss": 0.2930329442024231,
+          "future_loss": 0.02200644463300705,
+          "novelty_loss": 0.03861232101917267,
+          "reply_loss": 3.5998153686523438,
+          "piece_loss": 0.0012753303162753582,
+          "learned_positions": 299,
+          "gradient_norm": 4.371850967407227
+        },
+        {
+          "step": 1,
+          "seconds": 0.17808469999727095,
+          "loss": 4.029329776763916,
+          "survival_loss": 0.2986423373222351,
+          "future_loss": 0.02085677906870842,
+          "novelty_loss": 0.03494042158126831,
+          "reply_loss": 3.724705696105957,
+          "piece_loss": 0.0006321513210423291,
+          "learned_positions": 328,
+          "gradient_norm": 7.778990268707275
+        },
+        {
+          "step": 2,
+          "seconds": 0.1813495000023977,
+          "loss": 4.2004194259643555,
+          "survival_loss": 0.305388480424881,
+          "future_loss": 0.02045418880879879,
+          "novelty_loss": 0.03517671674489975,
+          "reply_loss": 3.8890788555145264,
+          "piece_loss": 0.001027507707476616,
+          "learned_positions": 205,
+          "gradient_norm": 4.849089622497559
+        },
+        {
+          "step": 3,
+          "seconds": 0.14235980000376003,
+          "loss": 3.7855870723724365,
+          "survival_loss": 0.30310603976249695,
+          "future_loss": 0.019378548488020897,
+          "novelty_loss": 0.031343974173069,
+          "reply_loss": 3.4769530296325684,
+          "piece_loss": 0.0008505349396727979,
+          "learned_positions": 265,
+          "gradient_norm": 3.2302980422973633
+        },
+        {
+          "step": 4,
+          "seconds": 0.14661160000105156,
+          "loss": 3.6186087131500244,
+          "survival_loss": 0.30884233117103577,
+          "future_loss": 0.018515827134251595,
+          "novelty_loss": 0.02792249247431755,
+          "reply_loss": 3.304600238800049,
+          "piece_loss": 0.000667694432195276,
+          "learned_positions": 290,
+          "gradient_norm": 3.920944929122925
+        },
+        {
+          "step": 5,
+          "seconds": 0.1409741000024951,
+          "loss": 4.048123836517334,
+          "survival_loss": 0.3059903681278229,
+          "future_loss": 0.018594641238451004,
+          "novelty_loss": 0.029834801331162453,
+          "reply_loss": 3.7368340492248535,
+          "piece_loss": 0.0008874211926013231,
+          "learned_positions": 224,
+          "gradient_norm": 3.256711721420288
+        },
+        {
+          "step": 6,
+          "seconds": 0.1445815000042785,
+          "loss": 3.967526435852051,
+          "survival_loss": 0.30938413739204407,
+          "future_loss": 0.017644762992858887,
+          "novelty_loss": 0.02585483528673649,
+          "reply_loss": 3.6532015800476074,
+          "piece_loss": 0.0011908385204151273,
+          "learned_positions": 249,
+          "gradient_norm": 2.737794876098633
+        },
+        {
+          "step": 7,
+          "seconds": 0.152555200002098,
+          "loss": 3.9131922721862793,
+          "survival_loss": 0.3102407157421112,
+          "future_loss": 0.017187004908919334,
+          "novelty_loss": 0.023955347016453743,
+          "reply_loss": 3.5982398986816406,
+          "piece_loss": 0.0007643978460691869,
+          "learned_positions": 241,
+          "gradient_norm": 1.9726495742797852
+        },
+        {
+          "step": 8,
+          "seconds": 0.17588759999489412,
+          "loss": 3.439401149749756,
+          "survival_loss": 0.30145886540412903,
+          "future_loss": 0.01673280820250511,
+          "novelty_loss": 0.022202981635928154,
+          "reply_loss": 3.133347988128662,
+          "piece_loss": 0.0013750321231782436,
+          "learned_positions": 263,
+          "gradient_norm": 1.9318320751190186
+        },
+        {
+          "step": 9,
+          "seconds": 0.18258369999966817,
+          "loss": 3.760035991668701,
+          "survival_loss": 0.3020280599594116,
+          "future_loss": 0.01659320667386055,
+          "novelty_loss": 0.023938553407788277,
+          "reply_loss": 3.453385829925537,
+          "piece_loss": 0.0010659049730747938,
+          "learned_positions": 341,
+          "gradient_norm": 1.839525818824768
+        }
+      ]
+    }
+  ],
+  "comparison": {
+    "cpu_speedup_over_cuda_mean": 2.8555911795628313,
+    "sample_keys_equal": true,
+    "learned_positions_equal": true,
+    "maximum_absolute_loss_difference": 9.5367431640625e-07
+  }
+}

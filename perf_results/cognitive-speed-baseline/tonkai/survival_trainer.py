@@ -1,0 +1,250 @@
+"""Sequence learning of discounted survival, without a win reward.
+
+Real losses supervise every earlier position. Other completed games are safe
+absorbing outcomes; artificial move limits instead use a detached n-step target.
+Future representations use a fixed copy of the initial encoder, so they cannot
+collapse by moving the target towards their own predictions.
+"""
+from copy import deepcopy
+from pathlib import Path
+
+import chess
+import numpy as np
+import torch
+from torch.nn import functional as F
+
+from .encoding import encode_after_moves, unpack_many
+from .sequence_replay import SequenceReplay
+from .temporal_model import SurvivalNet
+
+
+def survival_targets(remaining, lost, terminated, gamma, bootstrap, steps):
+    """Wins and draws deliberately share the same `lost=False` target.
+
+    `remaining` and `steps` count half-moves. The death state itself has value
+    zero. A position r moves before death has value 1 - gamma**r. Truncation is
+    censored data, never a manufactured successful terminal outcome.
+    """
+    discount = torch.pow(torch.as_tensor(gamma, device=remaining.device), remaining.clamp_min(0))
+    completed = torch.where(lost, 1.0 - discount, torch.ones_like(discount))
+    n_discount = torch.pow(torch.as_tensor(gamma, device=remaining.device), steps)
+    censored = 1.0 - n_discount + n_discount * bootstrap.detach()
+    return torch.where(terminated, completed, censored)
+
+
+class SurvivalTrainer:
+    def __init__(self, cfg, net=None):
+        cfg.validate()
+        self.cfg = cfg
+        self.device = cfg.resolved_device()
+        self.net = (net or SurvivalNet(cfg)).to(self.device)
+        self.target = deepcopy(self.net).eval().requires_grad_(False)
+        self.future_encoder = deepcopy(self.net.encoder).eval().requires_grad_(False)
+        self.optimizer = torch.optim.AdamW(
+            [p for p in self.net.parameters() if p.requires_grad],
+            lr=cfg.learning_rate, weight_decay=cfg.weight_decay)
+        self.replay = SequenceReplay(cfg.replay_capacity, seed=cfg.seed + 1)
+        self.rng = np.random.default_rng(cfg.seed + 2)
+        self.games = 0
+        self.steps = 0
+
+    def _unroll(self, net, x, valid, burn_in, learn_length, gradients=False):
+        memory = net.initial_memory(len(x))
+        contexts, before, after = [], [], []
+        # Encode all positions together. GRU time dependency remains sequential.
+        with torch.set_grad_enabled(gradients):
+            latent = net.encode(x.flatten(0, 1)).reshape(len(x), x.shape[1], -1)
+        for t in range(x.shape[1]):
+            learning = gradients and burn_in <= t < burn_in + learn_length
+            if t == burn_in or t == burn_in + learn_length:
+                memory = memory.detach()
+            with torch.set_grad_enabled(learning):
+                features = latent[:, t] if learning else latent[:, t].detach()
+                before.append(memory)
+                candidate = net.memory_cell(features, memory)
+                memory = torch.where(valid[:, t, None], candidate, memory)
+                contexts.append(net.context_from_latent(features, memory))
+                after.append(memory)
+        return torch.stack(contexts, 1), torch.stack(before, 1), torch.stack(after, 1)
+
+    def _reply_loss(self, batch, x, memories, offset, length):
+        """One legal reply distribution per sampled sequence, batched together."""
+        candidates, prefixes, labels, sizes, weights = [], [], [], [], []
+        for row, episode in enumerate(batch["episodes"]):
+            if not episode.actions:
+                continue
+            indices = batch["state_indices"][row, offset:offset + length]
+            # Plane 768 states whose turn it is relative to this episode's owner.
+            possible = np.flatnonzero((indices >= 0) & (indices < len(episode.actions))
+                                      & (x[row, offset:offset + length, 768].detach().cpu().numpy() < .5))
+            if not len(possible):
+                continue
+            local = int(self.rng.choice(possible))
+            index = int(indices[local])
+            board = chess.Board(episode.initial_fen or chess.STARTING_FEN)
+            for action in episode.actions[:index]:
+                board.push_uci(action)
+            moves = list(board.legal_moves)
+            actual = chess.Move.from_uci(episode.actions[index])
+            labels.append(moves.index(actual))
+            candidates.append(encode_after_moves(board, moves, not board.turn))
+            prefixes.append(memories[row, offset + local].expand(len(moves), -1))
+            sizes.append(len(moves))
+            weights.append(batch["importance_weights"][row])
+        if not candidates:
+            return x.new_zeros(())
+        encoded = torch.from_numpy(np.concatenate(candidates)).to(self.device)
+        context, _ = self.net.candidates(encoded, torch.cat(prefixes))
+        logits = self.net.predict_logits(context).split(sizes)
+        losses = torch.stack([F.cross_entropy(logit[None], torch.tensor([label], device=self.device))
+                              for logit, label in zip(logits, labels)])
+        return (losses * losses.new_tensor(weights)).mean()
+
+    def _piece_loss(self, x, context, prior_memory, valid):
+        # Position-dependent counterfactual value in survival units, no material table.
+        rows = torch.nonzero(valid.flatten(), as_tuple=False).flatten()
+        if not len(rows) or self.cfg.piece_value_weight == 0:
+            return x.new_zeros(())
+        if len(rows) > 64:
+            selection = self.rng.choice(len(rows), 64, replace=False)
+            rows = rows[torch.as_tensor(selection, device=self.device)]
+        selected = x.flatten(0, 1)[rows]
+        presence = selected[:, :768].reshape(-1, 12, 64).detach().cpu().numpy()
+        presence[:, 5] = 0  # never remove kings
+        presence[:, 11] = 0
+        chosen_rows, planes, squares = [], [], []
+        for row, pieces in enumerate(presence):
+            indices = np.argwhere(pieces > .5)
+            if not len(indices):
+                continue
+            plane, square = indices[int(self.rng.integers(len(indices)))]
+            chosen_rows.append(row)
+            planes.append(int(plane))
+            squares.append(int(square))
+        if not chosen_rows:
+            return x.new_zeros(())
+        rows = rows[torch.as_tensor(chosen_rows, device=self.device)]
+        selected = x.flatten(0, 1)[rows]
+        plane = torch.tensor(planes, device=self.device)
+        square = torch.tensor(squares, device=self.device)
+        current = context.flatten(0, 1)[rows]
+        with torch.no_grad():
+            removed = selected.clone()
+            removed[torch.arange(len(rows), device=self.device), plane * 64 + square] = 0
+            counterfactual, _ = self.net.observe(removed, prior_memory.flatten(0, 1)[rows])
+            target = self.net.survival(current)[0].mean(-1) - self.net.survival(counterfactual)[0].mean(-1)
+        predicted = self.net.piece_values(current, plane % 6, square, plane // 6)
+        return F.mse_loss(predicted, target)
+
+    def update(self):
+        if len(self.replay) < self.cfg.min_replay:
+            return None
+        cfg = self.cfg
+        horizon = max(cfg.future_horizons)
+        batch = self.replay.sample(cfg.sequence_batch_size, cfg.burn_in,
+                                   cfg.sequence_length, horizon)
+        b, total, _ = batch["packed"].shape
+        unpacked = unpack_many(batch["packed"].reshape(-1, batch["packed"].shape[-1]))
+        x = torch.from_numpy(unpacked.reshape(b, total, -1)).to(self.device)
+        valid = torch.as_tensor(batch["mask"], device=self.device)
+        offset, length = cfg.burn_in, cfg.sequence_length
+        selection = slice(offset, offset + length)
+        self.net.train()
+        context, before, after = self._unroll(self.net, x, valid, offset, length, True)
+        with torch.no_grad():
+            target_context, _, _ = self._unroll(self.target, x, valid, offset, length)
+            target_values = self.target.survival(target_context.flatten(0, 1))[0].mean(-1).reshape(b, total)
+            remaining = torch.as_tensor(batch["remaining"][:, selection], device=self.device)
+            steps = remaining.clamp(0, horizon)
+            endpoints = torch.arange(offset, offset + length, device=self.device)[None] + steps
+            bootstrap = target_values.gather(1, endpoints)
+            targets = survival_targets(remaining,
+                torch.as_tensor(batch["terminal_lost"], device=self.device)[:, None],
+                torch.as_tensor(batch["terminated"], device=self.device)[:, None],
+                cfg.survival_gamma, bootstrap, steps)
+            future_targets = F.normalize(self.future_encoder(x.flatten(0, 1)), dim=-1).reshape(b, total, -1)
+        learning = context[:, selection]
+        mask = valid[:, selection]
+        weights = torch.as_tensor(batch["importance_weights"], device=self.device)[:, None]
+        weighted_mask = mask * weights
+        means, logvars = self.net.survival(learning.flatten(0, 1))
+        means, logvars = means.reshape(b, length, -1), logvars.reshape(b, length, -1)
+        # Stable masks per episode keep genuinely different bootstrap datasets.
+        head_masks = []
+        for episode_id in batch["episode_id"]:
+            generator = np.random.default_rng(int(episode_id) + cfg.seed * 100003)
+            heads = generator.random(cfg.ensemble_size) < cfg.bootstrap_probability
+            heads[int(episode_id) % cfg.ensemble_size] = True
+            head_masks.append(heads)
+        head_mask = torch.as_tensor(np.stack(head_masks), device=self.device)[:, None]
+        residual = means - targets[..., None]
+        variance_target = (residual.detach().square() + 1e-4).log().clamp(-8, 2)
+        per_head = residual.square() + .05 * F.smooth_l1_loss(logvars, variance_target, reduction="none")
+        effective = weighted_mask[..., None] * head_mask
+        value_loss = (per_head * effective).sum() / effective.sum().clamp_min(1)
+        predictions = self.net.future(learning.flatten(0, 1)).reshape(b, length, len(cfg.future_horizons), -1)
+        future_errors, future_masks = [], []
+        for i, distance in enumerate(cfg.future_horizons):
+            target_latent = future_targets[:, offset + distance:offset + length + distance]
+            # Smooth L1 on unit target features; predictor magnitude remains learnable.
+            future_errors.append((predictions[:, :, i] - target_latent).square().mean(-1))
+            future_masks.append(mask & valid[:, offset + distance:offset + length + distance])
+        future_error = torch.stack(future_errors, -1)
+        future_mask = torch.stack(future_masks, -1) * weights[..., None]
+        future_loss = (future_error * future_mask).sum() / future_mask.sum().clamp_min(1)
+        novelty_error = self.net.novelty_error(learning.detach().flatten(0, 1)).reshape(b, length)
+        novelty_loss = (novelty_error * weighted_mask).sum() / weighted_mask.sum().clamp_min(1)
+        reply_loss = self._reply_loss(batch, x, after, offset, length) if cfg.predict_weight else x.new_zeros(())
+        piece_loss = self._piece_loss(x[:, selection], learning, before[:, selection], mask)
+        loss = cfg.value_weight * value_loss + cfg.future_weight * future_loss + cfg.novelty_weight * novelty_loss
+        loss = loss + cfg.predict_weight * reply_loss + cfg.piece_value_weight * piece_loss
+        if not torch.isfinite(loss):
+            raise FloatingPointError("Non-finite survival loss")
+        self.optimizer.zero_grad(set_to_none=True)
+        loss.backward()
+        gradient = torch.nn.utils.clip_grad_norm_(self.net.parameters(), cfg.grad_clip)
+        if not torch.isfinite(gradient):
+            raise FloatingPointError("Non-finite survival gradient")
+        self.optimizer.step()
+        with torch.no_grad():
+            for target, current in zip(self.target.parameters(), self.net.parameters()):
+                target.lerp_(current, cfg.target_tau)
+        # Surprise starts priorities; new learning errors refine each sampled start.
+        errors = (residual.detach().abs().mean(-1) + future_error.detach().mean(-1)) * mask
+        priorities = (errors.sum(-1) / mask.sum(-1).clamp_min(1)).cpu().numpy()
+        self.replay.update_priorities(batch["sample_keys"], priorities)
+        self.steps += 1
+        return {"loss": float(loss.detach()), "survival_loss": float(value_loss.detach()),
+                "future_loss": float(future_loss.detach()), "novelty_loss": float(novelty_loss.detach()),
+                "reply_loss": float(reply_loss.detach()), "piece_loss": float(piece_loss.detach()),
+                "learned_positions": int(mask.sum()), "gradient_norm": float(gradient)}
+
+    def state_dict(self):
+        return {"format": "tonkai-survival-v2", "config": self.cfg.to_dict(),
+                "model": self.net.state_dict(), "target": self.target.state_dict(),
+                "future_encoder": self.future_encoder.state_dict(),
+                "optimizer": self.optimizer.state_dict(), "replay": self.replay.state_dict(),
+                "games": self.games, "steps": self.steps,
+                "numpy_rng": deepcopy(self.rng.bit_generator.state), "torch_rng": torch.get_rng_state(),
+                "cuda_rng": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None}
+
+    def load_state_dict(self, state):
+        if state.get("format") != "tonkai-survival-v2":
+            raise ValueError("Legacy checkpoints require --init-from, not --resume")
+        self.net.load_state_dict(state["model"])
+        self.target.load_state_dict(state["target"])
+        self.future_encoder.load_state_dict(state["future_encoder"])
+        self.optimizer.load_state_dict(state["optimizer"])
+        self.replay.load_state_dict(state["replay"])
+        self.games, self.steps = state["games"], state["steps"]
+        self.rng.bit_generator.state = state["numpy_rng"]
+        torch.set_rng_state(state["torch_rng"].cpu())
+        if state.get("cuda_rng") is not None and torch.cuda.is_available():
+            torch.cuda.set_rng_state_all([s.cpu() for s in state["cuda_rng"]])
+
+    def save(self, path, **extra):
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_suffix(path.suffix + ".tmp")
+        torch.save({**self.state_dict(), **extra}, temporary)
+        temporary.replace(path)

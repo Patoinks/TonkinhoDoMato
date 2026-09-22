@@ -117,3 +117,119 @@ def test_oriented_square_roundtrip():
     for sq in range(64):
         for color in (chess.WHITE, chess.BLACK):
             assert E.real_square(E.oriented_square(sq, color), color) == sq
+
+
+def _reference_after_moves(board, moves, color):
+    reference = board.copy()
+    rows = []
+    for move in moves:
+        reference.push(move)
+        rows.append(E.encode(reference, color))
+        reference.pop()
+    return np.stack(rows) if rows else np.empty((0, E.INPUT_SIZE), dtype=np.float32)
+
+
+def _board_snapshot(board):
+    return (board.fen(en_passant="fen", promoted=True), tuple(board.move_stack),
+            tuple(id(state) for state in board._stack))
+
+
+def test_batch_encoder_is_byte_exact_for_golden_positions_and_clocks():
+    from export_web import GOLDEN_FENS
+
+    buffer = np.empty((256, E.INPUT_SIZE), dtype=np.float32)
+    for label, fen, _ in GOLDEN_FENS:
+        board = chess.Board(fen)
+        moves = list(board.legal_moves)
+        for clock in [*range(101), 125, 200]:
+            board.halfmove_clock = clock
+            before = _board_snapshot(board)
+            for color in (chess.WHITE, chess.BLACK):
+                expected = _reference_after_moves(board, moves, color)
+                actual = E.encode_after_moves(board, moves, color, buffer)
+                assert actual.tobytes() == expected.tobytes(), (label, clock, color)
+                assert E.pack_many(actual).tobytes() == E.pack_many(expected).tobytes()
+                assert _board_snapshot(board) == before
+
+
+@pytest.mark.parametrize("fen", [
+    "1r5k/P7/8/8/8/8/8/7K w - - 0 1",  # promotions and capture promotions
+    "7k/8/8/8/8/8/p7/1R5K b - - 0 1",
+    "r3k2r/8/8/3pP3/8/8/8/R3K2R w KQkq d6 7 20",  # ep and both castles
+    "r3k2r/8/8/8/3Pp3/8/8/R3K2R b KQkq d3 7 20",
+    "7k/6Q1/5K2/8/8/8/8/8 b - - 0 1",  # mate, no candidates
+    "7k/5K2/6Q1/8/8/8/8/8 b - - 0 1",  # stalemate
+])
+@pytest.mark.parametrize("color", [chess.WHITE, chess.BLACK])
+def test_batch_encoder_special_moves(fen, color):
+    board = chess.Board(fen)
+    moves = list(board.legal_moves)
+    before = _board_snapshot(board)
+    actual = E.encode_after_moves(board, moves, color)
+    expected = _reference_after_moves(board, moves, color)
+    assert actual.shape == (len(moves), E.INPUT_SIZE)
+    assert actual.dtype == np.float32
+    assert actual.tobytes() == expected.tobytes()
+    assert _board_snapshot(board) == before
+    assert list(board.legal_moves) == moves
+
+
+@pytest.mark.parametrize("kind", ["none", "reused", "strided", "undersized"])
+@pytest.mark.parametrize("empty", [False, True])
+def test_batch_encoder_output_buffer_contract(kind, empty):
+    board = chess.Board()
+    moves = [] if empty else list(board.legal_moves)
+    sentinel = -123.0
+    if kind == "none":
+        backing = buffer = None
+    elif kind == "strided":
+        backing = np.full((32, E.INPUT_SIZE * 2), sentinel, dtype=np.float32)
+        buffer = backing[:, ::2]
+    else:
+        rows = 1 if kind == "undersized" else 32
+        backing = buffer = np.full((rows, E.INPUT_SIZE), sentinel, dtype=np.float32)
+    actual = E.encode_after_moves(board, moves, chess.BLACK, buffer)
+    expected = _reference_after_moves(board, moves, chess.BLACK)
+    assert actual.shape == (len(moves), E.INPUT_SIZE)
+    assert actual.tobytes() == expected.tobytes()
+    if buffer is not None:
+        if empty or len(buffer) < len(moves):
+            assert np.all(backing == sentinel)
+        else:
+            assert np.shares_memory(actual, buffer)
+            assert np.all(buffer[len(moves):] == sentinel)
+        if kind == "strided":
+            assert np.all(backing[:, 1::2] == sentinel)
+
+
+def test_batch_encoder_preserves_random_game_history_and_candidate_order():
+    rng = np.random.default_rng(20260922)
+    board = chess.Board()
+    for _ in range(96):
+        moves = list(board.legal_moves)
+        before = _board_snapshot(board)
+        for color in (chess.WHITE, chess.BLACK):
+            actual = E.encode_after_moves(board, moves, color)
+            expected = _reference_after_moves(board, moves, color)
+            assert actual.tobytes() == expected.tobytes()
+            assert _board_snapshot(board) == before
+            assert list(board.legal_moves) == moves
+        if not moves or board.is_game_over():
+            board = chess.Board()
+        else:
+            board.push(moves[int(rng.integers(len(moves)))])
+
+
+def test_batch_encoder_restores_board_if_encoding_raises(monkeypatch):
+    board = chess.Board()
+    board.push_san("e4")
+    moves = list(board.legal_moves)
+    before = _board_snapshot(board)
+
+    def fail_piece_lookup(*args):
+        raise RuntimeError("encoding interrupted")
+
+    monkeypatch.setattr(board, "pieces_mask", fail_piece_lookup)
+    with pytest.raises(RuntimeError, match="encoding interrupted"):
+        E.encode_after_moves(board, moves, chess.BLACK)
+    assert _board_snapshot(board) == before

@@ -1,0 +1,36 @@
+{
+  "pid": 29176,
+  "started_utc": "2026-09-22T16:56:26.725787+00:00",
+  "run_id": "survival-20260922T165626Z-347632df",
+  "resume_games": 4,
+  "pretrained_games": 20500,
+  "additional_games": 4,
+  "objective": "survival",
+  "history": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\perf_results\\survival-smoke\\parallel-history\\survival-20260922T165626Z-347632df.jsonl",
+  "checkpoint": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\perf_results\\survival-smoke\\parallel\\latest.pt",
+  "source_checkpoint": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\perf_results\\survival-smoke\\checkpoints\\latest.pt",
+  "stop_file": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\perf_results\\survival-smoke\\parallel-history\\survival-20260922T165626Z-347632df\\STOP",
+  "opponent": {
+    "engine_name": "Stockfish 11 64",
+    "engine_author": "T. Romstad, M. Costalba, J. Kiiski, G. Linscott",
+    "path": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\engines\\stockfish-11\\stockfish-11-win\\Windows\\stockfish_20011801_x64.exe",
+    "sha256": "95ccc04678193f8f8e7e595de49a3e5270f5e853aa89a147061d65a3dbe59d81",
+    "elo": 1600,
+    "elo_is_nominal": true,
+    "elo_range": [
+      1350,
+      2850
+    ],
+    "move_time": 0.02,
+    "threads": 1,
+    "hash_mb": 16,
+    "timeout": 5.0,
+    "options": {
+      "Threads": 1,
+      "Hash": 16,
+      "UCI_Elo": 1600,
+      "UCI_LimitStrength": true
+    },
+    "seedable": false
+  }
+}

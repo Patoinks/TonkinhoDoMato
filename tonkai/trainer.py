@@ -94,8 +94,10 @@ class Trainer:
         b = x.shape[0]
         dw = cfg.draw_weight
 
-        p = torch.softmax(vlogits, dim=-1)
-        u_orig = p[:, 0] + dw * p[:, 1] - p[:, 2]
+        # This is a detached target; only the piece prediction needs a graph.
+        with torch.no_grad():
+            p = torch.softmax(vlogits, dim=-1)
+            u_orig = p[:, 0] + dw * p[:, 1] - p[:, 2]
 
         # candidate squares: any piece that is not a king
         if self._probe_shape != (b, PLANE_SIZE):
@@ -130,7 +132,8 @@ class Trainer:
             rows = torch.from_numpy(vi).to(self.device)
             cols = torch.from_numpy(sel).to(self.device)
 
-            x_masked = x[rows].clone()
+            # Advanced indexing already owns its storage; do not copy it twice.
+            x_masked = x[rows]
             x_masked[torch.arange(len(vi), device=self.device), cols] = 0.0
             with torch.no_grad():
                 vl_masked = self.net.value_logits(self.net.encode(x_masked))

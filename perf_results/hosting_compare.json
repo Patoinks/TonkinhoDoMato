@@ -1,0 +1,1047 @@
+{
+  "live": "2feade80574d41d6",
+  "liveFiles": [
+    {
+      "path": "/__/firebase/init.js",
+      "hash": "6135f03c09d85f69a42a13d27413097d04004c8319f5609e42d7ac43daca10b9",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/__/firebase/init.json",
+      "hash": "1143bb3e9d8f65c8a4ba7df3c59cecaaf75647e6ea851d0a51094067d51fbbfb",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/assets/ANWCornerLogo-Uwak_aJF.png",
+      "hash": "f2898fc97236137be00aa9b4fcd094b9b57c42e82628c93a29dd9aaabd014590",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/assets/FrizQuadrata-BTG600D_.ttf",
+      "hash": "af060daa6be03495723f8fcb85b085a2af7cd8a1a23768196948b6eef9ca4b27",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/assets/LoginBackground-CDmRbwpO.png",
+      "hash": "1e4d96fb313dbe7bde47dfaef9ec24da3dfe8b7059c2d45bc21985fb8e7ae3d3",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/assets/SocoBateLogo-BHrDSXoa.png",
+      "hash": "8b4598f8ad9c354c0ac9106f7dfac113ebe9cc86481e7240af5c7d2b2a00f6d1",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/assets/background-video-MCgjddtN.mp4",
+      "hash": "3ee63d8381a8b14f35028cc4046979b2caf509ba9bb610990d92e235e7a660a4",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/assets/index-BUQAIiJ7.css",
+      "hash": "96e87fc57f9ffc99398a0b0733edab0e03c764738fab68ca391077c286ddc25a",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/assets/index-hMPDShSx.js",
+      "hash": "41333080e91f914d2f93cbf350a553e26d7625f1f340ecb82da1d21fd228e9df",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/assets/logo-D5o2cit8.png",
+      "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/favicon.ico",
+      "hash": "2dff40ee4c4fc83b28f5169024ce42ff8e7a386514eb6d15728fe824abcce5dc",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/index.html",
+      "hash": "c1dacb8aa867ee7f65936c6e19e2b85e6772e37716117142ab6bff6ca160968f",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/og-image.png",
+      "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/robots.txt",
+      "hash": "b9f6bd5506c48b1d06d442c8b9feb77757e3bccae65a771263229f95c36666a7",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/sitemap.xml",
+      "hash": "a71f9681c6fcddac3418d6b98e3079a98697417a997324ec94bcdc0d1278393f",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/tonkai/ENCODING.md",
+      "hash": "ba9748f0c91da4f2ad493d740b1afc54bf7aa1a748fbc6637da918b1e94873e9",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/tonkai/golden.json",
+      "hash": "6a0d3b0de87dc8efc96f66ecaf6fa34e53970890e3b74e43241a07ea1972b0a3",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/tonkai/tonkai-59ceb6f3dab5f5f74cdf1ec49b21d7774e6ca6707b0c160a9cfd66325a1c9f06.bin",
+      "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/tonkai/tonkai.bin",
+      "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/tonkai/tonkai.json",
+      "hash": "a3a47eb5302952d3c438e00de5e2b18282b789a06028a431f3f307d364cd1436",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/tonkai/tonkinho-do-mato.png",
+      "hash": "70cb630a54154fd5faa825a1f174df21be3abe9e5f185c20f10c5bf00ad24421",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/tonkai/training-status.json",
+      "hash": "0ba4827c3845c4ea287f7b04bdc92942910c621e05d0283abf2fb07c8f3a8028",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/tonkai/version.json",
+      "hash": "e118f07646fb21c01dbd54a26d493027f940f672c86c5c0868c1a10841525128",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/videos/vr-01-inicio.mp4",
+      "hash": "ccc3d9340e01b72ea85afd3c267beb4418dd39fd2a4726352d44399b1e9e180e",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/videos/vr-02-decisoes.mp4",
+      "hash": "7137d69653015c9377df9bcf0ef4e1363e69911809264999cc21b6e224886610",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/videos/vr-03-higiene.mp4",
+      "hash": "a30af3acb0ec89185bbd3c6783e5d1a4e42bc6a246bf2cf015f24e1a2fadfa85",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/videos/vr-04-perfuracao.mp4",
+      "hash": "eabaa2f5c84de997a11f703420e2b4e09e5ca912dc7f5b86526e3974710c93fa",
+      "status": "ACTIVE"
+    },
+    {
+      "path": "/videos/vr-05-acesso-venoso.mp4",
+      "hash": "70e385abd43aa350e1b2631709d927a30eee0316305d438a47332aa01bd419fe",
+      "status": "ACTIVE"
+    }
+  ],
+  "compare": [
+    {
+      "id": "6acb41c29083dc0e",
+      "createTime": "2026-09-22T19:31:38.211420Z",
+      "bytes": "114066311",
+      "different": [
+        "/tonkai/training-status.json"
+      ],
+      "files": [
+        {
+          "path": "/__/firebase/init.js",
+          "hash": "6135f03c09d85f69a42a13d27413097d04004c8319f5609e42d7ac43daca10b9",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/__/firebase/init.json",
+          "hash": "1143bb3e9d8f65c8a4ba7df3c59cecaaf75647e6ea851d0a51094067d51fbbfb",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/ANWCornerLogo-Uwak_aJF.png",
+          "hash": "f2898fc97236137be00aa9b4fcd094b9b57c42e82628c93a29dd9aaabd014590",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/FrizQuadrata-BTG600D_.ttf",
+          "hash": "af060daa6be03495723f8fcb85b085a2af7cd8a1a23768196948b6eef9ca4b27",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/LoginBackground-CDmRbwpO.png",
+          "hash": "1e4d96fb313dbe7bde47dfaef9ec24da3dfe8b7059c2d45bc21985fb8e7ae3d3",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/SocoBateLogo-BHrDSXoa.png",
+          "hash": "8b4598f8ad9c354c0ac9106f7dfac113ebe9cc86481e7240af5c7d2b2a00f6d1",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/background-video-MCgjddtN.mp4",
+          "hash": "3ee63d8381a8b14f35028cc4046979b2caf509ba9bb610990d92e235e7a660a4",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/index-BUQAIiJ7.css",
+          "hash": "96e87fc57f9ffc99398a0b0733edab0e03c764738fab68ca391077c286ddc25a",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/index-hMPDShSx.js",
+          "hash": "41333080e91f914d2f93cbf350a553e26d7625f1f340ecb82da1d21fd228e9df",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/logo-D5o2cit8.png",
+          "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/favicon.ico",
+          "hash": "2dff40ee4c4fc83b28f5169024ce42ff8e7a386514eb6d15728fe824abcce5dc",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/index.html",
+          "hash": "c1dacb8aa867ee7f65936c6e19e2b85e6772e37716117142ab6bff6ca160968f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/og-image.png",
+          "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/robots.txt",
+          "hash": "b9f6bd5506c48b1d06d442c8b9feb77757e3bccae65a771263229f95c36666a7",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/sitemap.xml",
+          "hash": "a71f9681c6fcddac3418d6b98e3079a98697417a997324ec94bcdc0d1278393f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/ENCODING.md",
+          "hash": "ba9748f0c91da4f2ad493d740b1afc54bf7aa1a748fbc6637da918b1e94873e9",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/golden.json",
+          "hash": "6a0d3b0de87dc8efc96f66ecaf6fa34e53970890e3b74e43241a07ea1972b0a3",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai-59ceb6f3dab5f5f74cdf1ec49b21d7774e6ca6707b0c160a9cfd66325a1c9f06.bin",
+          "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai.bin",
+          "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai.json",
+          "hash": "a3a47eb5302952d3c438e00de5e2b18282b789a06028a431f3f307d364cd1436",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkinho-do-mato.png",
+          "hash": "70cb630a54154fd5faa825a1f174df21be3abe9e5f185c20f10c5bf00ad24421",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/training-status.json",
+          "hash": "c3e95cc5a7424af7503869856c74c9a1f8bc92aaff7416b60664a0753316df7f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/version.json",
+          "hash": "e118f07646fb21c01dbd54a26d493027f940f672c86c5c0868c1a10841525128",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-01-inicio.mp4",
+          "hash": "ccc3d9340e01b72ea85afd3c267beb4418dd39fd2a4726352d44399b1e9e180e",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-02-decisoes.mp4",
+          "hash": "7137d69653015c9377df9bcf0ef4e1363e69911809264999cc21b6e224886610",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-03-higiene.mp4",
+          "hash": "a30af3acb0ec89185bbd3c6783e5d1a4e42bc6a246bf2cf015f24e1a2fadfa85",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-04-perfuracao.mp4",
+          "hash": "eabaa2f5c84de997a11f703420e2b4e09e5ca912dc7f5b86526e3974710c93fa",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-05-acesso-venoso.mp4",
+          "hash": "70e385abd43aa350e1b2631709d927a30eee0316305d438a47332aa01bd419fe",
+          "status": "ACTIVE"
+        }
+      ]
+    },
+    {
+      "id": "14648a737c69869f",
+      "createTime": "2026-09-22T19:30:26.754583Z",
+      "bytes": "114066306",
+      "different": [
+        "/tonkai/training-status.json"
+      ],
+      "files": [
+        {
+          "path": "/__/firebase/init.js",
+          "hash": "6135f03c09d85f69a42a13d27413097d04004c8319f5609e42d7ac43daca10b9",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/__/firebase/init.json",
+          "hash": "1143bb3e9d8f65c8a4ba7df3c59cecaaf75647e6ea851d0a51094067d51fbbfb",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/ANWCornerLogo-Uwak_aJF.png",
+          "hash": "f2898fc97236137be00aa9b4fcd094b9b57c42e82628c93a29dd9aaabd014590",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/FrizQuadrata-BTG600D_.ttf",
+          "hash": "af060daa6be03495723f8fcb85b085a2af7cd8a1a23768196948b6eef9ca4b27",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/LoginBackground-CDmRbwpO.png",
+          "hash": "1e4d96fb313dbe7bde47dfaef9ec24da3dfe8b7059c2d45bc21985fb8e7ae3d3",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/SocoBateLogo-BHrDSXoa.png",
+          "hash": "8b4598f8ad9c354c0ac9106f7dfac113ebe9cc86481e7240af5c7d2b2a00f6d1",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/background-video-MCgjddtN.mp4",
+          "hash": "3ee63d8381a8b14f35028cc4046979b2caf509ba9bb610990d92e235e7a660a4",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/index-BUQAIiJ7.css",
+          "hash": "96e87fc57f9ffc99398a0b0733edab0e03c764738fab68ca391077c286ddc25a",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/index-hMPDShSx.js",
+          "hash": "41333080e91f914d2f93cbf350a553e26d7625f1f340ecb82da1d21fd228e9df",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/logo-D5o2cit8.png",
+          "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/favicon.ico",
+          "hash": "2dff40ee4c4fc83b28f5169024ce42ff8e7a386514eb6d15728fe824abcce5dc",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/index.html",
+          "hash": "c1dacb8aa867ee7f65936c6e19e2b85e6772e37716117142ab6bff6ca160968f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/og-image.png",
+          "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/robots.txt",
+          "hash": "b9f6bd5506c48b1d06d442c8b9feb77757e3bccae65a771263229f95c36666a7",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/sitemap.xml",
+          "hash": "a71f9681c6fcddac3418d6b98e3079a98697417a997324ec94bcdc0d1278393f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/ENCODING.md",
+          "hash": "ba9748f0c91da4f2ad493d740b1afc54bf7aa1a748fbc6637da918b1e94873e9",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/golden.json",
+          "hash": "6a0d3b0de87dc8efc96f66ecaf6fa34e53970890e3b74e43241a07ea1972b0a3",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai-59ceb6f3dab5f5f74cdf1ec49b21d7774e6ca6707b0c160a9cfd66325a1c9f06.bin",
+          "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai.bin",
+          "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai.json",
+          "hash": "a3a47eb5302952d3c438e00de5e2b18282b789a06028a431f3f307d364cd1436",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkinho-do-mato.png",
+          "hash": "70cb630a54154fd5faa825a1f174df21be3abe9e5f185c20f10c5bf00ad24421",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/training-status.json",
+          "hash": "da479980b8f7cb60a689f63699872213890b0877100294dfb928a0ad9f7212cc",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/version.json",
+          "hash": "e118f07646fb21c01dbd54a26d493027f940f672c86c5c0868c1a10841525128",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-01-inicio.mp4",
+          "hash": "ccc3d9340e01b72ea85afd3c267beb4418dd39fd2a4726352d44399b1e9e180e",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-02-decisoes.mp4",
+          "hash": "7137d69653015c9377df9bcf0ef4e1363e69911809264999cc21b6e224886610",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-03-higiene.mp4",
+          "hash": "a30af3acb0ec89185bbd3c6783e5d1a4e42bc6a246bf2cf015f24e1a2fadfa85",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-04-perfuracao.mp4",
+          "hash": "eabaa2f5c84de997a11f703420e2b4e09e5ca912dc7f5b86526e3974710c93fa",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-05-acesso-venoso.mp4",
+          "hash": "70e385abd43aa350e1b2631709d927a30eee0316305d438a47332aa01bd419fe",
+          "status": "ACTIVE"
+        }
+      ]
+    },
+    {
+      "id": "6cb0a9434c3613ff",
+      "createTime": "2026-09-22T19:29:14.929309Z",
+      "bytes": "114066286",
+      "different": [
+        "/tonkai/training-status.json"
+      ],
+      "files": [
+        {
+          "path": "/__/firebase/init.js",
+          "hash": "6135f03c09d85f69a42a13d27413097d04004c8319f5609e42d7ac43daca10b9",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/__/firebase/init.json",
+          "hash": "1143bb3e9d8f65c8a4ba7df3c59cecaaf75647e6ea851d0a51094067d51fbbfb",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/ANWCornerLogo-Uwak_aJF.png",
+          "hash": "f2898fc97236137be00aa9b4fcd094b9b57c42e82628c93a29dd9aaabd014590",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/FrizQuadrata-BTG600D_.ttf",
+          "hash": "af060daa6be03495723f8fcb85b085a2af7cd8a1a23768196948b6eef9ca4b27",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/LoginBackground-CDmRbwpO.png",
+          "hash": "1e4d96fb313dbe7bde47dfaef9ec24da3dfe8b7059c2d45bc21985fb8e7ae3d3",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/SocoBateLogo-BHrDSXoa.png",
+          "hash": "8b4598f8ad9c354c0ac9106f7dfac113ebe9cc86481e7240af5c7d2b2a00f6d1",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/background-video-MCgjddtN.mp4",
+          "hash": "3ee63d8381a8b14f35028cc4046979b2caf509ba9bb610990d92e235e7a660a4",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/index-BUQAIiJ7.css",
+          "hash": "96e87fc57f9ffc99398a0b0733edab0e03c764738fab68ca391077c286ddc25a",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/index-hMPDShSx.js",
+          "hash": "41333080e91f914d2f93cbf350a553e26d7625f1f340ecb82da1d21fd228e9df",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/logo-D5o2cit8.png",
+          "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/favicon.ico",
+          "hash": "2dff40ee4c4fc83b28f5169024ce42ff8e7a386514eb6d15728fe824abcce5dc",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/index.html",
+          "hash": "c1dacb8aa867ee7f65936c6e19e2b85e6772e37716117142ab6bff6ca160968f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/og-image.png",
+          "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/robots.txt",
+          "hash": "b9f6bd5506c48b1d06d442c8b9feb77757e3bccae65a771263229f95c36666a7",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/sitemap.xml",
+          "hash": "a71f9681c6fcddac3418d6b98e3079a98697417a997324ec94bcdc0d1278393f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/ENCODING.md",
+          "hash": "ba9748f0c91da4f2ad493d740b1afc54bf7aa1a748fbc6637da918b1e94873e9",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/golden.json",
+          "hash": "6a0d3b0de87dc8efc96f66ecaf6fa34e53970890e3b74e43241a07ea1972b0a3",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai-59ceb6f3dab5f5f74cdf1ec49b21d7774e6ca6707b0c160a9cfd66325a1c9f06.bin",
+          "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai.bin",
+          "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai.json",
+          "hash": "a3a47eb5302952d3c438e00de5e2b18282b789a06028a431f3f307d364cd1436",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkinho-do-mato.png",
+          "hash": "70cb630a54154fd5faa825a1f174df21be3abe9e5f185c20f10c5bf00ad24421",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/training-status.json",
+          "hash": "3fb42cacffdc19a1b5af1477e13d128e7a278c7b53fc4f94bec6412e7159b0b1",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/version.json",
+          "hash": "e118f07646fb21c01dbd54a26d493027f940f672c86c5c0868c1a10841525128",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-01-inicio.mp4",
+          "hash": "ccc3d9340e01b72ea85afd3c267beb4418dd39fd2a4726352d44399b1e9e180e",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-02-decisoes.mp4",
+          "hash": "7137d69653015c9377df9bcf0ef4e1363e69911809264999cc21b6e224886610",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-03-higiene.mp4",
+          "hash": "a30af3acb0ec89185bbd3c6783e5d1a4e42bc6a246bf2cf015f24e1a2fadfa85",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-04-perfuracao.mp4",
+          "hash": "eabaa2f5c84de997a11f703420e2b4e09e5ca912dc7f5b86526e3974710c93fa",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-05-acesso-venoso.mp4",
+          "hash": "70e385abd43aa350e1b2631709d927a30eee0316305d438a47332aa01bd419fe",
+          "status": "ACTIVE"
+        }
+      ]
+    },
+    {
+      "id": "a80e467d4520c72c",
+      "createTime": "2026-09-22T19:28:02.658262Z",
+      "bytes": "114066293",
+      "different": [
+        "/tonkai/training-status.json"
+      ],
+      "files": [
+        {
+          "path": "/__/firebase/init.js",
+          "hash": "6135f03c09d85f69a42a13d27413097d04004c8319f5609e42d7ac43daca10b9",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/__/firebase/init.json",
+          "hash": "1143bb3e9d8f65c8a4ba7df3c59cecaaf75647e6ea851d0a51094067d51fbbfb",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/ANWCornerLogo-Uwak_aJF.png",
+          "hash": "f2898fc97236137be00aa9b4fcd094b9b57c42e82628c93a29dd9aaabd014590",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/FrizQuadrata-BTG600D_.ttf",
+          "hash": "af060daa6be03495723f8fcb85b085a2af7cd8a1a23768196948b6eef9ca4b27",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/LoginBackground-CDmRbwpO.png",
+          "hash": "1e4d96fb313dbe7bde47dfaef9ec24da3dfe8b7059c2d45bc21985fb8e7ae3d3",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/SocoBateLogo-BHrDSXoa.png",
+          "hash": "8b4598f8ad9c354c0ac9106f7dfac113ebe9cc86481e7240af5c7d2b2a00f6d1",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/background-video-MCgjddtN.mp4",
+          "hash": "3ee63d8381a8b14f35028cc4046979b2caf509ba9bb610990d92e235e7a660a4",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/index-BUQAIiJ7.css",
+          "hash": "96e87fc57f9ffc99398a0b0733edab0e03c764738fab68ca391077c286ddc25a",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/index-hMPDShSx.js",
+          "hash": "41333080e91f914d2f93cbf350a553e26d7625f1f340ecb82da1d21fd228e9df",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/logo-D5o2cit8.png",
+          "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/favicon.ico",
+          "hash": "2dff40ee4c4fc83b28f5169024ce42ff8e7a386514eb6d15728fe824abcce5dc",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/index.html",
+          "hash": "c1dacb8aa867ee7f65936c6e19e2b85e6772e37716117142ab6bff6ca160968f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/og-image.png",
+          "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/robots.txt",
+          "hash": "b9f6bd5506c48b1d06d442c8b9feb77757e3bccae65a771263229f95c36666a7",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/sitemap.xml",
+          "hash": "a71f9681c6fcddac3418d6b98e3079a98697417a997324ec94bcdc0d1278393f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/ENCODING.md",
+          "hash": "ba9748f0c91da4f2ad493d740b1afc54bf7aa1a748fbc6637da918b1e94873e9",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/golden.json",
+          "hash": "6a0d3b0de87dc8efc96f66ecaf6fa34e53970890e3b74e43241a07ea1972b0a3",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai-59ceb6f3dab5f5f74cdf1ec49b21d7774e6ca6707b0c160a9cfd66325a1c9f06.bin",
+          "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai.bin",
+          "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai.json",
+          "hash": "a3a47eb5302952d3c438e00de5e2b18282b789a06028a431f3f307d364cd1436",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkinho-do-mato.png",
+          "hash": "70cb630a54154fd5faa825a1f174df21be3abe9e5f185c20f10c5bf00ad24421",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/training-status.json",
+          "hash": "622863bc63c8ee838046025a92a776675d60cc991089c0ccf7853e93df465486",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/version.json",
+          "hash": "e118f07646fb21c01dbd54a26d493027f940f672c86c5c0868c1a10841525128",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-01-inicio.mp4",
+          "hash": "ccc3d9340e01b72ea85afd3c267beb4418dd39fd2a4726352d44399b1e9e180e",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-02-decisoes.mp4",
+          "hash": "7137d69653015c9377df9bcf0ef4e1363e69911809264999cc21b6e224886610",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-03-higiene.mp4",
+          "hash": "a30af3acb0ec89185bbd3c6783e5d1a4e42bc6a246bf2cf015f24e1a2fadfa85",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-04-perfuracao.mp4",
+          "hash": "eabaa2f5c84de997a11f703420e2b4e09e5ca912dc7f5b86526e3974710c93fa",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-05-acesso-venoso.mp4",
+          "hash": "70e385abd43aa350e1b2631709d927a30eee0316305d438a47332aa01bd419fe",
+          "status": "ACTIVE"
+        }
+      ]
+    },
+    {
+      "id": "8aa5bc63f85a501f",
+      "createTime": "2026-09-22T19:26:50.508310Z",
+      "bytes": "114066290",
+      "different": [
+        "/tonkai/training-status.json"
+      ],
+      "files": [
+        {
+          "path": "/__/firebase/init.js",
+          "hash": "6135f03c09d85f69a42a13d27413097d04004c8319f5609e42d7ac43daca10b9",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/__/firebase/init.json",
+          "hash": "1143bb3e9d8f65c8a4ba7df3c59cecaaf75647e6ea851d0a51094067d51fbbfb",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/ANWCornerLogo-Uwak_aJF.png",
+          "hash": "f2898fc97236137be00aa9b4fcd094b9b57c42e82628c93a29dd9aaabd014590",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/FrizQuadrata-BTG600D_.ttf",
+          "hash": "af060daa6be03495723f8fcb85b085a2af7cd8a1a23768196948b6eef9ca4b27",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/LoginBackground-CDmRbwpO.png",
+          "hash": "1e4d96fb313dbe7bde47dfaef9ec24da3dfe8b7059c2d45bc21985fb8e7ae3d3",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/SocoBateLogo-BHrDSXoa.png",
+          "hash": "8b4598f8ad9c354c0ac9106f7dfac113ebe9cc86481e7240af5c7d2b2a00f6d1",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/background-video-MCgjddtN.mp4",
+          "hash": "3ee63d8381a8b14f35028cc4046979b2caf509ba9bb610990d92e235e7a660a4",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/index-BUQAIiJ7.css",
+          "hash": "96e87fc57f9ffc99398a0b0733edab0e03c764738fab68ca391077c286ddc25a",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/index-hMPDShSx.js",
+          "hash": "41333080e91f914d2f93cbf350a553e26d7625f1f340ecb82da1d21fd228e9df",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/logo-D5o2cit8.png",
+          "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/favicon.ico",
+          "hash": "2dff40ee4c4fc83b28f5169024ce42ff8e7a386514eb6d15728fe824abcce5dc",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/index.html",
+          "hash": "c1dacb8aa867ee7f65936c6e19e2b85e6772e37716117142ab6bff6ca160968f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/og-image.png",
+          "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/robots.txt",
+          "hash": "b9f6bd5506c48b1d06d442c8b9feb77757e3bccae65a771263229f95c36666a7",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/sitemap.xml",
+          "hash": "a71f9681c6fcddac3418d6b98e3079a98697417a997324ec94bcdc0d1278393f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/ENCODING.md",
+          "hash": "ba9748f0c91da4f2ad493d740b1afc54bf7aa1a748fbc6637da918b1e94873e9",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/golden.json",
+          "hash": "6a0d3b0de87dc8efc96f66ecaf6fa34e53970890e3b74e43241a07ea1972b0a3",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai-59ceb6f3dab5f5f74cdf1ec49b21d7774e6ca6707b0c160a9cfd66325a1c9f06.bin",
+          "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai.bin",
+          "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai.json",
+          "hash": "a3a47eb5302952d3c438e00de5e2b18282b789a06028a431f3f307d364cd1436",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkinho-do-mato.png",
+          "hash": "70cb630a54154fd5faa825a1f174df21be3abe9e5f185c20f10c5bf00ad24421",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/training-status.json",
+          "hash": "16c39e02cefec6dccd09ef376943af6d2f0521bcc6945c93885dd4e12b72c7f0",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/version.json",
+          "hash": "e118f07646fb21c01dbd54a26d493027f940f672c86c5c0868c1a10841525128",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-01-inicio.mp4",
+          "hash": "ccc3d9340e01b72ea85afd3c267beb4418dd39fd2a4726352d44399b1e9e180e",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-02-decisoes.mp4",
+          "hash": "7137d69653015c9377df9bcf0ef4e1363e69911809264999cc21b6e224886610",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-03-higiene.mp4",
+          "hash": "a30af3acb0ec89185bbd3c6783e5d1a4e42bc6a246bf2cf015f24e1a2fadfa85",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-04-perfuracao.mp4",
+          "hash": "eabaa2f5c84de997a11f703420e2b4e09e5ca912dc7f5b86526e3974710c93fa",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-05-acesso-venoso.mp4",
+          "hash": "70e385abd43aa350e1b2631709d927a30eee0316305d438a47332aa01bd419fe",
+          "status": "ACTIVE"
+        }
+      ]
+    },
+    {
+      "id": "d0a28f4d59ed8844",
+      "createTime": "2026-09-22T19:25:38.880764Z",
+      "bytes": "114066285",
+      "different": [
+        "/tonkai/training-status.json"
+      ],
+      "files": [
+        {
+          "path": "/__/firebase/init.js",
+          "hash": "6135f03c09d85f69a42a13d27413097d04004c8319f5609e42d7ac43daca10b9",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/__/firebase/init.json",
+          "hash": "1143bb3e9d8f65c8a4ba7df3c59cecaaf75647e6ea851d0a51094067d51fbbfb",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/ANWCornerLogo-Uwak_aJF.png",
+          "hash": "f2898fc97236137be00aa9b4fcd094b9b57c42e82628c93a29dd9aaabd014590",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/FrizQuadrata-BTG600D_.ttf",
+          "hash": "af060daa6be03495723f8fcb85b085a2af7cd8a1a23768196948b6eef9ca4b27",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/LoginBackground-CDmRbwpO.png",
+          "hash": "1e4d96fb313dbe7bde47dfaef9ec24da3dfe8b7059c2d45bc21985fb8e7ae3d3",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/SocoBateLogo-BHrDSXoa.png",
+          "hash": "8b4598f8ad9c354c0ac9106f7dfac113ebe9cc86481e7240af5c7d2b2a00f6d1",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/background-video-MCgjddtN.mp4",
+          "hash": "3ee63d8381a8b14f35028cc4046979b2caf509ba9bb610990d92e235e7a660a4",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/index-BUQAIiJ7.css",
+          "hash": "96e87fc57f9ffc99398a0b0733edab0e03c764738fab68ca391077c286ddc25a",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/index-hMPDShSx.js",
+          "hash": "41333080e91f914d2f93cbf350a553e26d7625f1f340ecb82da1d21fd228e9df",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/assets/logo-D5o2cit8.png",
+          "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/favicon.ico",
+          "hash": "2dff40ee4c4fc83b28f5169024ce42ff8e7a386514eb6d15728fe824abcce5dc",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/index.html",
+          "hash": "c1dacb8aa867ee7f65936c6e19e2b85e6772e37716117142ab6bff6ca160968f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/og-image.png",
+          "hash": "4cf216409d3c5a0881f8ca19fc0a5cf74b85e4826fa9914db830490412a19d80",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/robots.txt",
+          "hash": "b9f6bd5506c48b1d06d442c8b9feb77757e3bccae65a771263229f95c36666a7",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/sitemap.xml",
+          "hash": "a71f9681c6fcddac3418d6b98e3079a98697417a997324ec94bcdc0d1278393f",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/ENCODING.md",
+          "hash": "ba9748f0c91da4f2ad493d740b1afc54bf7aa1a748fbc6637da918b1e94873e9",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/golden.json",
+          "hash": "6a0d3b0de87dc8efc96f66ecaf6fa34e53970890e3b74e43241a07ea1972b0a3",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai-59ceb6f3dab5f5f74cdf1ec49b21d7774e6ca6707b0c160a9cfd66325a1c9f06.bin",
+          "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai.bin",
+          "hash": "5278a7e31121389e5b66ebd497801c4d0e56c7df156660bed7a89d0befa2a166",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkai.json",
+          "hash": "a3a47eb5302952d3c438e00de5e2b18282b789a06028a431f3f307d364cd1436",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/tonkinho-do-mato.png",
+          "hash": "70cb630a54154fd5faa825a1f174df21be3abe9e5f185c20f10c5bf00ad24421",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/training-status.json",
+          "hash": "1f57b839bb1910725e82cb51341ca5f389fc7b09cdab3e37669207d77e82cb2b",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/tonkai/version.json",
+          "hash": "e118f07646fb21c01dbd54a26d493027f940f672c86c5c0868c1a10841525128",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-01-inicio.mp4",
+          "hash": "ccc3d9340e01b72ea85afd3c267beb4418dd39fd2a4726352d44399b1e9e180e",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-02-decisoes.mp4",
+          "hash": "7137d69653015c9377df9bcf0ef4e1363e69911809264999cc21b6e224886610",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-03-higiene.mp4",
+          "hash": "a30af3acb0ec89185bbd3c6783e5d1a4e42bc6a246bf2cf015f24e1a2fadfa85",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-04-perfuracao.mp4",
+          "hash": "eabaa2f5c84de997a11f703420e2b4e09e5ca912dc7f5b86526e3974710c93fa",
+          "status": "ACTIVE"
+        },
+        {
+          "path": "/videos/vr-05-acesso-venoso.mp4",
+          "hash": "70e385abd43aa350e1b2631709d927a30eee0316305d438a47332aa01bd419fe",
+          "status": "ACTIVE"
+        }
+      ]
+    }
+  ]
+}

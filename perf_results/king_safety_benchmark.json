@@ -1,0 +1,19 @@
+{
+  "positions": 16,
+  "measured_repeats": 2,
+  "checkpoint": "checkpoints\\cognitive-1000-500\\latest.pt",
+  "threads": 1,
+  "scope": "Full candidate evaluation; piece safety stays enabled; no training or strength test",
+  "latency_ms": {
+    "0": {
+      "mean": 22.754990625571736,
+      "median": 19.579899999371264,
+      "maximum": 82.27189999888651
+    },
+    "0.06": {
+      "mean": 30.16790937499536,
+      "median": 29.500950000510784,
+      "maximum": 39.92469999502646
+    }
+  }
+}

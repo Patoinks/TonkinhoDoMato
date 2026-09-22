@@ -89,17 +89,43 @@ def encode_after_moves(board: chess.Board, moves, self_color: bool,
                        out: np.ndarray | None = None) -> np.ndarray:
     """Encode the position resulting from each move, into ONE (N, 782) array.
 
-    This is what lets the whole move list go through the network in a single
-    forward pass.
+    Keep python-chess responsible for each resulting position, then expand
+    all piece bitboards together for the network's single forward pass.
     """
     n = len(moves)
     if out is None or out.shape[0] < n:
         out = np.empty((max(n, 1), INPUT_SIZE), dtype=np.float32)
+    result = out[:n]
+    if n == 0:
+        return result
+    result[:] = 0.0
+    masks = np.empty((n, N_PLANES), dtype=np.uint64)
+    opp = not self_color
     for i, mv in enumerate(moves):
         board.push(mv)
-        encode_into(board, self_color, out[i])
-        board.pop()
-    return out[:n]
+        try:
+            j = 0
+            for color in (self_color, opp):
+                for pt in PIECE_ORDER:
+                    masks[i, j] = board.pieces_mask(pt, color)
+                    j += 1
+            result[i, OFF_STM] = 1.0 if board.turn == self_color else 0.0
+            result[i, OFF_CASTLE] = float(board.has_kingside_castling_rights(self_color))
+            result[i, OFF_CASTLE + 1] = float(board.has_queenside_castling_rights(self_color))
+            result[i, OFF_CASTLE + 2] = float(board.has_kingside_castling_rights(opp))
+            result[i, OFF_CASTLE + 3] = float(board.has_queenside_castling_rights(opp))
+            if board.ep_square is not None:
+                result[i, OFF_EP + chess.square_file(board.ep_square)] = 1.0
+            # Preserve encode_into's Python float division before assignment.
+            result[i, OFF_HALFMOVE] = min(board.halfmove_clock, 100) / 100.0
+        finally:
+            board.pop()
+    bits = np.unpackbits(masks.view(np.uint8), axis=1, bitorder="little")
+    if self_color == chess.BLACK:
+        # Reverse ranks inside every plane, matching the square ^ 56 mapping.
+        bits = bits.reshape(n, N_PLANES, 8, 8)[:, :, ::-1, :].reshape(n, PLANE_SIZE)
+    result[:, :PLANE_SIZE] = bits
+    return result
 
 
 # ------------------------------------------------------------------ packing

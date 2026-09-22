@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 import time
 
 import chess
@@ -15,6 +16,7 @@ import torch
 
 import tonkai
 from tonkai.config import Config, add_config_args, config_from_args
+from tonkai.win_history import LongestWinRecorder
 
 
 def main() -> int:
@@ -57,8 +59,14 @@ def main() -> int:
     print("-" * 64, flush=True)
 
     t0 = time.perf_counter()
+    win_recorder = LongestWinRecorder(cfg.win_pgn_path)
     for i in range(args.games):
-        worker.play_game(self_color=color, collect=False)
+        record = worker.play_game(self_color=color, collect=False)
+        try:
+            if win_recorder.consider_record(record, "TinyOpponent"):
+                print(f"[longest external win] {cfg.win_pgn_path} ({record.plies} plies)", flush=True)
+        except (OSError, ValueError) as exc:
+            print(f"[win recording failed] {exc}", file=sys.stderr, flush=True)
         if (i + 1) % max(args.games // 5, 1) == 0:
             w, d, l = metrics.wdl_percent()
             print(f"  {i + 1:5d} games   W/D/L {w:5.1f} / {d:5.1f} / {l:5.1f}",
