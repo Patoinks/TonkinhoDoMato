@@ -1,0 +1,21 @@
+{
+  "encoding": "2b5d2e061e5d446ffa6882821e91c49b44acdef433f9ebae3f27d73683447796",
+  "game": "9b54d942fbb7150c7a74793f826160c914e5dd024fc648fa1e16c85e09e0a6a3",
+  "workers": {
+    "1": {
+      "games_s": 11.006164075571489,
+      "positions_s": 15456.689955596748,
+      "wall_s": 5.45149059999676,
+      "times": {
+        "env": 1.166136700361676,
+        "inference": 1.0895725002337713,
+        "opponent": 0.7088023999822326,
+        "training": 2.1282824000227265
+      },
+      "timing_breakdown": "  training              3.6s   34.8%\n  env                   2.6s   25.3%\n  inference             2.5s   24.7%\n  opponent              1.6s   15.1%"
+    }
+  },
+  "batch_size": 512,
+  "updates": 1,
+  "learner_ms_game": 38.536033333366504
+}

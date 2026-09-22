@@ -24,7 +24,8 @@ class Config:
     replay_capacity: int = 200_000
     predict_capacity: int = 20_000
     min_replay: int = 2_000           # no gradient steps before this many samples
-    updates_per_game: int = 4
+    updates_per_game: int = 1
+    samples_per_game: int = 2048    # 0 uses legacy batch_size per update
     grad_clip: float = 1.0
 
     # --- losses ----------------------------------------------------------
@@ -67,7 +68,10 @@ class Config:
     @classmethod
     def from_dict(cls, d: dict) -> "Config":
         known = {f.name for f in dataclasses.fields(cls)}
-        return cls(**{k: v for k, v in d.items() if k in known})
+        values = {k: v for k, v in d.items() if k in known}
+        if "samples_per_game" not in d:
+            values["samples_per_game"] = 0  # preserve old checkpoint schedules
+        return cls(**values)
 
     def resolved_device(self) -> str:
         if self.device != "auto":

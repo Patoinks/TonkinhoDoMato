@@ -243,3 +243,10 @@ No MCTS. No minimax inside TonkAI. No opening book. No tablebases. No reward
 for captures, checks, centre control, development, material, or novelty. No
 Stockfish teacher. No centipawns. `tests/test_model.py` fails the build if a
 classical piece-value table appears anywhere in `tonkai/`.
+
+Training throughput: `--samples_per_game 2048 --updates_per_game 1` is the
+new default. Samples are split across the requested updates (including the
+remainder); `--samples_per_game 0 --batch_size 512 --updates_per_game 4`
+restores the old schedule. Old checkpoints retain that legacy schedule unless
+overridden. Larger batches change Adam's update trajectory, not the labels or
+loss definitions. A step is capped at the current replay size as before.

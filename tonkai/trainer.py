@@ -167,13 +167,14 @@ class Trainer:
 
     # ---------------------------------------------------------------- step
 
-    def train_step(self) -> dict:
+    def train_step(self, batch_size: int | None = None) -> dict:
         cfg = self.cfg
         self.opt.zero_grad(set_to_none=True)
 
         value_loss, piece_loss = self._value_and_piece_loss(
-            min(cfg.batch_size, len(self.replay))
+            min(cfg.batch_size if batch_size is None else batch_size, len(self.replay))
         )
+        self.predict_batch_size = max(32, (cfg.batch_size if batch_size is None else batch_size) // 8)
         predict_loss = self._predict_loss()
 
         total = (cfg.value_weight * value_loss
@@ -200,8 +201,14 @@ class Trainer:
         if not self.ready():
             return
         with self.metrics.timer("training"):
-            for _ in range(n_steps):
-                self.train_step()
+            for i in range(n_steps):
+                if self.cfg.samples_per_game > 0:
+                    batch, remainder = divmod(self.cfg.samples_per_game, n_steps)
+                    size = batch + (i < remainder)
+                    if size:
+                        self.train_step(size)
+                else:
+                    self.train_step()
 
     # --------------------------------------------------------- checkpoints
 
