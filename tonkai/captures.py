@@ -147,6 +147,25 @@ class CaptureStats:
                 self.hot_captures[PIECE_NAMES[event["victim_type"] - 1]] += 1
         (self.after_hot if hot else self.without_hot)[outcome] += 1
 
+    def pooled_kd(self, min_deaths: int = 50) -> dict[int, float] | None:
+        """Owner's rule: one K/D per piece type, pooling BOTH sides' pieces.
+
+        Returned relative to a pawn (pawn = 1), keyed by chess piece type
+        (1..5; kings never die, so they are excluded). None until every type
+        has at least ``min_deaths`` recorded deaths.
+        """
+        pooled = {}
+        for index, name in enumerate(PIECE_NAMES[:5], start=1):
+            kills = self.kills["self"][name] + self.kills["opponent"][name]
+            deaths = self.deaths["self"][name] + self.deaths["opponent"][name]
+            if deaths < min_deaths:
+                return None
+            pooled[index] = kills / deaths
+        pawn = pooled[chess.PAWN]
+        if pawn <= 0:
+            return None
+        return {kind: kd / pawn for kind, kd in pooled.items()}
+
     def summary(self) -> dict:
         def table(side):
             rows = {}
@@ -162,8 +181,11 @@ class CaptureStats:
                     "score": None if not games else
                     (counter["win"] + .5 * counter["draw"]) / games}
 
+        pooled = self.pooled_kd()
         return {"games": self.games, "hot_kills": self.hot_kills,
                 "kd_self": table("self"), "kd_opponent": table("opponent"),
+                "kd_pooled_vs_pawn": None if pooled is None else
+                {PIECE_NAMES[kind - 1]: value for kind, value in pooled.items()},
                 "hot_captures_by_victim": dict(self.hot_captures),
                 "games_with_hot_capture": outcomes(self.after_hot),
                 "games_without_hot_capture": outcomes(self.without_hot)}

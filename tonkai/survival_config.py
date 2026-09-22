@@ -38,8 +38,8 @@ class SurvivalConfig(Config):
     device: str = "cpu"
 
     def validate(self):
-        if self.objective not in ("survival", "victory"):
-            raise ValueError("objective must be survival or victory")
+        if self.objective not in ("survival", "victory", "shaped"):
+            raise ValueError("objective must be survival, victory or shaped")
         if not 0 < self.survival_gamma < 1:
             raise ValueError("survival_gamma must be between zero and one")
         if not 0 < self.target_tau <= 1:

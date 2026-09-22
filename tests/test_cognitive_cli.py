@@ -160,13 +160,13 @@ def test_explicit_new_campaign_retains_learning_and_resets_only_cap_and_openings
 class ResignPool(Pool):
     """The real pool forwards a resignation plan to the actor; so does this."""
 
-    def submit(self, net, knowledge, seed, game_number=0, resign_plan=None):
-        self.pending.append((net, knowledge, seed, game_number, resign_plan))
+    def submit(self, net, knowledge, seed, game_number=0, resign_plan=None, kd_values=None):
+        self.pending.append((net, knowledge, seed, game_number, resign_plan, kd_values))
 
     def receive(self):
         from tonkai.resign import ResignTracker
-        net, knowledge, seed, game_number, plan = self.pending.pop(0)
-        agent = CognitiveAgent(net, self.cfg, knowledge)
+        net, knowledge, seed, game_number, plan, kd_values = self.pending.pop(0)
+        agent = CognitiveAgent(net, self.cfg, knowledge, kd_values=kd_values)
         episode, board, colour, stats = play_episode(agent, Engine(), self.cfg, np.random.default_rng(seed),
                                                      resign=ResignTracker.from_plan(plan))
         stats["cognitive"] = dict(agent.diagnostics)
@@ -207,3 +207,26 @@ def test_resign_and_capture_target_run_end_to_end_and_resume(tmp_path, environme
     metrics = with_resign[0]
     assert metrics["resign"]["state"] == "shadow" and "captures" in metrics
     assert "capture_loss" in metrics["loss"]
+
+
+def test_owner_configuration_switches_to_shaped_and_records_victory_measures(tmp_path, environment, monkeypatch):
+    monkeypatch.setattr(cli, "CognitivePool", ResignPool)
+    _, args = environment
+    assert cli.main(args + ["--game-cap", "4"]) == 0                     # survival first
+    output = tmp_path / "out/latest.pt"
+    resumed = list(args)
+    resumed[0:2] = ["--resume", str(output)]
+    resumed += ["--objective", "shaped", "--kd-weight", "0.75", "--capture-target-weight", "0.05",
+                "--resign", "--resign-min-non-loss", "0"]
+    assert cli.main(resumed) == 0
+    state = torch.load(output, weights_only=False)
+    assert state["config"]["objective"] == "shaped"
+    assert state["config"]["kd_weight"] == 0.75
+    assert state["resign"]["state"] in ("shadow", "active")
+    with_measures = [row for row in state["replay"]["episodes"] if row.get("proxies") is not None]
+    assert len(with_measures) == 2                                      # the two shaped games
+    for row in with_measures:
+        assert len(row["proxies"]) == len(row["packed"])
+    rows = [json.loads(line) for path in (tmp_path / "history").glob("*.jsonl")
+            for line in path.read_text().splitlines()]
+    assert any(row.get("kind") == "metrics" and row.get("objective") == "shaped" for row in rows)

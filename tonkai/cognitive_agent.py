@@ -10,11 +10,11 @@ from .survival_agent import SurvivalAgent, SurvivalChoice
 from .cognitive_memory import structural_keys
 from .piece_safety import piece_senses, pawn_unit, position_risk
 from .king_safety import king_senses, king_balance
-from .objective import outcome_value, continuation_value
+from .objective import outcome_value, continuation_value, victory_weight
 
 
-def terminal_value(board, colour, objective="survival"):
-    draw = .5 if objective == "victory" else 1.0
+def terminal_value(board, colour, objective="survival", weight=0.5):
+    draw = .5 if objective == "victory" else 1.0 - weight / 2 if objective == "shaped" else 1.0
     result = board.outcome(claim_draw=False)
     if result is None and board.can_claim_fifty_moves():
         return draw
@@ -37,12 +37,15 @@ def terminal_value(board, colour, objective="survival"):
             return draw
     if result is None:
         return None
-    return outcome_value(result, colour, objective)
+    return outcome_value(result, colour, objective, weight)
 
 
 class CognitiveAgent(SurvivalAgent):
-    def __init__(self, net, cfg, knowledge, device="cpu"):
+    def __init__(self, net, cfg, knowledge, device="cpu", kd_values=None):
         self.knowledge = knowledge
+        # {piece_type: pooled K/D relative to a pawn}, from the learner's
+        # measurements; blended into piece values with cfg.kd_weight.
+        self.kd_values = kd_values
         super().__init__(net, cfg, device)
 
     def reset(self):
@@ -72,7 +75,18 @@ class CognitiveAgent(SurvivalAgent):
         unit = pawn_unit(raw, pieces)
         signed = raw * np.array([1 if p.color == self_color else -1 for p in pieces])
         normalized = np.clip(signed / unit, -12, 12)
-        cache = {(p.color, p.piece_type, sq): float(v) for (sq, p), v in zip(items, normalized)}
+        kd_weight = float(getattr(self.cfg, "kd_weight", 0.0))
+        kd = self.kd_values if kd_weight > 0 and self.kd_values else None
+
+        def blend(piece, learned):
+            # Owner's rule: kd_weight of the pooled per-type K/D, the rest the
+            # network's contextual value. Same sign convention (enemy negative).
+            if kd is None or piece.piece_type not in kd:
+                return learned
+            sign = 1 if piece.color == self_color else -1
+            return kd_weight * sign * kd[piece.piece_type] + (1 - kd_weight) * learned
+
+        cache = {(p.color, p.piece_type, sq): float(blend(p, v)) for (sq, p), v in zip(items, normalized)}
 
         def value(piece, square):
             if piece.piece_type == chess.KING:
@@ -83,7 +97,8 @@ class CognitiveAgent(SurvivalAgent):
                     torch.tensor([piece.piece_type - 1], device=self.device),
                     torch.tensor([square if self_color else square ^ 56], device=self.device),
                     torch.tensor([int(piece.color != self_color)], device=self.device))[0])
-                cache[key] = max(-12., min(12., predicted * (1 if piece.color == self_color else -1) / unit))
+                learned = max(-12., min(12., predicted * (1 if piece.color == self_color else -1) / unit))
+                cache[key] = float(blend(piece, learned))
             return cache[key]
 
         return value
@@ -92,6 +107,25 @@ class CognitiveAgent(SurvivalAgent):
     def sense_pieces(self, board, self_color, context=None):
         return piece_senses(board, self.piece_valuer(board, self_color, context), tolerance=self.cfg.piece_exchange_tolerance,
                             depth=self.cfg.piece_exchange_depth)
+
+    @torch.inference_mode()
+    def position_proxy(self, board, self_color):
+        """The owner's victory measure for a REAL, already observed position.
+
+        0.5 + 0.25 * (enemy king risk - own king risk)
+            + 0.25 * (threat to enemy pieces - threat to own pieces),
+        with piece values as used in decisions (K/D blend when enabled).
+        A finished game overrides it: win 1, draw 0.5, loss 0.
+        """
+        outcome = board.outcome(claim_draw=True)
+        if outcome is not None:
+            return 0.5 if outcome.winner is None else float(outcome.winner == self_color)
+        if self.context is None:
+            self.observe(board, self_color)
+        king = king_balance(king_senses(board), self_color)
+        senses = self.sense_pieces(board, self_color, self.context)
+        pieces = position_risk(senses, not self_color) - position_risk(senses, self_color)
+        return float(np.clip(0.5 + 0.25 * king + 0.25 * pieces, 0.0, 1.0))
 
     @torch.inference_mode()
     def _robust(self, board, colour, moves, candidate_memory, values, probabilities, root_indices):
@@ -107,7 +141,7 @@ class CognitiveAgent(SurvivalAgent):
         for ordinal, index in enumerate(root_indices):
             candidate = board.copy(stack=True)
             candidate.push(moves[index])
-            ending = terminal_value(candidate, colour, cfg.objective)
+            ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg))
             if ending is not None:
                 changes[index] = ending
                 continue
@@ -127,7 +161,7 @@ class CognitiveAgent(SurvivalAgent):
             reply_probabilities = self.net.predict_logits(contexts).softmax(0).cpu().numpy()
             for j, reply in enumerate(replies):
                 candidate.push(reply)
-                ending = terminal_value(candidate, colour, cfg.objective)
+                ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg))
                 if ending is not None:
                     reply_values[j] = ending
                 elif cfg.king_safety_weight:
@@ -216,12 +250,12 @@ class CognitiveAgent(SurvivalAgent):
         else:
             self.diagnostics["fast_decisions"] += 1
         # Known endings override noisy critics and intrinsic incentives.
-        if safety or kings or self.cfg.objective == "victory":
+        if safety or kings or self.cfg.objective in ("victory", "shaped"):
             scores = np.minimum(scores, .999999)
         for index, move in enumerate(moves):
             branch = board.copy(stack=True)
             branch.push(move)
-            ending = terminal_value(branch, self_color, self.cfg.objective)
+            ending = terminal_value(branch, self_color, self.cfg.objective, victory_weight(self.cfg))
             if ending is not None:
                 scores[index] = ending
         self._evaluation = {"keys": keys, "retrieved": retrieved, "uncertainty": uncertainty,
@@ -254,7 +288,8 @@ class CognitiveAgent(SurvivalAgent):
                 self.plan = ()
         temperature = self.cfg.temperature if temperature is None else temperature
         winning = []
-        if self.cfg.objective == "victory":
+        if self.cfg.objective in ("victory", "shaped"):
+            # A real checkmate is the maximum under both; always take it.
             for index, move in enumerate(choice.moves):
                 branch = board.copy(stack=True)
                 branch.push(move)

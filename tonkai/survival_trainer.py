@@ -19,7 +19,7 @@ from .captures import episode_capture_targets
 from .encoding import encode_after_moves, unpack_many
 from .sequence_replay import SequenceReplay
 from .temporal_model import SurvivalNet
-from .objective import episode_result
+from .objective import episode_result, victory_weight
 
 CAPTURE_PREFIX = "capture_out."
 CAPTURE_CACHE = 4096
@@ -146,6 +146,21 @@ class SurvivalTrainer:
                               for logit, label in zip(logits, labels)])
         return (losses * losses.new_tensor(weights)).mean()
 
+    def _proxy_targets(self, batch, offset, length):
+        """(b, length) victory measures for the learning window, plus a mask."""
+        indices = batch["state_indices"][:, offset:offset + length]
+        values = np.zeros(indices.shape, dtype=np.float32)
+        present = np.zeros(indices.shape, dtype=bool)
+        for row, episode in enumerate(batch["episodes"]):
+            proxies = getattr(episode, "proxies", None)
+            if proxies is None:
+                continue
+            ok = (indices[row] >= 0) & (indices[row] < len(proxies))
+            values[row, ok] = proxies[indices[row, ok]]
+            present[row] = ok
+        return (torch.as_tensor(values, device=self.device),
+                torch.as_tensor(present, device=self.device))
+
     def _capture_table(self, episode_id, episode):
         """Future-capture targets for one episode, cached by episode id."""
         table = self._capture_tables.get(episode_id)
@@ -253,6 +268,12 @@ class SurvivalTrainer:
                     torch.as_tensor(batch["terminal_lost"], device=self.device)[:, None],
                     torch.as_tensor(batch["terminated"], device=self.device)[:, None],
                     cfg.survival_gamma, bootstrap, steps)
+                if cfg.objective == "shaped":
+                    # Owner's victory measure, recorded per state during play.
+                    # States without one (old episodes, experiments) keep survival.
+                    proxies, has_proxy = self._proxy_targets(batch, offset, length)
+                    weight = victory_weight(cfg)
+                    targets = torch.where(has_proxy, (1 - weight) * targets + weight * proxies, targets)
             future_targets = F.normalize(self.future_encoder(x.flatten(0, 1)), dim=-1).reshape(b, total, -1)
         learning = context[:, selection]
         mask = valid[:, selection]

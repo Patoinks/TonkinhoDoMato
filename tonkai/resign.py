@@ -6,6 +6,8 @@ learns never to get there. "Hopeless" is read ONLY from the network:
   * survival objective: even the best legal move predicts death within
     ``survival_plies`` half-moves, i.e. value <= 1 - gamma ** survival_plies
   * victory objective: even the best legal move has expected score <= 0.05
+  * shaped objective: the survival part as above, with the victory measure
+    near its floor (0.25): (1 - w) * (1 - gamma ** plies) + w * 0.25
 
 Never an engine score, never material, never TinyOpponent's evaluation, and in
 V3 never the heuristic-adjusted move scores (king/piece safety, search, memory,
@@ -22,8 +24,11 @@ Safeguards
     while TonkAI loses almost every game is "right" every time, so the playout
     check alone would approve resigning at move one and destroy the data.
 
-A resigned game is never labelled as a death: it is censored at the
-resignation ply and bootstrapped, exactly like a game cut by ``max_plies``.
+A resignation is a real loss, as in chess and in AlphaZero: the game ends at
+the resignation ply and is labelled lost. That is the owner's intent - TonkAI
+must learn never to reach a hopeless position - and the playout check bounds
+how often the label is wrong. Setting ``min_non_loss`` to zero ("resign for
+real") removes the variance condition; verification and tightening remain.
 
 This module must not import any engine, opponent or heuristic module; a test
 enforces that.
@@ -70,7 +75,7 @@ class ResignConfig:
             raise ValueError("resign threshold must be between zero and one")
 
 
-def hope_threshold(rc: ResignConfig, objective: str, gamma: float) -> float:
+def hope_threshold(rc: ResignConfig, objective: str, gamma: float, weight: float = 0.5) -> float:
     """TonkAI resigns when its best option's value is at or below this."""
     if rc.threshold is not None:
         return rc.threshold
@@ -78,6 +83,8 @@ def hope_threshold(rc: ResignConfig, objective: str, gamma: float) -> float:
         return 1.0 - gamma ** rc.survival_plies
     if objective == "victory":
         return rc.victory_score
+    if objective == "shaped":
+        return (1.0 - weight) * (1.0 - gamma ** rc.survival_plies) + weight * 0.25
     raise ValueError(f"unknown objective {objective!r}")
 
 

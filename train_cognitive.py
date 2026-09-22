@@ -60,6 +60,12 @@ def main(argv=None):
                         help="auxiliary target: piece head predicts future captures (0 = off)")
     parser.add_argument("--hot-piece-kills", type=int,
                         help="measurement: an enemy piece with this many kills is 'hot'")
+    parser.add_argument("--objective", choices=["survival", "victory", "shaped"],
+                        help="shaped = survival blended with the owner's victory measure")
+    parser.add_argument("--victory-weight", type=float,
+                        help="shaped objective: share of the victory measure in the value target")
+    parser.add_argument("--kd-weight", type=float,
+                        help="share of the pooled per-type K/D in decision piece values (0 = off)")
     add_resign_args(parser)
     args = parser.parse_args(argv)
     if args.games < 1:
@@ -88,7 +94,8 @@ def main(argv=None):
                             ("experiments_every", "experiments_every"), ("planning_nodes", "planning_nodes"),
                             ("generalization_every", "generalization_every"), ("win_pgn_path", "win_pgn_path"),
                             ("log_every", "log_every"), ("capture_target_weight", "capture_target_weight"),
-                            ("hot_piece_kills", "hot_piece_kills")):
+                            ("hot_piece_kills", "hot_piece_kills"), ("objective", "objective"),
+                            ("victory_weight", "victory_weight"), ("kd_weight", "kd_weight")):
         value = getattr(args, argument)
         if value is not None:
             setattr(cfg, field, str(value) if isinstance(value, Path) else value)
@@ -129,7 +136,8 @@ def main(argv=None):
                     initial_reasons = prior.get('draw_reasons', {})
                     break
     resign_cfg = resign_config_from_args(args)
-    resign = (ResignController(resign_cfg, hope_threshold(resign_cfg, cfg.objective, cfg.survival_gamma))
+    resign = (ResignController(resign_cfg, hope_threshold(resign_cfg, cfg.objective, cfg.survival_gamma,
+                                                            cfg.victory_weight))
               if resign_cfg.enabled else None)
     capture_stats = CaptureStats(cfg.hot_piece_kills)
     if not args.new_campaign:
@@ -168,7 +176,7 @@ def main(argv=None):
 
     def metrics(final=False):
         seconds = time.perf_counter() - started
-        result = dict(games=completed, final=final, state=status, objective="survival", wins=counts["wins"],
+        result = dict(games=completed, final=final, state=status, objective=cfg.objective, wins=counts["wins"],
                       losses=counts["losses"], draws=counts["draws"], truncated=counts["truncated"],
                       draw_reasons=dict(reasons), games_per_second=completed / max(.001, seconds),
                       positions_per_second=plies / max(.001, seconds), survival_plies_mean=plies / max(1, completed),
@@ -193,13 +201,14 @@ def main(argv=None):
     try:
         external = UCIOpponent(cfg.opponent_path, cfg.opponent_elo, cfg.opponent_move_time)
         launch = dict(pid=os.getpid(), run_id=run_id, resume_games=initial_games, additional_games=args.games,
-                      pretrained_games=pretrained_games, objective="survival", version="cognitive-v3",
+                      pretrained_games=pretrained_games, objective=cfg.objective, version="cognitive-v3",
                       history=str(history_path.resolve()), checkpoint=str(output), source_checkpoint=str(source_path),
                       stop_file=str(stop_file.resolve()), opponent=external.info,
                       campaign_start_games=campaign_start, campaign_cap=campaign_cap,
                       opening_report=str(output.parent / "opening-report.json"),
                       opponent_mixture={"external": 1, "historical": 0, "current": 0},
-                      capture_target_weight=cfg.capture_target_weight,
+                      capture_target_weight=cfg.capture_target_weight, kd_weight=cfg.kd_weight,
+                      victory_weight=cfg.victory_weight,
                       resign=resign.summary()["config"] if resign is not None else None)
         (run_dir / "launch.json").write_text(json.dumps(launch, indent=2), encoding="utf-8")
         record("run", config=cfg.to_dict(), launch=launch)
@@ -211,10 +220,13 @@ def main(argv=None):
             stopping = stopping or stop_file.exists()
             while len(pool.pending) < pool.capacity and submitted < args.games and not stopping:
                 seed, game_number = rng.integers(0, 2**31 - 1), campaign_done + submitted + 1
-                if resign is None:
-                    pool.submit(trainer.net, trainer.knowledge, seed, game_number)
-                else:
-                    pool.submit(trainer.net, trainer.knowledge, seed, game_number, resign_plan=resign.plan())
+                extras = {}
+                if resign is not None:
+                    extras["resign_plan"] = resign.plan()
+                kd_values = capture_stats.pooled_kd() if cfg.kd_weight > 0 else None
+                if kd_values is not None:
+                    extras["kd_values"] = kd_values
+                pool.submit(trainer.net, trainer.knowledge, seed, game_number, **extras)
                 submitted += 1
             if not pool.pending:
                 break
@@ -229,24 +241,28 @@ def main(argv=None):
             resign_report = stats.get("resign")
             resigned = bool(resign_report and resign_report["resigned"])
             if not episode.terminated:
-                counts["resigned" if resigned else "truncated"] += 1
+                counts["truncated"] += 1
             elif episode.lost:
                 counts["losses"] += 1
+                if resigned:
+                    counts["resigned"] += 1
             elif stats["result"] == "1/2-1/2":
                 counts["draws"] += 1
                 reasons[board.outcome(claim_draw=True).termination.name.lower()] += 1
             else:
                 counts["wins"] += 1
-            if episode.terminated:
+            if resigned:
+                outcome = "resigned"
+            elif episode.terminated:
                 outcome = ("loss" if episode.lost else "draw" if stats["result"] == "1/2-1/2" else "win")
             else:
-                outcome = "resigned" if resigned else "unfinished"
+                outcome = "unfinished"
             capture_stats.add(board.move_stack, colour, outcome)
             if resign is not None:
                 for message in resign.update(resign_report, lost=episode.lost):
                     print(message, flush=True)
                     record("resign", game=completed, message=message, **resign.summary())
-            if episode.terminated:
+            if episode.terminated and not resigned:     # a resigned board has no outcome
                 try:
                     recorder.consider(board, colour, stats["opponent"], stats["result"],
                                       board.outcome(claim_draw=True).termination.name.lower())

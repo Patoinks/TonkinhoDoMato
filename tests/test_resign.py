@@ -192,9 +192,9 @@ def test_resigns_on_the_network_estimate_not_on_the_heuristic_scores():
                                                  np.random.default_rng(1),
                                                  self_color=chess.WHITE, resign=tracker)
     assert stats["resign"]["resigned"]
-    assert not episode.terminated and not episode.lost      # censored, not a death
-    assert episode.result_value is None
-    assert stats["result"] == "*"
+    assert episode.terminated and episode.lost               # resigning is losing
+    assert episode.result_value == 0.0
+    assert stats["result"] == "0-1"                          # TonkAI had white
     assert len(episode.actions) == len(episode.packed) - 1 == stats["plies"]
     assert len(agent.trace) == (stats["plies"] + 1) // 2    # the unplayed decision was dropped
 

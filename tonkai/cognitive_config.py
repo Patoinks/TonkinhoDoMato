@@ -43,6 +43,13 @@ class CognitiveConfig(SurvivalConfig):
     # Measurement only: a "hot" enemy piece had made this many captures in the
     # game before TonkAI took it; the report shows how such games end.
     hot_piece_kills: int = 2
+    # objective="shaped": share of the owner's victory measure in the value
+    # target (the rest is survival). Unused by the other objectives.
+    victory_weight: float = 0.5
+    # Share of the pooled per-type K/D (both sides, pawn = 1) in the piece
+    # values used for exchange/protection decisions; the rest is the network's
+    # contextual value. Zero keeps the network values alone.
+    kd_weight: float = 0.0
 
     def validate(self):
         super().validate()
@@ -55,7 +62,7 @@ class CognitiveConfig(SurvivalConfig):
                 raise ValueError(f"{name} must be positive")
         for name in ("memory_similarity", "memory_weight", "information_bonus", "planning_uncertainty",
                      "planning_gap", "robust_weight", "skill_bonus", "piece_safety_weight", "piece_exchange_tolerance",
-                     "king_safety_weight", "capture_target_weight"):
+                     "king_safety_weight", "capture_target_weight", "victory_weight", "kd_weight"):
             if not 0 <= getattr(self, name) <= 1:
                 raise ValueError(f"{name} must be between zero and one")
         if self.external_probability != 1 or self.historical_probability != 0:

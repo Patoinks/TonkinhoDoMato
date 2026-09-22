@@ -34,12 +34,12 @@ def _shutdown_actor():
     return True
 
 
-def _play(payload, seed, game_number, resign_plan=None):
+def _play(payload, seed, game_number, resign_plan=None, kd_values=None):
     weights, knowledge_state = pickle.loads(payload)
     state = _actor_state
     state["net"].load_state_dict(weights)
     state["knowledge"].load_state_dict(knowledge_state)
-    agent = CognitiveAgent(state["net"], state["cfg"], state["knowledge"])
+    agent = CognitiveAgent(state["net"], state["cfg"], state["knowledge"], kd_values=kd_values)
     started = time.perf_counter()
     episode, board, colour, stats = play_episode(agent, state["external"], state["cfg"],
         np.random.default_rng(seed), opponent_name=state["external"].description,
@@ -58,14 +58,15 @@ class CognitivePool:
         self.capacity = cfg.num_workers
         self.closed = False
 
-    def submit(self, net, knowledge, seed, game_number=0, resign_plan=None):
+    def submit(self, net, knowledge, seed, game_number=0, resign_plan=None, kd_values=None):
         if len(self.pending) >= self.capacity:
             raise RuntimeError("Actor pool is full")
         weights = {key: tensor.detach().cpu().clone() for key, tensor in net.state_dict().items()}
         state = knowledge.state_dict()
         state["memory"]["episodes"] = []  # Protected rehearsal belongs only to learner.
         payload = pickle.dumps((weights, state), protocol=pickle.HIGHEST_PROTOCOL)
-        self.pending.add(self.executor.submit(_play, payload, int(seed), game_number, resign_plan))
+        self.pending.add(self.executor.submit(_play, payload, int(seed), game_number,
+                                              resign_plan, kd_values))
 
     def receive(self, timeout=120):
         if not self.pending:

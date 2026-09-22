@@ -2,17 +2,32 @@
 
 Victory uses expected game score (win=1, draw=.5, loss=0), not a
 calibrated win probability. Unfinished trajectories remain bootstrapped.
+
+"shaped" is the owner's definition of victory for this network: a blend of
+survival and a per-position victory measure (enemy king pressure, own king
+safety, threats to high-K/D enemy pieces, protection of our own) recorded in
+``SequenceEpisode.proxies``. A real checkmate is worth 1.0, the maximum.
 """
 import chess
 
 from .encoding import unpack_many
 
+OBJECTIVES = ("survival", "victory", "shaped")
 
-def outcome_value(outcome, colour, objective="survival"):
+
+def victory_weight(cfg) -> float:
+    return float(getattr(cfg, "victory_weight", 0.5))
+
+
+def outcome_value(outcome, colour, objective="survival", weight=0.5):
     if outcome is None:
         return None
     if outcome.winner is None:
-        return .5 if objective == "victory" else 1.0
+        if objective == "victory":
+            return .5
+        if objective == "shaped":
+            return 1.0 - weight / 2       # survival credits a draw 1, victory .5
+        return 1.0
     return float(outcome.winner == colour)
 
 
@@ -39,7 +54,12 @@ def episode_result(episode):
 def observed_target(episode, ply, cfg):
     if cfg.objective == "victory":
         return episode_result(episode)
-    return 1 - cfg.survival_gamma ** (len(episode.actions) - ply) if episode.lost else 1.0
+    survival = 1 - cfg.survival_gamma ** (len(episode.actions) - ply) if episode.lost else 1.0
+    proxies = getattr(episode, "proxies", None)
+    if cfg.objective == "shaped" and proxies is not None and 0 <= ply < len(proxies):
+        weight = victory_weight(cfg)
+        return (1 - weight) * survival + weight * float(proxies[ply])
+    return survival
 
 
 def continuation_value(value, steps, cfg):
@@ -47,4 +67,10 @@ def continuation_value(value, steps, cfg):
     if cfg.objective == "victory":
         return value
     discount = cfg.survival_gamma ** steps
-    return 1 - discount + discount * value
+    survival = 1 - discount + discount * value
+    if cfg.objective == "shaped":
+        # The blended value stands in for both parts; only survival earns
+        # living credit for the extra plies.
+        weight = victory_weight(cfg)
+        return (1 - weight) * survival + weight * value
+    return survival

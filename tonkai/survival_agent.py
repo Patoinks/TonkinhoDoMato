@@ -123,8 +123,12 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
 
     ``resign`` is an optional ``ResignTracker`` (V3 only). It reads the raw
     network estimate ``choice.mean`` - never the heuristic-adjusted scores. A
-    resigned game stops before TonkAI moves and is left unterminated, so its
-    positions are censored and bootstrapped rather than labelled as a death.
+    resignation is a real loss: the game ends there, lost, as in chess (and in
+    AlphaZero). It only happens once the tracker is ACTIVE, i.e. after the
+    controller has verified that TonkAI's "hopeless" judgement is reliable.
+
+    With ``cfg.objective == "shaped"`` and an agent that can measure it, the
+    owner's victory measure of every real position is recorded in ``proxies``.
     """
     self_color = bool(rng.integers(2)) if self_color is None else self_color
     board = chess.Board()
@@ -136,6 +140,9 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
     surprises = [0.0]
     uncertainties = []
     agent.observe(board, self_color)
+    measure = (getattr(cfg, "objective", "survival") == "shaped"
+               and callable(getattr(agent, "position_proxy", None)))
+    proxies = [agent.position_proxy(board, self_color)] if measure else None
     while not board.is_game_over(claim_draw=True) and len(board.move_stack) < cfg.max_plies:
         if board.turn == self_color:
             choice = agent.choose(board, self_color, rng, temperature=temperature,
@@ -162,14 +169,25 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
         agent.observe(board, self_color)
         positions.append(encode(board, self_color))
         surprises.append(surprise)
+        if measure:
+            proxies.append(agent.position_proxy(board, self_color))
+    resigned = resign is not None and resign.resigned
     outcome = board.outcome(claim_draw=True)
-    lost = bool(outcome and outcome.winner is not None and outcome.winner != self_color)
-    terminated = outcome is not None
+    if resigned:
+        lost, terminated, result_value = True, True, 0.0
+        result = "0-1" if self_color == chess.WHITE else "1-0"
+        if measure:
+            proxies[-1] = 0.0                      # resigning is losing
+    else:
+        lost = bool(outcome and outcome.winner is not None and outcome.winner != self_color)
+        terminated = outcome is not None
+        result_value = outcome_value(outcome, self_color, "victory")
+        result = board.result(claim_draw=True) if terminated else "*"
     episode = SequenceEpisode(packed=pack_many(np.stack(positions)), lost=lost,
         terminated=terminated, opponent=opponent_name, surprises=np.asarray(surprises, dtype=np.float32),
         actions=tuple(move.uci() for move in board.move_stack),
-        result_value=outcome_value(outcome, self_color, "victory"))
-    result = board.result(claim_draw=True) if terminated else "*"
+        result_value=result_value,
+        proxies=np.asarray(proxies, dtype=np.float32) if measure else None)
     stats = {
         "plies": len(board.move_stack), "lost": lost, "terminated": terminated,
         "result": result, "opponent": opponent_name,

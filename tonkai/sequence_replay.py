@@ -26,6 +26,7 @@ class SequenceEpisode:
     actions: tuple[str, ...] = ()        # optional UCI [T-1], chronological
     initial_fen: str = ""                # empty means the standard initial board
     result_value: float | None = None    # observed win=1, draw=.5, loss=0; never truncation
+    proxies: np.ndarray | None = None    # "shaped" objective: victory measure in [0, 1] per state
 
 
 def _integer(value, name, minimum=0):
@@ -65,10 +66,17 @@ def _copy_episode(episode):
         if surprises.shape != (len(packed),) or not np.isfinite(surprises).all() or (surprises < 0).any():
             raise ValueError("surprises must be finite nonnegative values aligned with all T states")
         surprises.setflags(write=False)
+    proxies = None
+    if getattr(episode, "proxies", None) is not None:
+        proxies = np.array(episode.proxies, dtype=np.float32, copy=True)
+        if (proxies.shape != (len(packed),) or not np.isfinite(proxies).all()
+                or (proxies < 0).any() or (proxies > 1).any()):
+            raise ValueError("proxies must be finite values in [0, 1] aligned with all T states")
+        proxies.setflags(write=False)
     packed = np.array(packed, dtype=np.uint8, order="C", copy=True)
     packed.setflags(write=False)
     return SequenceEpisode(packed, bool(episode.lost), bool(episode.terminated),
-                           episode.opponent, surprises, actions, episode.initial_fen, result)
+                           episode.opponent, surprises, actions, episode.initial_fen, result, proxies)
 
 
 class SequenceReplay:
@@ -236,6 +244,7 @@ class SequenceReplay:
                 "surprises": None if episode.surprises is None else episode.surprises.copy(),
                 "actions": episode.actions, "priorities": self._priorities[episode_id].copy(),
                 "result_value": getattr(episode, "result_value", None),
+                "proxies": None if episode.proxies is None else episode.proxies.copy(),
             })
         return {
             "version": 1, "capacity_positions": self.capacity_positions,
@@ -263,7 +272,8 @@ class SequenceReplay:
             if episode_id in restored._episodes:
                 raise ValueError("duplicate episode ID in replay state")
             episode = _copy_episode(SequenceEpisode(row["packed"], row["lost"], row["terminated"],
-                                                    row["opponent"], row["surprises"], tuple(row["actions"]), row["initial_fen"], row.get("result_value")))
+                                                    row["opponent"], row["surprises"], tuple(row["actions"]), row["initial_fen"], row.get("result_value"),
+                                                    row.get("proxies")))
             priorities = np.array(row["priorities"], dtype=np.float64, copy=True)
             if priorities.shape != (len(episode.packed),) or not np.isfinite(priorities).all() or (priorities < 1).any() or (priorities > 1 + restored.priority_cap).any():
                 raise ValueError("invalid priorities in replay state")
