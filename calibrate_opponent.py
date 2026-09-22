@@ -17,6 +17,9 @@ import itertools
 import math
 import random
 import time
+import json
+from pathlib import Path
+import shutil
 
 import chess
 
@@ -79,6 +82,53 @@ def match(a, b, games: int, label_a: str, label_b: str) -> float:
     return score
 
 
+def anchor_match(args):
+    """Optional measurement of TinyOpponent only. Never imported by training."""
+    executable = shutil.which(args.anchor)
+    if executable is None and Path(args.anchor).is_file():
+        executable = str(Path(args.anchor).resolve())
+    if executable is None:
+        print(f"Anchor skipped: reference not found: {args.anchor}")
+        return None
+    if args.anchor_elo is None:
+        raise ValueError("--anchor-elo must state the reference's known rating at these settings")
+    import chess.engine
+
+    tiny = make(int(args.settings.split(',')[0]), args.nodes, args.randomness, args.seed, True)
+    scores = []
+    with chess.engine.SimpleEngine.popen_uci(executable) as reference:
+        reference.configure(json.loads(args.anchor_options))
+        for g in range(args.games):
+            # A fresh token tells the reference this is a new game.
+            token = object()
+
+            def reference_move(board):
+                return reference.play(board, chess.engine.Limit(time=args.anchor_time), game=token).move.uci()
+
+            score = (play(engine_mover(tiny), reference_move) if g % 2 == 0
+                     else 1 - play(reference_move, engine_mover(tiny)))
+            scores.append(score)
+    score = sum(scores) / len(scores)
+    wins, draws, losses = scores.count(1.0), scores.count(0.5), scores.count(0.0)
+    # Wilson interval for fractional game scores: an approximate sampling range,
+    # not a claim that the supplied reference rating is universally transferable.
+    n, z = len(scores), 1.96
+    centre = (score + z*z/(2*n)) / (1 + z*z/n)
+    radius = z * math.sqrt(score*(1-score)/n + z*z/(4*n*n)) / (1 + z*z/n)
+    estimate = args.anchor_elo + elo_diff(score)
+    print(f"Anchor: {executable}, supplied Elo {args.anchor_elo}, {args.anchor_time}s/move")
+    print(f"Options: {args.anchor_options}; seed {args.seed}; TinyOpponent depth "
+          f"{args.settings.split(',')[0]}, nodes {args.nodes}, randomness {args.randomness}")
+    print(f"W/D/L {wins}/{draws}/{losses}; score {score:.3f}; conditional Elo estimate {estimate:.0f}")
+    print(f"Approximate 95% sampling range: {args.anchor_elo + elo_diff(centre-radius):.0f} to "
+          f"{args.anchor_elo + elo_diff(centre+radius):.0f}")
+    if score in (0, 1):
+        print("All games had the same result: the displayed estimate is clipped, not a finite measured rating.")
+    print("Reference rating must be valid for these exact options and time controls. "
+          "This measures TinyOpponent only; no reference output enters training.")
+    return estimate
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--games", type=int, default=60)
@@ -88,7 +138,19 @@ def main() -> int:
     ap.add_argument("--nodes", type=int, default=1000)
     ap.add_argument("--randomness", type=float, default=0.35)
     ap.add_argument("--speed-only", action="store_true")
+    ap.add_argument("--anchor", help="optional rated UCI reference executable; runs only the anchor match")
+    ap.add_argument("--anchor-elo", type=float, help="known reference rating at the configured conditions")
+    ap.add_argument("--anchor-time", type=float, default=0.05, help="reference seconds per move")
+    ap.add_argument("--anchor-options", default="{}", help="JSON UCI settings for the rated reference")
     args = ap.parse_args()
+    if args.games <= 0 or args.anchor_time <= 0:
+        ap.error("--games and --anchor-time must be positive")
+    if args.anchor:
+        try:
+            anchor_match(args)
+        except (ValueError, OSError) as error:
+            ap.error(str(error))
+        return 0
 
     depths = [int(s) for s in args.settings.split(",") if s.strip()]
     rng = random.Random(args.seed)

@@ -61,7 +61,49 @@ python play.py                       # play it yourself
 `play.py` is the interesting one to run by hand: before each of your moves it
 shows what the predict head expects you to play, and afterwards how surprised
 it was. Commands inside the game: `eval`, `pieces`, `predict`, `undo`, `fen`,
-`help`, `quit`.
+`help`, `quit`. `hint` shows the most expected human reply, not strength advice.
+`moves` prints the move list; `pgn` prints PGN and `pgn filename.pgn` exports it.
+Use `--pgn filename.pgn` to save on exit (including resignation or an unfinished
+game). Quiet mode still scores predictions, and undo removes the corresponding
+prediction observation from the final hit count and mean surprise.
+
+## Run histories and plots
+
+Each training invocation now writes a separate `history/<UTC-time>-<id>.jsonl`.
+The first row records config, resume path and initial checkpoint game count;
+subsequent rows snapshot metrics at `log_every` and once at orderly exit.
+Counters and timers are cumulative as reported by Metrics; prediction/loss
+means and standard deviations use the existing rolling windows and include
+their sample counts. `elapsed_seconds` is local to this process. There is no
+extra per-position logging or plotting dependency.
+
+```bash
+python train.py --history-dir history/experiment-a --games 2000
+python plot_history.py "history/*.jsonl" --metric top1.mean --out top1.svg
+python plot_history.py "history/*.jsonl" --metric surprise.mean --out surprise.svg
+```
+
+Pass `--no-history` to disable logging. SVGs are standalone and compare all
+matched runs. Other metric paths include `value_loss.mean`, `wins`, `entropy.mean`
+and `times.inference`. The final snapshot replaces an earlier sample at the
+same game count in a plot. Forced termination can leave no final row; earlier
+completed rows remain on disk.
+
+## Optional rating anchor
+
+```bash
+python calibrate_opponent.py --anchor /path/to/rated-uci-reference --anchor-elo 1300 --anchor-time 0.05 --games 100 --settings 1
+```
+
+This mode only measures TinyOpponent against a supplied UCI reference, alternating
+colours. It does not run the relative ladder. A missing executable is skipped;
+no reference is downloaded or required. `--anchor-options` accepts a JSON object
+of UCI options if the rated configuration needs them. The supplied rating must
+be supported for that exact configuration and time budget: the output is a
+conditional estimate with an approximate sampling interval, not an established
+absolute rating. No rated reference was available during implementation, so no
+new measured Elo is claimed. Calibration never passes reference moves, scores,
+or weights to TonkAI training.
 
 Every config field is also a flag, so experiments need no code edits:
 
@@ -191,8 +233,9 @@ These are deliberate. They are the first things to revisit.
   how often that happened.
 * **One worker.** `GameWorker` is self-contained so several can later feed one
   replay buffer, but V0 runs a single one.
-* **The opponent is not Elo-anchored.** `calibrate_opponent.py` gives relative
-  numbers only; an absolute ~1300 needs an external rated reference.
+* **The opponent has no measured absolute Elo yet.** Default calibration gives
+  relative numbers. Optional `--anchor` can measure against a supplied rated
+  reference; an absolute ~1300 still needs evidence under matched conditions.
 
 ## What is deliberately absent
 

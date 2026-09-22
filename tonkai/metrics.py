@@ -195,3 +195,20 @@ class Metrics:
             "times": dict(self.times),
             "termination": dict(self.termination),
         }
+
+    def snapshot(self) -> dict:
+        """Report-time snapshot only; no extra work in the per-position loop."""
+        data = self.to_dict()
+        elapsed = max(time.perf_counter() - self.t_start, 1e-9)
+        data.update(elapsed_seconds=elapsed, games_per_second=self.games / elapsed,
+                    positions_per_second=self.tonkai_positions / elapsed)
+        for name in ("game_length", "legal_moves", "enemy_moves", "value_loss",
+                     "predict_loss", "piece_loss", "top1", "top3", "surprise",
+                     "entropy", "true_move_prob"):
+            window = getattr(self, name)
+            data[name] = {"mean": window.mean, "std": window.std, "count": len(window)}
+        data["piece_value"] = {
+            name: {"mean": window.mean, "std": window.std, "count": len(window)}
+            for name, window in self.piece_value.items()
+        }
+        return data

@@ -16,6 +16,7 @@ import torch
 
 import tonkai
 from tonkai.config import Config, add_config_args, config_from_args
+from tonkai.history import RunHistory
 
 _stop = False
 
@@ -35,6 +36,8 @@ def main() -> int:
     ap.add_argument("--no-train", action="store_true", help="self-play only")
     ap.add_argument("--dump-theory", type=str, default=None)
     ap.add_argument("--dump-sacrifices", type=str, default=None)
+    ap.add_argument("--history-dir", default="history", help="per-run JSONL directory")
+    ap.add_argument("--no-history", action="store_true", help="disable run history")
     add_config_args(ap)
     args = ap.parse_args()
 
@@ -64,6 +67,11 @@ def main() -> int:
     os.makedirs(cfg.checkpoint_dir, exist_ok=True)
 
     t0 = time.perf_counter()
+    history = None if args.no_history else RunHistory(
+        args.history_dir, cfg.to_dict(), resume=args.resume,
+        initial_games=trainer.games, no_train=args.no_train)
+    if history:
+        print(f"history: {history.path}")
     played = 0
     for _ in range(args.games):
         if _stop:
@@ -75,6 +83,8 @@ def main() -> int:
         played += 1
 
         if metrics.games % cfg.log_every == 0:
+            if history:
+                history.record(metrics)
             print(metrics.report(
                 f"Replay: {len(trainer.replay):,} value / "
                 f"{len(trainer.predict_replay):,} predict "
@@ -88,6 +98,8 @@ def main() -> int:
             print(f"[checkpoint] {path} @ {metrics.games} games", flush=True)
 
     elapsed = time.perf_counter() - t0
+    if history:
+        history.record(metrics, final=True)
     path = os.path.join(cfg.checkpoint_dir, "latest.pt")
     trainer.save(path)
 

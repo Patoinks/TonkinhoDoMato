@@ -13,8 +13,10 @@ from __future__ import annotations
 import argparse
 import math
 import os
+from pathlib import Path
 
 import chess
+import chess.pgn
 import numpy as np
 import torch
 
@@ -40,6 +42,9 @@ HELP = """
   eval      TonkAI's ranking of every legal move in this position
   pieces    TonkAI's contextual value for each piece on the board
   predict   what TonkAI thinks you are about to play
+  hint      show its most expected reply (a prediction, not strength advice)
+  moves     show the move list
+  pgn [file] print PGN, or export it to a file
   fen       print the FEN
   board     redraw the board
   undo      take back your last move (and TonkAI's reply)
@@ -121,6 +126,42 @@ def show_predict(agent, board, self_color, top=5):
     return moves, probs
 
 
+def game_pgn(board, human, result="*"):
+    game = chess.pgn.Game.from_board(board)
+    game.headers["White"] = "Human" if human == chess.WHITE else "TonkAI"
+    game.headers["Black"] = "Human" if human == chess.BLACK else "TonkAI"
+    game.headers["Result"] = result
+    return game
+
+
+def export_pgn(board, human, path, result="*"):
+    Path(path).write_text(str(game_pgn(board, human, result)) + "\n", encoding="utf-8")
+
+
+def undo_human_turn(board, human, observations):
+    """Undo through the last human move, including an optional TonkAI reply."""
+    if not board.move_stack:
+        return False
+    # A lone opening move by TonkAI (human black) cannot be taken back here.
+    if len(board.move_stack) == 1 and human == chess.BLACK:
+        return False
+    board.pop()
+    while board.move_stack and board.turn != human:
+        board.pop()
+    if observations:
+        observations.pop()
+    return True
+
+
+def print_summary(board, observations, outcome):
+    print(f"\n  {outcome}. {len(board.move_stack)} plies played.")
+    hits = sum(hit for _, hit in observations)
+    print(f"  TonkAI saw {hits} of your {len(observations)} moves coming.")
+    if observations:
+        mean = sum(s for s, _ in observations) / len(observations)
+        print(f"  Mean surprise: {mean:.2f} (lower = it saw you coming)")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Play against TonkAI")
     ap.add_argument("--checkpoint", type=str, default="checkpoints/latest.pt")
@@ -129,6 +170,7 @@ def main() -> int:
     ap.add_argument("--top", type=int, default=8)
     ap.add_argument("--quiet", action="store_true",
                     help="do not show predictions automatically")
+    ap.add_argument("--pgn", help="export PGN on exit, including unfinished games")
     add_config_args(ap)
     args = ap.parse_args()
 
@@ -162,20 +204,28 @@ def main() -> int:
 
     last = None
     pending = None      # (moves, probs) TonkAI's guess about your next move
-    surprises = []
+    observations = []  # (surprise, top1 hit), one per retained human move
+    pgn_result = "*"
+    outcome = "Game unfinished"
 
     while True:
         result, reason = env.terminal(board, tonk, cfg.max_plies)
         if result is not None:
             print("\n" + render(board, human == chess.BLACK, args.unicode, last))
             outcome = {0: "TonkAI wins", 1: "Draw", 2: "You win"}[result]
+            pgn_result = ("1/2-1/2" if result == 1 else
+                          "1-0" if (tonk == chess.WHITE) == (result == 0) else "0-1")
             print(f"\n  *** {outcome} - {reason} ***")
             break
 
         if board.turn == human:
             print("\n" + render(board, human == chess.BLACK, args.unicode, last))
-            if pending is None and not args.quiet:
-                pending = show_predict(agent, board, tonk)
+            if pending is None:
+                if args.quiet:
+                    moves, probs, _ = agent.predict_enemy(board, tonk)
+                    pending = moves, probs
+                else:
+                    pending = show_predict(agent, board, tonk)
 
             try:
                 text = input("\n  your move> ").strip()
@@ -190,6 +240,8 @@ def main() -> int:
                 print("  bye")
                 break
             if low == "resign":
+                outcome = "TonkAI wins by resignation"
+                pgn_result = "1-0" if tonk == chess.WHITE else "0-1"
                 print("  you resign - TonkAI wins")
                 break
             if low == "help":
@@ -199,6 +251,26 @@ def main() -> int:
                 print(f"  {board.fen()}")
                 continue
             if low == "board":
+                continue
+            if low == "moves":
+                print(game_pgn(board, human).mainline())
+                continue
+            if low == "pgn" or low.startswith("pgn "):
+                path = text[3:].strip().strip('"')
+                if path:
+                    try:
+                        export_pgn(board, human, path)
+                        print(f"  PGN written to {path}")
+                    except OSError as error:
+                        print(f"  Could not export PGN: {error}")
+                else:
+                    print(game_pgn(board, human))
+                continue
+            if low == "hint":
+                moves, probs = pending
+                i = int(np.argmax(probs))
+                print(f"  Prediction hint: {board.san(moves[i])} ({probs[i]:.1%}). "
+                      "This is its most expected reply, not a strength evaluation.")
                 continue
             if low == "eval":
                 show_eval(agent, board, tonk, args.top)
@@ -210,9 +282,7 @@ def main() -> int:
                 pending = show_predict(agent, board, tonk)
                 continue
             if low == "undo":
-                if len(board.move_stack) >= 2:
-                    board.pop()
-                    board.pop()
+                if undo_human_turn(board, human, observations):
                     last = board.move_stack[-1] if board.move_stack else None
                     pending = None
                     print("  took back one move each")
@@ -233,7 +303,7 @@ def main() -> int:
                 p = float(probs[idx])
                 rank = int((-probs).argsort().tolist().index(idx)) + 1
                 s = -math.log(max(p, 1e-12))
-                surprises.append(s)
+                observations.append((s, rank == 1))
                 verdict = ("called it" if rank == 1 else
                            f"had it {rank}{'nd' if rank == 2 else 'rd' if rank == 3 else 'th'}")
                 print(f"  TonkAI gave {board.san(mv)} {p:.1%} - {verdict} "
@@ -258,10 +328,14 @@ def main() -> int:
         last = mv
         board.push(mv)
 
-    if surprises:
-        print(f"\n  over {len(surprises)} of your moves, TonkAI's mean surprise "
-              f"was {float(np.mean(surprises)):.2f} "
-              f"(lower = it saw you coming)")
+    print_summary(board, observations, outcome)
+    if args.pgn:
+        try:
+            export_pgn(board, human, args.pgn, pgn_result)
+            print(f"  PGN written to {args.pgn}")
+        except OSError as error:
+            print(f"  Could not export PGN: {error}")
+            return 1
     return 0
 
 
