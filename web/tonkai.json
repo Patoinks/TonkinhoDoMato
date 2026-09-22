@@ -1,0 +1,178 @@
+{
+ "format": "float32-le",
+ "binary": "tonkai.bin",
+ "bytes": 526804,
+ "sha256": "0045f8ecb0045001cd47e489dacc97896fe43bbc3ec11cefa0cc3ad5d5e80a6a",
+ "parameters": 131701,
+ "input_size": 782,
+ "latent_size": 128,
+ "hidden_size": 128,
+ "draw_weight": 0.1,
+ "activation": "silu",
+ "games_trained": 5020,
+ "tensors": [
+  {
+   "name": "encoder.0.weight",
+   "shape": [
+    128,
+    782
+   ],
+   "offset": 0,
+   "count": 100096
+  },
+  {
+   "name": "encoder.0.bias",
+   "shape": [
+    128
+   ],
+   "offset": 400384,
+   "count": 128
+  },
+  {
+   "name": "encoder.2.weight",
+   "shape": [
+    128,
+    128
+   ],
+   "offset": 400896,
+   "count": 16384
+  },
+  {
+   "name": "encoder.2.bias",
+   "shape": [
+    128
+   ],
+   "offset": 466432,
+   "count": 128
+  },
+  {
+   "name": "value_head.0.weight",
+   "shape": [
+    32,
+    128
+   ],
+   "offset": 466944,
+   "count": 4096
+  },
+  {
+   "name": "value_head.0.bias",
+   "shape": [
+    32
+   ],
+   "offset": 483328,
+   "count": 32
+  },
+  {
+   "name": "value_head.2.weight",
+   "shape": [
+    3,
+    32
+   ],
+   "offset": 483456,
+   "count": 96
+  },
+  {
+   "name": "value_head.2.bias",
+   "shape": [
+    3
+   ],
+   "offset": 483840,
+   "count": 3
+  },
+  {
+   "name": "predict_head.0.weight",
+   "shape": [
+    32,
+    128
+   ],
+   "offset": 483852,
+   "count": 4096
+  },
+  {
+   "name": "predict_head.0.bias",
+   "shape": [
+    32
+   ],
+   "offset": 500236,
+   "count": 32
+  },
+  {
+   "name": "predict_head.2.weight",
+   "shape": [
+    1,
+    32
+   ],
+   "offset": 500364,
+   "count": 32
+  },
+  {
+   "name": "predict_head.2.bias",
+   "shape": [
+    1
+   ],
+   "offset": 500492,
+   "count": 1
+  },
+  {
+   "name": "type_embed.weight",
+   "shape": [
+    6,
+    16
+   ],
+   "offset": 500496,
+   "count": 96
+  },
+  {
+   "name": "square_embed.weight",
+   "shape": [
+    64,
+    16
+   ],
+   "offset": 500880,
+   "count": 1024
+  },
+  {
+   "name": "side_embed.weight",
+   "shape": [
+    2,
+    8
+   ],
+   "offset": 504976,
+   "count": 16
+  },
+  {
+   "name": "piece_head.0.weight",
+   "shape": [
+    32,
+    168
+   ],
+   "offset": 505040,
+   "count": 5376
+  },
+  {
+   "name": "piece_head.0.bias",
+   "shape": [
+    32
+   ],
+   "offset": 526544,
+   "count": 32
+  },
+  {
+   "name": "piece_head.2.weight",
+   "shape": [
+    1,
+    32
+   ],
+   "offset": 526672,
+   "count": 32
+  },
+  {
+   "name": "piece_head.2.bias",
+   "shape": [
+    1
+   ],
+   "offset": 526800,
+   "count": 1
+  }
+ ]
+}

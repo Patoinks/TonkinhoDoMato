@@ -1,0 +1,6 @@
+python-chess>=1.11
+numpy>=1.26
+torch>=2.1
+pybind11>=2.11
+setuptools>=68
+pytest>=7.4

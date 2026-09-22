@@ -1,0 +1,9 @@
+build/
+*.pyd
+*.so
+*.pyc
+__pycache__/
+.pytest_cache/
+checkpoints/
+theory_events.json
+sacrifices.json
