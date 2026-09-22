@@ -20,10 +20,13 @@ from collections import deque
 
 # weakest first. (quiescence, depth, nodes, randomness)
 LADDER = [
-    # Measured: even (off, 1, 50, 0.90) beats an untrained net 84% of the time,
-    # so the bottom of the ladder needs to go lower than "weakest sane engine".
-    (False, 1, 20, 2.00),
-    (False, 1, 30, 1.40),
+    # The bottom rung must be WEAK, not INCOHERENT. Two rungs with randomness
+    # 1.4 and 2.0 were tried and removed: an opponent that moves at random
+    # cannot convert a won position and cannot be predicted, so games ran to
+    # 207 plies, 41% ended in stalemate, Predict was fitting noise and got
+    # worse (14.1% -> 13.0% top1), and the contextual piece values separated
+    # LESS than against a weak-but-coherent opponent (queen std 0.06 vs 0.13).
+    # Weaken with depth, nodes and quiescence; keep randomness moderate.
     (False, 1, 50, 0.90),
     (False, 1, 100, 0.80),
     (False, 1, 200, 0.60),
@@ -40,13 +43,18 @@ LADDER = [
 class Curriculum:
     def __init__(self, opponent, start: int = 0, window: int = 200,
                  promote_at: float = 0.55, demote_at: float = 0.15,
-                 patience: int = 200):
+                 patience: int = 200, stagnation: int = 2500):
         self.opponent = opponent
         self.rung = max(0, min(start, len(LADDER) - 1))
         self.window = window
         self.promote_at = promote_at
         self.demote_at = demote_at
         self.patience = patience
+        # A draw-heavy regime parks the score near 0.4 forever: draws count
+        # half, so `promote_at` is unreachable without real wins and the ladder
+        # never moves. Measured: 3000 games pinned at exactly 0.41. If the
+        # score is healthy but static for this long, move up anyway.
+        self.stagnation = stagnation
         self.scores: deque[float] = deque(maxlen=window)
         self.since_change = 0
         self.changes = 0
@@ -82,7 +90,12 @@ class Curriculum:
 
         s = self.score
         old = self.rung
+        stuck = (self.since_change >= self.stagnation
+                 and s > self.demote_at
+                 and self.rung < len(LADDER) - 1)
         if s >= self.promote_at and self.rung < len(LADDER) - 1:
+            self.rung += 1
+        elif stuck:
             self.rung += 1
         elif s <= self.demote_at and self.rung > 0:
             self.rung -= 1
