@@ -93,6 +93,7 @@ def test_safety_changes_policy_without_forbidding_sacrifices(monkeypatch):
     cfg = CognitiveConfig()
     trainer = CognitiveTrainer(cfg)
     agent = CognitiveAgent(trainer.net, cfg, trainer.knowledge)
+    agent.use_fast_rules = False  # this test replaces the Python sense_pieces hook
     monkeypatch.setattr(agent.net, 'survival', lambda contexts: (
         torch.full((len(contexts), cfg.ensemble_size), .5), torch.zeros((len(contexts), cfg.ensemble_size))))
     monkeypatch.setattr(agent, '_robust', lambda *a, **kw: {})

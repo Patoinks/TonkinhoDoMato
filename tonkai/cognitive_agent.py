@@ -5,6 +5,7 @@ import chess
 import numpy as np
 import torch
 
+from . import fast_rules
 from .encoding import encode, encode_after_moves
 from .survival_agent import SurvivalAgent, SurvivalChoice
 from .cognitive_memory import structural_keys
@@ -41,6 +42,10 @@ def terminal_value(board, colour, objective="survival", weight=0.5):
 
 
 class CognitiveAgent(SurvivalAgent):
+    # The C++ rules return exactly what the Python ones do (tests/test_fast_rules.py,
+    # tests/test_fast_agent.py); False keeps the Python reference path.
+    use_fast_rules = fast_rules.AVAILABLE
+
     def __init__(self, net, cfg, knowledge, device="cpu", kd_values=None):
         self.knowledge = knowledge
         # {piece_type: pooled K/D relative to a pawn}, from the learner's
@@ -61,12 +66,13 @@ class CognitiveAgent(SurvivalAgent):
         return structural_keys(x.detach().cpu().numpy(), latent)
 
     @torch.inference_mode()
-    def piece_valuer(self, board, self_color, context=None):
+    def piece_valuer(self, board, self_color, context=None, items=None):
         """Frozen contextual values shared by protection and capture selection."""
         if context is None:
             self.observe(board, self_color)
             context = self.context
-        items = sorted(board.piece_map().items())
+        if items is None:
+            items = sorted(board.piece_map().items())
         pieces = [piece for _, piece in items]
         types = torch.tensor([p.piece_type - 1 for p in pieces], device=self.device)
         squares = torch.tensor([sq if self_color else sq ^ 56 for sq, _ in items], device=self.device)
@@ -122,13 +128,27 @@ class CognitiveAgent(SurvivalAgent):
             return 0.5 if outcome.winner is None else float(outcome.winner == self_color)
         if self.context is None:
             self.observe(board, self_color)
-        king = king_balance(king_senses(board), self_color)
-        senses = self.sense_pieces(board, self_color, self.context)
-        pieces = position_risk(senses, not self_color) - position_risk(senses, self_color)
+        if self.use_fast_rules:
+            fast = fast_rules.board(board)
+            king = fast_rules.king_balance(fast, self_color)
+            own, enemy = self._fast_piece_risks(fast, self_color, self.context)
+            pieces = enemy - own
+        else:
+            king = king_balance(king_senses(board), self_color)
+            senses = self.sense_pieces(board, self_color, self.context)
+            pieces = position_risk(senses, not self_color) - position_risk(senses, self_color)
         return float(np.clip(0.5 + 0.25 * king + 0.25 * pieces, 0.0, 1.0))
 
+    def _fast_piece_risks(self, fast, self_color, context):
+        """(own, enemy) position_risk of piece_senses, for the C++ board's position."""
+        pieces = fast_rules.items(fast)
+        value = self.piece_valuer(None, self_color, context, items=pieces)
+        white, black = fast_rules.piece_risks(fast, value, pieces, tolerance=self.cfg.piece_exchange_tolerance,
+                                              depth=self.cfg.piece_exchange_depth)
+        return (white, black) if self_color else (black, white)
+
     @torch.inference_mode()
-    def _robust(self, board, colour, moves, candidate_memory, values, probabilities, root_indices):
+    def _robust(self, board, colour, moves, candidate_memory, values, probabilities, root_indices, fast=None):
         """Search legal enemy replies, retaining likely and dangerous branches.
 
         Full response previews count against the budget. No UCI engine or engine
@@ -139,15 +159,26 @@ class CognitiveAgent(SurvivalAgent):
         budget, used, changes = cfg.planning_nodes, 0, {}
         root_count = len(root_indices)
         for ordinal, index in enumerate(root_indices):
-            candidate = board.copy(stack=True)
+            if fast is not None:
+                fast.push(fast_rules.code(moves[index]))
+                ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg))
+                if ending is not None:
+                    fast.pop()
+                    changes[index] = ending
+                    continue
+            # Replies and their order depend only on the position, never on history.
+            candidate = board.copy(stack=fast is None)
             candidate.push(moves[index])
-            ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg))
-            if ending is not None:
-                changes[index] = ending
-                continue
+            if fast is None:
+                ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg))
+                if ending is not None:
+                    changes[index] = ending
+                    continue
             replies = list(candidate.legal_moves)
             available = (budget - used) // max(1, root_count - ordinal)
             if available < 1:
+                if fast is not None:
+                    fast.pop()
                 break
             # Force/check/capture coverage plus deterministic diversity within the
             # strict node cap. Diagnostics expose any replies left unexplored.
@@ -155,11 +186,24 @@ class CognitiveAgent(SurvivalAgent):
                 replies.sort(key=lambda move: (not candidate.gives_check(move), not candidate.is_capture(move), move.uci()))
                 self.diagnostics["unsearched_replies"] += len(replies) - available
                 replies = replies[:available]
-            x = torch.from_numpy(encode_after_moves(candidate, replies, colour)).to(self.device)
+            if fast is not None:
+                encoded = fast_rules.encode_after_moves(fast, [fast_rules.code(r) for r in replies], colour)
+            else:
+                encoded = encode_after_moves(candidate, replies, colour)
+            x = torch.from_numpy(encoded).to(self.device)
             contexts, _ = self.net.candidates(x, candidate_memory[index:index + 1])
             reply_values = self.net.survival(contexts)[0].mean(-1).cpu().numpy()
             reply_probabilities = self.net.predict_logits(contexts).softmax(0).cpu().numpy()
             for j, reply in enumerate(replies):
+                if fast is not None:
+                    fast.push(fast_rules.code(reply))
+                    ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg))
+                    if ending is not None:
+                        reply_values[j] = ending
+                    elif cfg.king_safety_weight:
+                        reply_values[j] += cfg.king_safety_weight * fast_rules.king_balance(fast, colour)
+                    fast.pop()
+                    continue
                 candidate.push(reply)
                 ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg))
                 if ending is not None:
@@ -167,6 +211,8 @@ class CognitiveAgent(SurvivalAgent):
                 elif cfg.king_safety_weight:
                     reply_values[j] += cfg.king_safety_weight * king_balance(king_senses(candidate), colour)
                 candidate.pop()
+            if fast is not None:
+                fast.pop()
             used += len(replies)
             # Always include the worst measured reply, even when predicted unlikely.
             selected = list(np.argsort(reply_probabilities)[::-1][:max(1, cfg.planning_replies - 1)])
@@ -187,7 +233,11 @@ class CognitiveAgent(SurvivalAgent):
         moves = list(board.legal_moves)
         if not moves:
             raise ValueError("Cannot select a move in a terminal position")
-        x = torch.from_numpy(encode_after_moves(board, moves, self_color)).to(self.device)
+        fast = fast_rules.board(board) if self.use_fast_rules else None
+        codes = [fast_rules.code(move) for move in moves] if fast is not None else None
+        encoded = (fast_rules.encode_after_moves(fast, codes, self_color) if fast is not None
+                   else encode_after_moves(board, moves, self_color))
+        x = torch.from_numpy(encoded).to(self.device)
         contexts, memories = self.net.candidates(x, self.memory)
         heads, logvars = self.net.survival(contexts)
         mean = heads.mean(-1).cpu().numpy()
@@ -212,16 +262,30 @@ class CognitiveAgent(SurvivalAgent):
         king_bonuses = np.zeros(len(moves))
         if self.cfg.piece_safety_weight:
             for index, move in enumerate(moves):
-                branch = board.copy(stack=False)
-                branch.push(move)
-                senses = self.sense_pieces(branch, self_color, contexts[index:index + 1])
-                own_risk = position_risk(senses, self_color)
-                enemy_risk = position_risk(senses, not self_color)
+                if fast is not None:
+                    fast.push(codes[index])
+                    own_risk, enemy_risk = self._fast_piece_risks(fast, self_color, contexts[index:index + 1])
+                    fast.pop()
+                else:
+                    branch = board.copy(stack=False)
+                    branch.push(move)
+                    senses = self.sense_pieces(branch, self_color, contexts[index:index + 1])
+                    own_risk = position_risk(senses, self_color)
+                    enemy_risk = position_risk(senses, not self_color)
                 scores[index] += self.cfg.piece_safety_weight * (enemy_risk - own_risk)
                 safety.append({"own_risk": own_risk, "enemy_risk": enemy_risk})
             self.diagnostics["piece_safety_positions"] += len(moves)
         if self.cfg.king_safety_weight:
             for index, move in enumerate(moves):
+                if fast is not None:
+                    # Risks only; the chosen move's full senses are rebuilt for its trace.
+                    fast.push(codes[index])
+                    white, black = fast.king_risks()
+                    fast.pop()
+                    senses = {"w": {"risk": white}, "b": {"risk": black}}
+                    king_bonuses[index] = self.cfg.king_safety_weight * king_balance(senses, self_color)
+                    kings.append(senses)
+                    continue
                 branch = board.copy(stack=False)
                 branch.push(move)
                 senses = king_senses(branch)
@@ -236,7 +300,7 @@ class CognitiveAgent(SurvivalAgent):
         king_pressure = bool(kings) and any(row['risk'] > .1 for row in kings[order[0]].values())
         if danger or uncertain or gap <= self.cfg.planning_gap or king_pressure:
             root_indices = order[:self.cfg.planning_candidates]
-            revised = self._robust(board, self_color, moves, memories, mean, None, root_indices)
+            revised = self._robust(board, self_color, moves, memories, mean, None, root_indices, fast)
             for index, value in revised.items():
                 # Replace immediate king pressure by pressure AFTER the reply;
                 # do not keep rewarding an attack the opponent has neutralized.
@@ -253,13 +317,19 @@ class CognitiveAgent(SurvivalAgent):
         if safety or kings or self.cfg.objective in ("victory", "shaped"):
             scores = np.minimum(scores, .999999)
         for index, move in enumerate(moves):
-            branch = board.copy(stack=True)
-            branch.push(move)
-            ending = terminal_value(branch, self_color, self.cfg.objective, victory_weight(self.cfg))
+            if fast is not None:
+                fast.push(codes[index])
+                ending = fast_rules.terminal_value(fast, self_color, self.cfg.objective, victory_weight(self.cfg))
+                fast.pop()
+            else:
+                branch = board.copy(stack=True)
+                branch.push(move)
+                ending = terminal_value(branch, self_color, self.cfg.objective, victory_weight(self.cfg))
             if ending is not None:
                 scores[index] = ending
         self._evaluation = {"keys": keys, "retrieved": retrieved, "uncertainty": uncertainty,
-                            "information": information, "gap": gap, "piece_safety": safety, "king_safety": kings}
+                            "information": information, "gap": gap, "piece_safety": safety, "king_safety": kings,
+                            "fast": fast, "codes": codes}
         return SurvivalChoice(moves, scores, mean, epistemic, aleatoric, information)
 
     @torch.inference_mode()
@@ -290,10 +360,17 @@ class CognitiveAgent(SurvivalAgent):
         winning = []
         if self.cfg.objective in ("victory", "shaped"):
             # A real checkmate is the maximum under both; always take it.
+            fast = self._evaluation["fast"]
             for index, move in enumerate(choice.moves):
-                branch = board.copy(stack=True)
-                branch.push(move)
-                if terminal_value(branch, self_color, "victory") == 1:
+                if fast is not None:
+                    fast.push(self._evaluation["codes"][index])
+                    wins = fast_rules.terminal_value(fast, self_color, "victory") == 1
+                    fast.pop()
+                else:
+                    branch = board.copy(stack=True)
+                    branch.push(move)
+                    wins = terminal_value(branch, self_color, "victory") == 1
+                if wins:
                     winning.append(index)
         if winning:
             choice.index = winning[0]
@@ -312,6 +389,11 @@ class CognitiveAgent(SurvivalAgent):
         if self._evaluation.get("piece_safety"):
             self.trace[-1]["piece_safety"] = self._evaluation["piece_safety"][choice.index]
         if self._evaluation.get("king_safety"):
-            self.trace[-1]["king_safety"] = self._evaluation["king_safety"][choice.index]
+            senses = self._evaluation["king_safety"][choice.index]
+            if self._evaluation["fast"] is not None:
+                branch = board.copy(stack=False)
+                branch.push(choice.move)
+                senses = king_senses(branch)
+            self.trace[-1]["king_safety"] = senses
         self.diagnostics["retrieval_hits"] += int(self._evaluation["retrieved"]["support"][choice.index] > 0)
         return choice
