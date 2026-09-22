@@ -16,6 +16,7 @@ import torch
 
 import tonkai
 from tonkai.config import Config, add_config_args, config_from_args
+from tonkai.curriculum import Curriculum
 from tonkai.history import RunHistory
 
 _stop = False
@@ -38,6 +39,11 @@ def main() -> int:
     ap.add_argument("--dump-sacrifices", type=str, default=None)
     ap.add_argument("--history-dir", default="history", help="per-run JSONL directory")
     ap.add_argument("--no-history", action="store_true", help="disable run history")
+    ap.add_argument("--curriculum", action="store_true",
+                    help="move the opponent up/down a strength ladder so TonkAI's "
+                         "result signal stays informative")
+    ap.add_argument("--curriculum-start", type=int, default=0)
+    ap.add_argument("--curriculum-window", type=int, default=200)
     add_config_args(ap)
     args = ap.parse_args()
 
@@ -72,12 +78,22 @@ def main() -> int:
         initial_games=trainer.games, no_train=args.no_train)
     if history:
         print(f"history: {history.path}")
+    curriculum = None
+    if args.curriculum:
+        curriculum = Curriculum(opponent, start=args.curriculum_start,
+                                window=args.curriculum_window)
+        print(f"curriculum: starting at {curriculum.describe()}")
+
     played = 0
     for _ in range(args.games):
         if _stop:
             break
         record = worker.play_game()
         trainer.add_game(record)
+        if curriculum is not None:
+            msg = curriculum.update(record.result, metrics.games)
+            if msg:
+                print(msg, flush=True)
         if not args.no_train:
             trainer.train(cfg.updates_per_game)
         played += 1
@@ -85,11 +101,13 @@ def main() -> int:
         if metrics.games % cfg.log_every == 0:
             if history:
                 history.record(metrics)
-            print(metrics.report(
-                f"Replay: {len(trainer.replay):,} value / "
-                f"{len(trainer.predict_replay):,} predict "
-                f"(truncated {trainer.predict_replay.truncated})"
-            ))
+            extra = (f"Replay: {len(trainer.replay):,} value / "
+                     f"{len(trainer.predict_replay):,} predict "
+                     f"(truncated {trainer.predict_replay.truncated})")
+            if curriculum is not None:
+                extra += ("\n" + f"Opponent: {curriculum.describe()}   "
+                          f"recent score {curriculum.score:.2f}")
+            print(metrics.report(extra))
             print("-" * 64, flush=True)
 
         if cfg.checkpoint_every and metrics.games % cfg.checkpoint_every == 0:

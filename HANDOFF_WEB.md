@@ -29,7 +29,14 @@ If the model plays a weak move, that is data, not a bug. Show it.
 
 ## What to build
 
-A `/tonkai` page on `C:\Users\Martim\Desktop\Github\ANW-GAMES-WEBSITE`.
+A `/tonkai` page, built in the git worktree
+`C:\Users\Martim\Desktop\Github\ANW-TONKAI-PAGE`, branch `tonkai-page`.
+
+**Work in that worktree, not in `ANW-GAMES-WEBSITE`.** The main checkout has
+the owner's uncommitted work in it and must not be touched. The worktree is a
+clean checkout of `main` at `f3daf8f`; `node_modules` is not there yet, so run
+`npm install` first. Commit your work on `tonkai-page`; do not merge to `main`
+and do not push.
 
 Stack already there: React 19, Vite 7, TypeScript, react-router-dom 7,
 Firebase (Firestore). Pages live in `src/pages`, follow how
@@ -130,11 +137,39 @@ A better checkpoint is coming and is a drop-in replacement - the page must load
 the weights at runtime and key the metrics on `weights_sha256`, so a swap does
 not mix statistics from two different models.
 
-## Do not touch
+## Second job: local improvements in the TonkAI repo
 
-The `TonkAI` repo is being worked on concurrently by another agent. Read from
-`TonkAI\web\` and `TonkAI\README.md`; **write nothing** inside `TonkAI`. All
-your changes go in `ANW-GAMES-WEBSITE`.
+`C:\Users\Martim\Desktop\Github\TonkAI` is a git repo at commit `4455d88`,
+clean. You own these there:
+
+1. **Better metrics.** `tonkai/metrics.py` already tracks W/D/L, losses,
+   predict top1/top3, surprise, entropy, piece-value mean/std and timers.
+   Missing and wanted: per-run history written to CSV or JSONL so runs can be
+   compared and plotted afterwards, plus a small script that plots it. Keep
+   logging cheap - it runs inside the game loop.
+2. **`play.py` polish.** It works (human vs TonkAI in the terminal, shows the
+   predict distribution and the surprise). Worth adding: move list / PGN
+   export, a `hint` command, a clearer end-of-game summary.
+3. **Elo anchoring.** `calibrate_opponent.py` produces only *relative* numbers
+   today. If you can anchor TinyOpponent against a reference of known strength,
+   add it as an **optional** mode (`--anchor ...`) that is skipped when the
+   reference is absent. Never make it a required dependency, and never let any
+   reference engine touch TonkAI's training - it may only ever measure
+   TinyOpponent.
+
+### Hard limits in the TonkAI repo
+
+* **Do not change `tonkai/encoding.py`, `tonkai/model.py`, or any tensor name
+  or shape.** The exported weights, `golden.json` and the whole web port depend
+  on them. Changing the encoding silently invalidates everything.
+* **Do not retrain or overwrite `checkpoints/latest.pt`.** Another agent is
+  working on the training signal in parallel.
+* `python -m pytest` must stay green - 84 tests pass right now. Run it before
+  you finish.
+* Commit your work with clear messages. Never force-push or rewrite history.
+
+If you conclude the encoding or the model must change, stop and say so in your
+final summary instead of doing it.
 
 ## Done means
 
