@@ -50,6 +50,7 @@ class Trainer:
         self.games = 0
         self.steps = 0
         self.predict_batch_size = max(32, cfg.batch_size // 8)
+        self._probe_shape = None
 
     # -------------------------------------------------------------- ingest
 
@@ -97,7 +98,14 @@ class Trainer:
         u_orig = p[:, 0] + dw * p[:, 1] - p[:, 2]
 
         # candidate squares: any piece that is not a king
-        planes = x_np[:, :PLANE_SIZE].reshape(b, 12, 64).copy()
+        if self._probe_shape != (b, PLANE_SIZE):
+            self._probe_shape = (b, PLANE_SIZE)
+            self._probe_planes = np.empty(self._probe_shape, dtype=np.float32)
+            self._probe_random = np.empty(self._probe_shape, dtype=np.float64)
+            self._probe_scores = np.empty(self._probe_shape, dtype=np.float32)
+            self._probe_rows = np.arange(b)
+        np.copyto(self._probe_planes, x_np[:, :PLANE_SIZE])
+        planes = self._probe_planes.reshape(b, 12, 64)
         for kp in KING_PLANES:
             planes[:, kp, :] = 0.0
         flat = planes.reshape(b, PLANE_SIZE)
@@ -106,9 +114,14 @@ class Trainer:
         used = 0
         for _ in range(cfg.pieces_per_position):
             # pick a uniformly random *set* bit per row, without a Python loop
-            scores = self.rng.random((b, PLANE_SIZE)).astype(np.float32) * flat
+            # Keep float64 RNG generation, then float32 rounding BEFORE multiply.
+            # Generating float32 randoms would consume a different RNG stream.
+            self.rng.random(out=self._probe_random)
+            np.copyto(self._probe_scores, self._probe_random)
+            np.multiply(self._probe_scores, flat, out=self._probe_scores)
+            scores = self._probe_scores
             idx = scores.argmax(axis=1)
-            valid = flat[np.arange(b), idx] > 0
+            valid = flat[self._probe_rows, idx] > 0
             if not valid.any():
                 continue
 
@@ -149,13 +162,11 @@ class Trainer:
         if len(self.predict_replay) < 64:
             return torch.zeros((), device=self.device)
         b = min(self.predict_batch_size, len(self.predict_replay))
-        x_np, mask_np, true_np = self.predict_replay.sample(b)
-        k = x_np.shape[1]
+        x_np, mask_np, true_np = self.predict_replay.sample_valid(b)
+        k = mask_np.shape[1]
 
         flat_mask = mask_np.reshape(-1)
-        xv = torch.from_numpy(
-            x_np.reshape(-1, INPUT_SIZE)[flat_mask]
-        ).to(self.device)
+        xv = torch.from_numpy(x_np).to(self.device)
         logits_valid = self.net.predict_logits(self.net.encode(xv))
 
         full = torch.full((b * k,), -1e9, device=self.device, dtype=logits_valid.dtype)

@@ -53,10 +53,10 @@
       },
       "timing_breakdown": "  training              3.6s   61.0%\n  actor_wait            1.7s   29.1%\n  actor_stop            0.6s    9.4%\n  actor_start           0.0s    0.5%\n  weight_publish        0.0s    0.1%\n  env                   0.0s    0.0%\n  inference             0.0s    0.0%\n  opponent              0.0s    0.0%",
       "actor_times": {
-        "weight_load": 0.021345999994082376,
-        "env": 3.949251099387766,
-        "inference": 3.242993100473541,
-        "opponent": 2.2255172001969186
+        "weight_load": 0.014870600018184632,
+        "env": 2.0946696996179526,
+        "inference": 2.359354900116159,
+        "opponent": 1.1711758001256385
       }
     }
   },

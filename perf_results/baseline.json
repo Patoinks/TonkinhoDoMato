@@ -12,7 +12,7 @@
         "opponent": 0.8395776001561899,
         "training": 3.498255299993616
       },
-      "timing_breakdown": "  training              5.8s   43.8%\n  inference             2.9s   21.8%\n  env                   2.9s   21.6%\n  opponent              1.7s   12.8%"
+      "timing_breakdown": "  training              3.5s   49.1%\n  env                   1.4s   19.9%\n  inference             1.4s   19.1%\n  opponent              0.8s   11.8%"
     }
   },
   "batch_size": 512,

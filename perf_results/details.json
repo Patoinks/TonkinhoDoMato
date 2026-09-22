@@ -1,0 +1,56 @@
+{
+  "probe": {
+    "512": {
+      "old_ms": 2.032277999969665,
+      "scratch_ms": 0.863312000001315
+    },
+    "2048": {
+      "old_ms": 8.005735000042478,
+      "scratch_ms": 3.6851219999516616
+    }
+  },
+  "refresh": {
+    "1": {
+      "games_s": 25.5232102118337,
+      "positions_s": 38955.08317703576,
+      "wall_s": 7.052404399997613,
+      "warmup_and_start_s": 2.552364499999385,
+      "publications": 180,
+      "times": {
+        "weight_publish": 0.17790749997948296,
+        "actor_start": 0.0,
+        "actor_wait": 0.09713170000031823,
+        "training": 6.705111999966903
+      },
+      "timing_breakdown": "  training              6.7s   96.1%\n  weight_publish        0.2s    2.5%\n  actor_wait            0.1s    1.4%\n  actor_start           0.0s    0.0%"
+    },
+    "20": {
+      "games_s": 30.126577820938817,
+      "positions_s": 46413.173160815124,
+      "wall_s": 5.9747907999990275,
+      "warmup_and_start_s": 2.227299400001357,
+      "publications": 9,
+      "times": {
+        "weight_publish": 0.008675399993080646,
+        "actor_start": 0.0,
+        "actor_wait": 0.3253120000299532,
+        "training": 5.571643300070718
+      },
+      "timing_breakdown": "  training              5.6s   94.3%\n  actor_wait            0.3s    5.5%\n  weight_publish        0.0s    0.1%\n  actor_start           0.0s    0.0%"
+    },
+    "100": {
+      "games_s": 25.97690367518372,
+      "positions_s": 39777.42238488813,
+      "wall_s": 6.929232299997238,
+      "warmup_and_start_s": 2.328449399996316,
+      "publications": 2,
+      "times": {
+        "weight_publish": 0.0020414999962667935,
+        "actor_start": 0.0,
+        "actor_wait": 0.9974351000782917,
+        "training": 5.856415200061747
+      },
+      "timing_breakdown": "  training              5.9s   85.4%\n  actor_wait            1.0s   14.5%\n  weight_publish        0.0s    0.0%\n  actor_start           0.0s    0.0%"
+    }
+  }
+}

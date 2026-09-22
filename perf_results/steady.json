@@ -1,0 +1,28 @@
+{
+  "1": {
+    "games_s": 11.938911930547533,
+    "positions_s": 17559.08839456428,
+    "wall_s": 15.07675079999899,
+    "warmup_and_start_s": 1.8503544999985024,
+    "times": {
+      "env": 4.5638835998106515,
+      "inference": 1.5001014001536532,
+      "opponent": 2.7197704001373495,
+      "training": 5.480541600030847
+    },
+    "timing_breakdown": "  training              5.5s   38.4%\n  env                   4.6s   32.0%\n  opponent              2.7s   19.1%\n  inference             1.5s   10.5%"
+  },
+  "4": {
+    "games_s": 24.177966922308958,
+    "positions_s": 35598.026631946224,
+    "wall_s": 7.444794700000784,
+    "warmup_and_start_s": 2.605370099998254,
+    "times": {
+      "weight_publish": 0.009414299987838604,
+      "actor_start": 0.0,
+      "actor_wait": 0.06223139997018734,
+      "training": 7.296938299994508
+    },
+    "timing_breakdown": "  training              7.3s   99.0%\n  actor_wait            0.1s    0.8%\n  weight_publish        0.0s    0.1%\n  actor_start           0.0s    0.0%"
+  }
+}

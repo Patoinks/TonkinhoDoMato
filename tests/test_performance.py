@@ -88,3 +88,50 @@ def test_cpu_inference_replica_tracks_training_and_load(tmp_path):
     tr.load(path)
     for key,value in net.state_dict().items():
         assert torch.equal(value.cpu(),agent.net.state_dict()[key])
+
+def test_valid_predict_sampling_preserves_bytes_and_rng():
+    import numpy as np
+    from tonkai.replay import PredictBuffer
+    from tonkai.encoding import pack, encode
+    import chess
+    old=PredictBuffer(10,48,np.random.default_rng(23))
+    new=PredictBuffer(10,48,np.random.default_rng(23))
+    row=pack(encode(chess.Board(),True))
+    for n in [1,2,17,48,64]:
+        for buffer in [old,new]:buffer.add(np.tile(row,(n,1)),n-1)
+    x,mask,truth=old.sample(32)
+    valid,new_mask,new_truth=new.sample_valid(32)
+    assert x[mask].tobytes()==valid.tobytes()
+    assert mask.tobytes()==new_mask.tobytes()
+    assert truth.tobytes()==new_truth.tobytes()
+    assert old.rng.bit_generator.state == new.rng.bit_generator.state
+
+def test_vectorized_pack_matches_every_clock_and_orientation():
+    import numpy as np,chess
+    from tonkai.encoding import encode,pack,pack_many,INPUT_SIZE
+    from export_web import GOLDEN_FENS
+    rows=[]
+    for _,fen,_ in GOLDEN_FENS:
+        b=chess.Board(fen)
+        for clock in range(101):
+            b.halfmove_clock=clock
+            for color in [True,False]:rows.append(encode(b,color))
+    x=np.stack(rows)
+    assert pack_many(x).tobytes()==np.stack([pack(row) for row in x]).tobytes()
+    assert pack_many(np.empty((0,INPUT_SIZE),dtype=np.float32)).shape==(0,99)
+
+def test_piece_probe_preserves_float64_rng_and_rounding():
+    import numpy as np,torch,chess
+    from tonkai.encoding import encode,PLANE_SIZE
+    cfg=Config(device='cpu',pieces_per_position=3)
+    net,_,_,_,tr,_=tonkai.build(cfg)
+    for count in [3,7,3]:
+        x_np=np.tile(encode(chess.Board(),True),(count,1))
+        flat=x_np[:,:PLANE_SIZE].copy().reshape(count,12,64)
+        flat[:,[5,11]]=0;flat=flat.reshape(count,PLANE_SIZE)
+        rng=np.random.default_rng();rng.bit_generator.state=tr.rng.bit_generator.state
+        for _ in range(3):expected=rng.random((count,PLANE_SIZE)).astype(np.float32)*flat
+        x=torch.from_numpy(x_np);latent=net.encode(x);vlogits=net.value_logits(latent)
+        tr._piece_loss(x,x_np,latent,vlogits)
+        assert tr._probe_scores.tobytes()==expected.tobytes()
+        assert tr.rng.bit_generator.state==rng.bit_generator.state

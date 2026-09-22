@@ -25,6 +25,7 @@ from .encoding import (
     encode_into,
     oriented_square,
     pack_into,
+    pack_many,
 )
 from .model import TonkAINet, probabilities, utility
 from .theory_buffer import SacrificeEvent, TheoryEvent
@@ -167,8 +168,7 @@ class TonkAIAgent:
 class GameWorker:
     """Plays one game at a time and hands back everything worth keeping.
 
-    `num_workers > 1` will eventually mean several of these feeding one
-    replay buffer; the class is already self-contained for that.
+    `num_workers > 1` runs these in CPU actor processes feeding one learner.
     """
 
     def __init__(self, agent: TonkAIAgent, opponent, cfg: Config,
@@ -308,9 +308,7 @@ class GameWorker:
         m.top3.add(1.0 if rank < 3 else 0.0)
 
         if collect:
-            packed = np.empty((len(enemy_moves), PACKED_SIZE), dtype=np.uint8)
-            for i in range(len(enemy_moves)):
-                pack_into(ex[i], packed[i])
+            packed = pack_many(ex)
             predict_samples.append((packed, true_index))
             # the position the opponent just created is already encoded: keep
             # it for the value head, free of charge

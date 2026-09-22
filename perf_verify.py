@@ -31,6 +31,8 @@ def run(label):
         cfg.num_workers=workers
         if workers > 1: tr.inference_net = net
         times=dict(m.times); pos=m.tonkai_positions
+        actor_before=dict(getattr(m,"actor_times",{}))
+        refresh_before=getattr(m,"inference_refresh_seconds",0.0)
         start=time.perf_counter()
         if workers==1:
             for _ in range(60): tr.add_game(w.play_game()); tr.train(cfg.updates_per_game)
@@ -42,7 +44,7 @@ def run(label):
         dt=time.perf_counter()-start
         from tonkai.metrics import Metrics
         delta=Metrics(); delta.times.update({k:v-times.get(k,0) for k,v in m.times.items()})
-        result['workers'][workers]={'games_s':60/dt,'positions_s':(m.tonkai_positions-pos)/dt,'wall_s':dt,'times':{k:v-times.get(k,0) for k,v in m.times.items()},'timing_breakdown':delta.timing_breakdown(),'actor_times':dict(getattr(m,'actor_times',{}))}
+        result['workers'][workers]={'games_s':60/dt,'positions_s':(m.tonkai_positions-pos)/dt,'wall_s':dt,'times':{k:v-times.get(k,0) for k,v in m.times.items()},'timing_breakdown':delta.timing_breakdown(),'actor_times':{k:v-actor_before.get(k,0) for k,v in getattr(m,'actor_times',{}).items()},'inference_refresh_s':getattr(m,'inference_refresh_seconds',0.0)-refresh_before}
     subprocess.run([sys.executable,'export_web.py','--checkpoint','checkpoints/deployed_5020games.pt','--out',str(OUT/'export')],check=True,stdout=subprocess.DEVNULL)
     assert json.loads((OUT/'export/golden.json').read_text())==json.loads(Path('web/golden.json').read_text())
     if label!='baseline':

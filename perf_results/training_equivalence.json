@@ -1,0 +1,10 @@
+{
+  "cpu": {
+    "five_trained_games_sha256": "e8406f95cb0db1df2dbba13e73305f2ef13e47e73578d33f16f6f43c8ba8fffc",
+    "parameters_bit_identical": true
+  },
+  "cuda": {
+    "five_trained_games_sha256": "e8406f95cb0db1df2dbba13e73305f2ef13e47e73578d33f16f6f43c8ba8fffc",
+    "parameters_bit_identical": true
+  }
+}

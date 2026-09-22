@@ -119,3 +119,11 @@ class PredictBuffer:
         counts = self.count[idx].astype(np.int64)
         mask = np.arange(self.k)[None, :] < counts[:, None]
         return x, mask, self.true_idx[idx].astype(np.int64)
+
+    def sample_valid(self, batch_size: int):
+        """Decode only present candidates, in the same row order as sample()."""
+        idx = self.rng.integers(0, self.size, size=batch_size)
+        mask = np.arange(self.k)[None, :] < self.count[idx, None]
+        rows, cols = np.nonzero(mask)
+        x = unpack_many(self.cand[idx[rows], cols])
+        return x, mask, self.true_idx[idx].astype(np.int64)

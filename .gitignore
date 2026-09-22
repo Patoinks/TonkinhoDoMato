@@ -9,3 +9,6 @@ theory_events.json
 sacrifices.json
 history/
 .test-tmp*/
+
+perf_results/pytest*/
+perf_results/export/

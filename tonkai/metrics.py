@@ -193,6 +193,8 @@ class Metrics:
             "sacrifices": self.sacrifices,
             "theory_events": self.theory_events,
             "times": dict(self.times),
+            "actor_times": dict(getattr(self, "actor_times", {})),
+            "inference_refresh_seconds": getattr(self, "inference_refresh_seconds", 0.0),
             "termination": dict(self.termination),
         }
 

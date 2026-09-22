@@ -272,3 +272,11 @@ remain in-process and repeatable under a seed. CPU/GPU floating-point results
 can differ slightly, so device changes are not a promise of identical training
 trajectories. `inference_refresh_seconds` measures copy cost already included in
 training time. Parallel actors were already CPU-only in step 2.
+
+Performance verification scripts and raw measurements are in `perf_*.py` and
+`perf_results/`. See `PERFORMANCE.md` for the measurement conditions, comparisons,
+wall-time breakdowns, and regressions. Run tests with a fresh writable temp path:
+`python -m pytest --basetemp=perf_results/pytest-local -p no:cacheprovider`.
+The vectorized packing preserves all 99 bytes, including float64 clock rounding;
+valid-only predict sampling keeps candidate order and RNG draws. Piece scratch
+reuse retains float64 random generation followed by float32 rounding.

@@ -1,0 +1,69 @@
+{
+  "encoding": "2b5d2e061e5d446ffa6882821e91c49b44acdef433f9ebae3f27d73683447796",
+  "game": "9b54d942fbb7150c7a74793f826160c914e5dd024fc648fa1e16c85e09e0a6a3",
+  "workers": {
+    "1": {
+      "games_s": 12.218457217761456,
+      "positions_s": 17159.194034716933,
+      "wall_s": 4.9106036000011954,
+      "times": {
+        "env": 1.4328079001425067,
+        "inference": 0.48201869977492606,
+        "opponent": 0.869966300073429,
+        "training": 1.8602686000449467
+      },
+      "timing_breakdown": "  training              1.9s   40.0%\n  env                   1.4s   30.8%\n  opponent              0.9s   18.7%\n  inference             0.5s   10.4%",
+      "actor_times": {},
+      "inference_refresh_s": 0.05873849999625236
+    },
+    "2": {
+      "games_s": 13.993401784549707,
+      "positions_s": 21215.862892281963,
+      "wall_s": 4.287735099998827,
+      "times": {
+        "env": 0.0,
+        "inference": 0.0,
+        "opponent": 0.0,
+        "training": 1.970091000002867,
+        "weight_publish": 0.004706599997007288,
+        "actor_start": 0.012754700001096353,
+        "actor_wait": 1.830278899964469,
+        "actor_stop": 0.436000999994576
+      },
+      "timing_breakdown": "  training              2.0s   46.3%\n  actor_wait            1.8s   43.0%\n  actor_stop            0.4s   10.2%\n  actor_start           0.0s    0.3%\n  weight_publish        0.0s    0.1%\n  env                   0.0s    0.0%\n  inference             0.0s    0.0%\n  opponent              0.0s    0.0%",
+      "actor_times": {
+        "weight_load": 0.009446300005947705,
+        "env": 1.977055599913001,
+        "inference": 1.024433999955363,
+        "opponent": 1.089873099932447
+      },
+      "inference_refresh_s": 0.0
+    },
+    "4": {
+      "games_s": 13.929589084544885,
+      "positions_s": 22461.462398828626,
+      "wall_s": 4.307377600001928,
+      "times": {
+        "env": 0.0,
+        "inference": 0.0,
+        "opponent": 0.0,
+        "training": 2.1013941999772214,
+        "weight_publish": 0.004339900013292208,
+        "actor_start": 0.022500400002172682,
+        "actor_wait": 1.6479317000412266,
+        "actor_stop": 0.506089599999541
+      },
+      "timing_breakdown": "  training              2.1s   49.1%\n  actor_wait            1.6s   38.5%\n  actor_stop            0.5s   11.8%\n  actor_start           0.0s    0.5%\n  weight_publish        0.0s    0.1%\n  env                   0.0s    0.0%\n  inference             0.0s    0.0%\n  opponent              0.0s    0.0%",
+      "actor_times": {
+        "weight_load": 0.019263599991973024,
+        "env": 2.0854833999546827,
+        "inference": 2.825382900344266,
+        "opponent": 1.2168743000293034
+      },
+      "inference_refresh_s": 0.0
+    }
+  },
+  "batch_size": 512,
+  "updates": 1,
+  "learner_ms_game": 25.341546666701714
+}

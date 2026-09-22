@@ -119,6 +119,16 @@ def pack_into(vec: np.ndarray, out: np.ndarray) -> None:
     out[PACK_BITS_BYTES] = int(round(float(vec[OFF_HALFMOVE]) * 100.0))
 
 
+def pack_many(vectors: np.ndarray) -> np.ndarray:
+    """Vectorized pack_into, including its float64 rounding of the clock."""
+    out = np.empty((len(vectors), PACKED_SIZE), dtype=np.uint8)
+    out[:, :PACK_BITS_BYTES] = np.packbits(
+        vectors[:, :N_BINARY].astype(np.uint8), axis=1, bitorder="little")
+    out[:, PACK_BITS_BYTES] = np.rint(
+        vectors[:, OFF_HALFMOVE].astype(np.float64) * 100.0).astype(np.uint8)
+    return out
+
+
 def unpack_many(packed: np.ndarray) -> np.ndarray:
     """(N, 99) bytes -> (N, 782) float32."""
     packed = np.atleast_2d(packed)

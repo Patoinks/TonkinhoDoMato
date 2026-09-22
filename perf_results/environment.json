@@ -1,0 +1,8 @@
+{
+  "python": "3.13.14",
+  "torch": "2.11.0+cu128",
+  "numpy": "2.5.2",
+  "gpu": "NVIDIA GeForce RTX 5060 Ti",
+  "torch_threads": 6,
+  "logical_cpus": 12
+}
