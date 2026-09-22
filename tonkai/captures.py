@@ -24,6 +24,9 @@ from .encoding import OFF_STM, PIECE_NAMES, unpack_many
 
 MAX_TARGET = 255
 OUTCOMES = ("win", "draw", "loss", "resigned", "unfinished")
+# Owner's rule for a piece's measured value: equal parts of the three measures,
+# each pooled over both sides and taken relative to a pawn.
+VALUE_MEASURES = ("kd", "mobility", "threats")
 
 
 def _captured_square(board: chess.Board, move: chess.Move) -> int:
@@ -83,6 +86,44 @@ def track(moves, initial_fen: str | None = None):
     return snapshots, capturer, events, board
 
 
+def activity(moves, snapshots, initial_fen: str | None = None):
+    """Per-type activity sums for both colours, from the rules only.
+
+    Sampled in every position for the side to move, kings excluded:
+      * mobility: legal destination squares of a piece, counted only once that
+        piece has made its first move (an unmoved piece is not sampled)
+      * threats: enemy pieces (not the king) it attacks that are defended
+
+    Returns ``{colour: {"mobility": Counter, "mobility_n": Counter,
+    "threats": Counter, "threats_n": Counter}}`` keyed by piece type.
+    """
+    board = chess.Board(initial_fen or chess.STARTING_FEN)
+    out = {colour: {key: Counter() for key in ("mobility", "mobility_n", "threats", "threats_n")}
+           for colour in (chess.WHITE, chess.BLACK)}
+    moved: set[int] = set()
+    for k, move in enumerate(moves):
+        if isinstance(move, str):
+            move = chess.Move.from_uci(move)
+        turn, rows = board.turn, out[board.turn]
+        destinations = Counter(m.from_square for m in board.legal_moves)
+        enemy = board.occupied_co[not turn]
+        own = board.occupied_co[turn] & ~board.kings
+        for square in chess.SquareSet(own):
+            kind = board.piece_type_at(square)
+            if snapshots[k][square] in moved:
+                rows["mobility"][kind] += destinations[square]
+                rows["mobility_n"][kind] += 1
+            threats = 0
+            for target in chess.SquareSet(board.attacks_mask(square) & enemy & ~board.kings):
+                if board.is_attacked_by(not turn, target):
+                    threats += 1
+            rows["threats"][kind] += threats
+            rows["threats_n"][kind] += 1
+        moved.add(snapshots[k][move.from_square])
+        board.push(move)
+    return out
+
+
 def capture_targets(snapshots, capturer, owner_color: bool) -> np.ndarray:
     """(T, 64) uint8: future captures of the piece on each square, per state.
 
@@ -130,12 +171,20 @@ class CaptureStats:
         self.hot_captures = Counter()                  # victim type -> count
         self.after_hot = Counter()                      # outcome -> games
         self.without_hot = Counter()
+        # side -> measure -> piece name -> sum / sample count (see ``activity``)
+        self.activity = {side: {key: Counter() for key in ("mobility", "mobility_n", "threats", "threats_n")}
+                         for side in ("self", "opponent")}
 
     def add(self, moves, self_color: bool, outcome: str, initial_fen: str | None = None):
         if outcome not in OUTCOMES:
             raise ValueError(f"unknown outcome {outcome!r}")
-        _, _, events, _ = track(moves, initial_fen)
+        snapshots, _, events, _ = track(moves, initial_fen)
         self.games += 1
+        for colour, rows in activity(moves, snapshots, initial_fen).items():
+            side = "self" if colour == self_color else "opponent"
+            for key, counter in rows.items():
+                for kind, value in counter.items():
+                    self.activity[side][key][PIECE_NAMES[kind - 1]] += value
         hot = False
         for event in events:
             killer = "self" if event["capturer_color"] == self_color else "opponent"
@@ -166,6 +215,36 @@ class CaptureStats:
             return None
         return {kind: kd / pawn for kind, kd in pooled.items()}
 
+    def pooled_activity(self, measure: str, min_samples: int = 500) -> dict[int, float] | None:
+        """Mean ``measure`` ("mobility" or "threats") per sample, both sides
+        pooled, relative to a pawn. None until every type has enough samples
+        or while the pawn's mean is zero."""
+        means = {}
+        for index, name in enumerate(PIECE_NAMES[:5], start=1):
+            total = sum(self.activity[side][measure][name] for side in ("self", "opponent"))
+            samples = sum(self.activity[side][measure + "_n"][name] for side in ("self", "opponent"))
+            if samples < min_samples:
+                return None
+            means[index] = total / samples
+        pawn = means[chess.PAWN]
+        if pawn <= 0:
+            return None
+        return {kind: mean / pawn for kind, mean in means.items()}
+
+    def measures(self) -> dict:
+        return {"kd": self.pooled_kd(), "mobility": self.pooled_activity("mobility"),
+                "threats": self.pooled_activity("threats")}
+
+    def piece_values(self) -> dict[int, float] | None:
+        """Owner's rule: 1/3 K/D + 1/3 mobility after the first move + 1/3
+        threats on defended pieces, each relative to a pawn. None until all
+        three measures exist."""
+        measures = self.measures()
+        if any(measures[name] is None for name in VALUE_MEASURES):
+            return None
+        return {kind: sum(measures[name][kind] for name in VALUE_MEASURES) / len(VALUE_MEASURES)
+                for kind in range(1, 6)}
+
     def summary(self) -> dict:
         def table(side):
             rows = {}
@@ -182,7 +261,13 @@ class CaptureStats:
                     (counter["win"] + .5 * counter["draw"]) / games}
 
         pooled = self.pooled_kd()
-        return {"games": self.games, "hot_kills": self.hot_kills,
+
+        def named(values):
+            return None if values is None else {PIECE_NAMES[kind - 1]: value for kind, value in values.items()}
+
+        measures = self.measures()
+        return {"mobility_vs_pawn": named(measures["mobility"]), "threats_vs_pawn": named(measures["threats"]),
+                "piece_values_vs_pawn": named(self.piece_values()), "games": self.games, "hot_kills": self.hot_kills,
                 "kd_self": table("self"), "kd_opponent": table("opponent"),
                 "kd_pooled_vs_pawn": None if pooled is None else
                 {PIECE_NAMES[kind - 1]: value for kind, value in pooled.items()},
@@ -195,7 +280,9 @@ class CaptureStats:
                 "kills": {k: dict(v) for k, v in self.kills.items()},
                 "deaths": {k: dict(v) for k, v in self.deaths.items()},
                 "hot_captures": dict(self.hot_captures), "after_hot": dict(self.after_hot),
-                "without_hot": dict(self.without_hot)}
+                "without_hot": dict(self.without_hot),
+                "activity": {side: {key: dict(value) for key, value in rows.items()}
+                             for side, rows in self.activity.items()}}
 
     def load_state_dict(self, state: dict) -> None:
         self.games = state["games"]
@@ -205,3 +292,6 @@ class CaptureStats:
         self.hot_captures.update(state["hot_captures"])
         self.after_hot.update(state["after_hot"])
         self.without_hot.update(state["without_hot"])
+        for side, rows in state.get("activity", {}).items():   # older states lack it
+            for key, value in rows.items():
+                self.activity[side][key].update(value)

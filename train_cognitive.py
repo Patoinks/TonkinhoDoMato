@@ -8,6 +8,7 @@ from collections import Counter
 from copy import deepcopy
 from datetime import datetime, timezone
 import json
+import math
 import os
 from pathlib import Path
 import signal
@@ -143,7 +144,13 @@ def main(argv=None):
     capture_stats = CaptureStats(cfg.hot_piece_kills)
     if not args.new_campaign:
         if resign is not None and state.get("resign"):
-            resign.load_state_dict(state["resign"])
+            # A state measured against another threshold (e.g. another objective)
+            # would keep the old scale; start its verification again instead.
+            if math.isclose(state["resign"]["initial_threshold"], resign.initial_threshold):
+                resign.load_state_dict(state["resign"])
+            else:
+                print(f"[resign] threshold changed {state['resign']['initial_threshold']:.4f} -> "
+                      f"{resign.initial_threshold:.4f}; verification restarts in shadow", flush=True)
         if state.get("capture_stats") and state["capture_stats"].get("hot_kills") == cfg.hot_piece_kills:
             capture_stats.load_state_dict(state["capture_stats"])
     del state
@@ -233,7 +240,7 @@ def main(argv=None):
                 extras = {}
                 if resign is not None:
                     extras["resign_plan"] = resign.plan()
-                kd_values = capture_stats.pooled_kd() if cfg.kd_weight > 0 else None
+                kd_values = capture_stats.piece_values() if cfg.kd_weight > 0 else None
                 if kd_values is not None:
                     extras["kd_values"] = kd_values
                 pool.submit(trainer.net, trainer.knowledge, seed, game_number, **extras)

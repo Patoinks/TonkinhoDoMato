@@ -186,3 +186,51 @@ def test_shaped_training_uses_the_measures():
     assert present.any()
     assert values[present].min() >= 0 and values[present].max() <= 1
     assert trainer.update() is not None
+
+
+# ------------------------------------------- mobility and threats (1/3 each)
+
+def test_threats_count_only_defended_pieces():
+    from tonkai.captures import activity, track
+    fen = "4k3/8/8/4p3/3N4/8/8/3R2K1 b - - 0 1"          # e5 pawn hits Nd4, defended by Rd1
+    snapshots, _, _, _ = track(["e8e7"], fen)
+    rows = activity(["e8e7"], snapshots, fen)[chess.BLACK]
+    assert rows["threats"][chess.PAWN] == 1 and rows["threats_n"][chess.PAWN] == 1
+    undefended = "4k3/8/8/4p3/3N4/8/8/6K1 b - - 0 1"
+    snapshots, _, _, _ = track(["e8e7"], undefended)
+    assert activity(["e8e7"], snapshots, undefended)[chess.BLACK]["threats"][chess.PAWN] == 0
+
+
+def test_mobility_counts_only_after_the_first_move():
+    from tonkai.captures import activity, track
+    fen = "4k3/8/8/4p3/3N4/8/8/3R2K1 b - - 0 1"
+    moves = ["e5e4", "g1g2", "e4e3"]
+    snapshots, _, _, _ = track(moves, fen)
+    black = activity(moves, snapshots, fen)[chess.BLACK]
+    assert black["mobility_n"][chess.PAWN] == 1        # sampled once, after e5-e4
+    assert black["mobility"][chess.PAWN] == 1          # e4-e3 is its only square
+    white = activity(moves, snapshots, fen)[chess.WHITE]
+    assert sum(white["mobility_n"].values()) == 0      # no white piece other than the king moved
+
+
+def test_piece_values_are_a_third_of_each_measure():
+    stats = CaptureStats()
+    names = ("Pawn", "Knight", "Bishop", "Rook", "Queen")
+    assert stats.piece_values() is None
+    for side in ("self", "opponent"):
+        for name in names:
+            stats.deaths[side][name] = 100
+            stats.kills[side][name] = 50
+            stats.activity[side]["mobility_n"][name] = 500
+            stats.activity[side]["threats_n"][name] = 500
+            stats.activity[side]["mobility"][name] = 500
+            stats.activity[side]["threats"][name] = 100
+    stats.activity["self"]["mobility"]["Rook"] = 2500          # rook: (500+2500)/1000 = 3 pawns
+    stats.activity["opponent"]["threats"]["Rook"] = 500          # rook: 600/1000 vs pawn 200/1000 = 3 pawns
+    values = stats.piece_values()
+    assert values[chess.PAWN] == pytest.approx(1.0)
+    assert values[chess.ROOK] == pytest.approx((1 + 3 + 3) / 3)
+    restored = CaptureStats()
+    restored.load_state_dict(stats.state_dict())
+    assert restored.piece_values() == values
+    assert restored.summary()["piece_values_vs_pawn"]["Rook"] == pytest.approx(7 / 3)

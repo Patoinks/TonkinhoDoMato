@@ -230,3 +230,19 @@ def test_owner_configuration_switches_to_shaped_and_records_victory_measures(tmp
     rows = [json.loads(line) for path in (tmp_path / "history").glob("*.jsonl")
             for line in path.read_text().splitlines()]
     assert any(row.get("kind") == "metrics" and row.get("objective") == "shaped" for row in rows)
+
+
+def test_changing_objective_restarts_resign_verification(tmp_path, environment, monkeypatch):
+    from tonkai.resign import ResignConfig, hope_threshold
+    monkeypatch.setattr(cli, "CognitivePool", ResignPool)
+    _, args = environment
+    assert cli.main(args + ["--game-cap", "4", "--resign"]) == 0
+    output = tmp_path / "out/latest.pt"
+    survival = torch.load(output, weights_only=False)["resign"]
+    resumed = list(args)
+    resumed[0:2] = ["--resume", str(output)]
+    assert cli.main(resumed + ["--resign", "--objective", "shaped"]) == 0
+    shaped = torch.load(output, weights_only=False)["resign"]
+    assert shaped["initial_threshold"] == pytest.approx(hope_threshold(ResignConfig(), "shaped", 0.985, 0.5))
+    assert shaped["initial_threshold"] != pytest.approx(survival["initial_threshold"])
+    assert shaped["counts"]["games"] == 2                          # the survival-scale history was not carried over
