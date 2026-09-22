@@ -104,9 +104,28 @@ class SurvivalAgent:
         return moves, self.net.predict_logits(context).softmax(0).cpu().numpy()
 
 
+def _has_safe_ending(board, colour):
+    """Some legal move ends the game now without TonkAI losing."""
+    for move in list(board.legal_moves):  # materialise: the loop mutates the board
+        board.push(move)
+        try:
+            outcome = board.outcome(claim_draw=True)
+        finally:
+            board.pop()
+        if outcome is not None and outcome.winner != (not colour):
+            return True
+    return False
+
+
 def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
-                 opponent_name="external"):
-    """Collect the complete ordered trajectory, including the initial state."""
+                 opponent_name="external", resign=None):
+    """Collect the complete ordered trajectory, including the initial state.
+
+    ``resign`` is an optional ``ResignTracker`` (V3 only). It reads the raw
+    network estimate ``choice.mean`` - never the heuristic-adjusted scores. A
+    resigned game stops before TonkAI moves and is left unterminated, so its
+    positions are censored and bootstrapped rather than labelled as a death.
+    """
     self_color = bool(rng.integers(2)) if self_color is None else self_color
     board = chess.Board()
     agent.reset()
@@ -121,6 +140,15 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
         if board.turn == self_color:
             choice = agent.choose(board, self_color, rng, temperature=temperature,
                                   explore=explore, head=head)
+            hope = float(np.max(choice.mean)) if resign is not None else 0.0
+            # Rules, not heuristics: never resign with a win or a draw on the board.
+            if resign is not None and hope <= resign.threshold and _has_safe_ending(board, self_color):
+                hope = 1.0
+            if resign is not None and resign.observe(hope, len(board.move_stack)):
+                trace = getattr(agent, "trace", None)
+                if trace:
+                    trace.pop()  # that decision was never played
+                break
             move = choice.move
             surprise = 0.0
             uncertainties.append(float(choice.epistemic[choice.index]))
@@ -142,12 +170,15 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
         actions=tuple(move.uci() for move in board.move_stack),
         result_value=outcome_value(outcome, self_color, "victory"))
     result = board.result(claim_draw=True) if terminated else "*"
-    return episode, board, self_color, {
+    stats = {
         "plies": len(board.move_stack), "lost": lost, "terminated": terminated,
         "result": result, "opponent": opponent_name,
         "epistemic_mean": float(np.mean(uncertainties)) if uncertainties else 0.0,
         "surprise_mean": float(np.mean(surprises)),
     }
+    if resign is not None:
+        stats["resign"] = resign.report(len(board.move_stack))
+    return episode, board, self_color, stats
 
 
 class NeuralOpponent:

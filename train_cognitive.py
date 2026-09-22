@@ -17,6 +17,7 @@ import uuid
 import numpy as np
 import torch
 
+from tonkai.captures import CaptureStats
 from tonkai.cognitive_config import CognitiveConfig
 from tonkai.cognitive_pool import CognitivePool
 from tonkai.cognitive_trainer import CognitiveTrainer
@@ -24,6 +25,8 @@ from tonkai.uci_opponent import UCIOpponent
 from tonkai.win_history import LongestWinRecorder
 from tonkai.opening_history import OpeningHistory
 from tonkai.web_publish import publish_completed
+from tonkai.resign import (ResignController, add_resign_args, hope_threshold,
+                           resign_config_from_args)
 
 
 ROOT = Path(__file__).resolve().parent
@@ -53,6 +56,11 @@ def main(argv=None):
     parser.add_argument("--planning-nodes", type=int)
     parser.add_argument("--log-every", type=int)
     parser.add_argument("--stop-file", type=Path)
+    parser.add_argument("--capture-target-weight", type=float,
+                        help="auxiliary target: piece head predicts future captures (0 = off)")
+    parser.add_argument("--hot-piece-kills", type=int,
+                        help="measurement: an enemy piece with this many kills is 'hot'")
+    add_resign_args(parser)
     args = parser.parse_args(argv)
     if args.games < 1:
         parser.error("games must be positive")
@@ -79,7 +87,8 @@ def main(argv=None):
                             ("max_plies", "max_plies"), ("min_replay", "min_replay"),
                             ("experiments_every", "experiments_every"), ("planning_nodes", "planning_nodes"),
                             ("generalization_every", "generalization_every"), ("win_pgn_path", "win_pgn_path"),
-                            ("log_every", "log_every")):
+                            ("log_every", "log_every"), ("capture_target_weight", "capture_target_weight"),
+                            ("hot_piece_kills", "hot_piece_kills")):
         value = getattr(args, argument)
         if value is not None:
             setattr(cfg, field, str(value) if isinstance(value, Path) else value)
@@ -119,6 +128,15 @@ def main(argv=None):
                     initial_results = {key: prior.get(key, 0) for key in ('wins', 'draws', 'losses', 'truncated')}
                     initial_reasons = prior.get('draw_reasons', {})
                     break
+    resign_cfg = resign_config_from_args(args)
+    resign = (ResignController(resign_cfg, hope_threshold(resign_cfg, cfg.objective, cfg.survival_gamma))
+              if resign_cfg.enabled else None)
+    capture_stats = CaptureStats(cfg.hot_piece_kills)
+    if not args.new_campaign:
+        if resign is not None and state.get("resign"):
+            resign.load_state_dict(state["resign"])
+        if state.get("capture_stats") and state["capture_stats"].get("hot_kills") == cfg.hot_piece_kills:
+            capture_stats.load_state_dict(state["capture_stats"])
     del state
     initial_games = trainer.games
     run_id = datetime.now(timezone.utc).strftime("cognitive-%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:8]
@@ -157,7 +175,10 @@ def main(argv=None):
                       train_batches=trainer.steps, cognitive=dict(diagnostics), loss=loss,
                       archive=len(trainer.knowledge.memory.entries), skills=len(trainer.knowledge.skills.skills),
                       counterfactuals=trainer.experiments, generalizations=trainer.generalizations,
-                      experiment_positions=trainer.experiment_positions)
+                      experiment_positions=trainer.experiment_positions, captures=capture_stats.summary())
+        if resign is not None:
+            result["resigned"] = counts["resigned"]
+            result["resign"] = resign.summary()
         record("metrics", **result)
         print(json.dumps(result), flush=True)
 
@@ -165,7 +186,9 @@ def main(argv=None):
         trainer.save(output, actor_rng=deepcopy(rng.bit_generator.state), pretrained_games=pretrained_games,
                      source_checkpoint=str(source_path), run_id=run_id, status=status,
                      campaign_start_games=campaign_start, campaign_cap=campaign_cap, opening_history=openings.state(),
-                     campaign_results=dict(counts), campaign_draw_reasons=dict(reasons))
+                     campaign_results=dict(counts), campaign_draw_reasons=dict(reasons),
+                     capture_stats=capture_stats.state_dict(),
+                     resign=resign.state_dict() if resign is not None else None)
 
     try:
         external = UCIOpponent(cfg.opponent_path, cfg.opponent_elo, cfg.opponent_move_time)
@@ -175,15 +198,23 @@ def main(argv=None):
                       stop_file=str(stop_file.resolve()), opponent=external.info,
                       campaign_start_games=campaign_start, campaign_cap=campaign_cap,
                       opening_report=str(output.parent / "opening-report.json"),
-                      opponent_mixture={"external": 1, "historical": 0, "current": 0})
+                      opponent_mixture={"external": 1, "historical": 0, "current": 0},
+                      capture_target_weight=cfg.capture_target_weight,
+                      resign=resign.summary()["config"] if resign is not None else None)
         (run_dir / "launch.json").write_text(json.dumps(launch, indent=2), encoding="utf-8")
         record("run", config=cfg.to_dict(), launch=launch)
         print(f"V3 {run_id}: {args.games} games, {cfg.num_workers} actors, next opponent {external.description}", flush=True)
+        if resign is not None:
+            print(resign.line(), flush=True)
         pool = CognitivePool(cfg, cfg.opponent_path)
         while completed < args.games:
             stopping = stopping or stop_file.exists()
             while len(pool.pending) < pool.capacity and submitted < args.games and not stopping:
-                pool.submit(trainer.net, trainer.knowledge, rng.integers(0, 2**31 - 1), campaign_done + submitted + 1)
+                seed, game_number = rng.integers(0, 2**31 - 1), campaign_done + submitted + 1
+                if resign is None:
+                    pool.submit(trainer.net, trainer.knowledge, seed, game_number)
+                else:
+                    pool.submit(trainer.net, trainer.knowledge, seed, game_number, resign_plan=resign.plan())
                 submitted += 1
             if not pool.pending:
                 break
@@ -195,8 +226,10 @@ def main(argv=None):
                 record("opening", **{k:v for k,v in openings.rows[stats["game_number"]].items() if k != "pgn"})
             plies += stats["plies"]
             diagnostics.update(stats["cognitive"])
+            resign_report = stats.get("resign")
+            resigned = bool(resign_report and resign_report["resigned"])
             if not episode.terminated:
-                counts["truncated"] += 1
+                counts["resigned" if resigned else "truncated"] += 1
             elif episode.lost:
                 counts["losses"] += 1
             elif stats["result"] == "1/2-1/2":
@@ -204,6 +237,15 @@ def main(argv=None):
                 reasons[board.outcome(claim_draw=True).termination.name.lower()] += 1
             else:
                 counts["wins"] += 1
+            if episode.terminated:
+                outcome = ("loss" if episode.lost else "draw" if stats["result"] == "1/2-1/2" else "win")
+            else:
+                outcome = "resigned" if resigned else "unfinished"
+            capture_stats.add(board.move_stack, colour, outcome)
+            if resign is not None:
+                for message in resign.update(resign_report, lost=episode.lost):
+                    print(message, flush=True)
+                    record("resign", game=completed, message=message, **resign.summary())
             if episode.terminated:
                 try:
                     recorder.consider(board, colour, stats["opponent"], stats["result"],

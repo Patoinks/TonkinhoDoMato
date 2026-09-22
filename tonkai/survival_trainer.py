@@ -5,6 +5,7 @@ absorbing outcomes; artificial move limits instead use a detached n-step target.
 Future representations use a fixed copy of the initial encoder, so they cannot
 collapse by moving the target towards their own predictions.
 """
+from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
 import time
@@ -14,10 +15,49 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 
+from .captures import episode_capture_targets
 from .encoding import encode_after_moves, unpack_many
 from .sequence_replay import SequenceReplay
 from .temporal_model import SurvivalNet
 from .objective import episode_result
+
+CAPTURE_PREFIX = "capture_out."
+CAPTURE_CACHE = 4096
+
+
+def _load_module(module, state):
+    """Strict loading, except that the optional capture head may be new or gone.
+
+    Returns (missing, unexpected) capture keys. Anything else still fails
+    exactly as a strict load would.
+    """
+    result = module.load_state_dict(state, strict=False)
+    other = [k for k in (*result.missing_keys, *result.unexpected_keys)
+             if not k.startswith(CAPTURE_PREFIX)]
+    if other:
+        raise RuntimeError(f"Error(s) in loading state_dict: missing {result.missing_keys}, "
+                           f"unexpected {result.unexpected_keys}")
+    return list(result.missing_keys), list(result.unexpected_keys)
+
+
+def _adapt_optimizer(state, added: int, dropped: int):
+    """Match a saved optimizer to a model that gained/lost the capture head.
+
+    The capture parameters are the last ones registered, so they are the last
+    ids of the single parameter group: append fresh ids (Adam starts their
+    moments lazily) or drop the trailing ones with their moments.
+    """
+    state = deepcopy(state)
+    if len(state["param_groups"]) != 1:
+        raise RuntimeError("capture head migration expects a single parameter group")
+    params = state["param_groups"][0]["params"]
+    for pid in params[len(params) - dropped:] if dropped else ():
+        state["state"].pop(pid, None)
+    if dropped:
+        del params[len(params) - dropped:]
+    start = max(params, default=-1) + 1
+    params.extend(range(start, start + added))
+    return state
 
 
 def survival_targets(remaining, lost, terminated, gamma, bootstrap, steps):
@@ -49,6 +89,10 @@ class SurvivalTrainer:
         self.rng = np.random.default_rng(cfg.seed + 2)
         self.games = 0
         self.steps = 0
+        # Optional V3 auxiliary target; zero leaves every V2 code path untouched.
+        self.capture_weight = float(getattr(cfg, "capture_target_weight", 0.0) or 0.0)
+        self.last_capture_loss = None
+        self._capture_tables = OrderedDict()
 
     def _unroll(self, net, x, valid, burn_in, learn_length, gradients=False):
         memory = net.initial_memory(len(x))
@@ -102,8 +146,43 @@ class SurvivalTrainer:
                               for logit, label in zip(logits, labels)])
         return (losses * losses.new_tensor(weights)).mean()
 
-    def _piece_loss(self, x, context, prior_memory, valid):
+    def _capture_table(self, episode_id, episode):
+        """Future-capture targets for one episode, cached by episode id."""
+        table = self._capture_tables.get(episode_id)
+        if table is not None or episode_id in self._capture_tables:
+            self._capture_tables.move_to_end(episode_id)
+            return table
+        table = episode_capture_targets(episode)
+        self._capture_tables[episode_id] = table
+        if len(self._capture_tables) > CAPTURE_CACHE:
+            self._capture_tables.popitem(last=False)
+        return table
+
+    def _capture_loss(self, predicted, rows, squares, batch, offset, length):
+        """MSE between predicted and actual future captures of the probed pieces.
+
+        The target is what that piece really went on to capture in its game. It
+        is a prediction target only: nothing rewards a capture or picks a move.
+        """
+        keep, targets = [], []
+        clip = float(getattr(self.cfg, "capture_target_clip", 8.0))
+        for j, row in enumerate(rows.detach().cpu().numpy()):
+            i, t = divmod(int(row), length)
+            table = self._capture_table(int(batch["episode_id"][i]), batch["episodes"][i])
+            if table is None:
+                continue
+            state = int(batch["state_indices"][i, offset + t])
+            if 0 <= state < len(table):
+                keep.append(j)
+                targets.append(min(float(table[state, squares[j]]), clip))
+        if not keep:
+            return predicted.new_zeros(())
+        index = torch.as_tensor(keep, device=predicted.device)
+        return F.mse_loss(predicted[index], predicted.new_tensor(targets))
+
+    def _piece_loss(self, x, context, prior_memory, valid, batch=None, offset=0):
         # Position-dependent counterfactual value in survival units, no material table.
+        self.last_capture_loss = None
         rows = torch.nonzero(valid.flatten(), as_tuple=False).flatten()
         if not len(rows) or self.cfg.piece_value_weight == 0:
             return x.new_zeros(())
@@ -135,7 +214,11 @@ class SurvivalTrainer:
             removed[torch.arange(len(rows), device=self.device), plane * 64 + square] = 0
             counterfactual, _ = self.net.observe(removed, prior_memory.flatten(0, 1)[rows])
             target = self.net.survival(current)[0].mean(-1) - self.net.survival(counterfactual)[0].mean(-1)
-        predicted = self.net.piece_values(current, plane % 6, square, plane // 6)
+        if self.capture_weight > 0 and batch is not None and self.net.has_capture_head:
+            predicted, captures = self.net.piece_values_and_captures(current, plane % 6, square, plane // 6)
+            self.last_capture_loss = self._capture_loss(captures, rows, squares, batch, offset, x.shape[1])
+        else:
+            predicted = self.net.piece_values(current, plane % 6, square, plane // 6)
         return F.mse_loss(predicted, target)
 
     def update(self):
@@ -203,9 +286,13 @@ class SurvivalTrainer:
         novelty_error = self.net.novelty_error(learning.detach().flatten(0, 1)).reshape(b, length)
         novelty_loss = (novelty_error * weighted_mask).sum() / weighted_mask.sum().clamp_min(1)
         reply_loss = self._reply_loss(batch, x, after, offset, length) if cfg.predict_weight else x.new_zeros(())
-        piece_loss = self._piece_loss(x[:, selection], learning, before[:, selection], mask)
+        piece_loss = self._piece_loss(x[:, selection], learning, before[:, selection], mask,
+                                      batch=batch, offset=offset)
         loss = cfg.value_weight * value_loss + cfg.future_weight * future_loss + cfg.novelty_weight * novelty_loss
         loss = loss + cfg.predict_weight * reply_loss + cfg.piece_value_weight * piece_loss
+        capture_loss = self.last_capture_loss
+        if capture_loss is not None:
+            loss = loss + self.capture_weight * capture_loss
         if not torch.isfinite(loss):
             raise FloatingPointError("Non-finite survival loss")
         self.optimizer.zero_grad(set_to_none=True)
@@ -222,11 +309,14 @@ class SurvivalTrainer:
         priorities = (errors.sum(-1) / mask.sum(-1).clamp_min(1)).cpu().numpy()
         self.replay.update_priorities(batch["sample_keys"], priorities)
         self.steps += 1
-        return {"loss": float(loss.detach()), "survival_loss": float(value_loss.detach()),
-                "value_loss": float(value_loss.detach()), "objective": cfg.objective,
-                "future_loss": float(future_loss.detach()), "novelty_loss": float(novelty_loss.detach()),
-                "reply_loss": float(reply_loss.detach()), "piece_loss": float(piece_loss.detach()),
-                "learned_positions": int(mask.sum()), "gradient_norm": float(gradient)}
+        out = {"loss": float(loss.detach()), "survival_loss": float(value_loss.detach()),
+               "value_loss": float(value_loss.detach()), "objective": cfg.objective,
+               "future_loss": float(future_loss.detach()), "novelty_loss": float(novelty_loss.detach()),
+               "reply_loss": float(reply_loss.detach()), "piece_loss": float(piece_loss.detach()),
+               "learned_positions": int(mask.sum()), "gradient_norm": float(gradient)}
+        if capture_loss is not None:
+            out["capture_loss"] = float(capture_loss.detach())
+        return out
 
     def state_dict(self):
         return {"format": "tonkai-survival-v2", "config": self.cfg.to_dict(),
@@ -240,10 +330,14 @@ class SurvivalTrainer:
     def load_state_dict(self, state):
         if state.get("format") != "tonkai-survival-v2":
             raise ValueError("Legacy checkpoints require --init-from, not --resume")
-        self.net.load_state_dict(state["model"])
-        self.target.load_state_dict(state["target"])
+        added, dropped = _load_module(self.net, state["model"])
+        _load_module(self.target, state["target"])
         self.future_encoder.load_state_dict(state["future_encoder"])
-        self.optimizer.load_state_dict(state["optimizer"])
+        optimizer = state["optimizer"]
+        if added or dropped:
+            # Turning the capture target on/off for an existing checkpoint.
+            optimizer = _adapt_optimizer(optimizer, len(added), len(dropped))
+        self.optimizer.load_state_dict(optimizer)
         self.replay.load_state_dict(state["replay"])
         self.games, self.steps = state["games"], state["steps"]
         self.rng.bit_generator.state = state["numpy_rng"]

@@ -155,3 +155,55 @@ def test_explicit_new_campaign_retains_learning_and_resets_only_cap_and_openings
     assert state['campaign_cap'] == 100000 and len(state['opening_history']) == 2
     assert sum(state['campaign_results'].values()) == 2
     assert previous.read_bytes() == previous_bytes
+
+
+class ResignPool(Pool):
+    """The real pool forwards a resignation plan to the actor; so does this."""
+
+    def submit(self, net, knowledge, seed, game_number=0, resign_plan=None):
+        self.pending.append((net, knowledge, seed, game_number, resign_plan))
+
+    def receive(self):
+        from tonkai.resign import ResignTracker
+        net, knowledge, seed, game_number, plan = self.pending.pop(0)
+        agent = CognitiveAgent(net, self.cfg, knowledge)
+        episode, board, colour, stats = play_episode(agent, Engine(), self.cfg, np.random.default_rng(seed),
+                                                     resign=ResignTracker.from_plan(plan))
+        stats["cognitive"] = dict(agent.diagnostics)
+        stats["game_number"] = game_number
+        return episode, board, colour, stats, agent.trace
+
+
+def test_resign_and_capture_target_run_end_to_end_and_resume(tmp_path, environment, monkeypatch):
+    monkeypatch.setattr(cli, "CognitivePool", ResignPool)
+    _, args = environment
+    # Without the new options: no capture head, no resign state.
+    assert cli.main(args + ["--game-cap", "4"]) == 0
+    output = tmp_path / "out/latest.pt"
+    plain = torch.load(output, weights_only=False)
+    assert not any(key.startswith("capture_out.") for key in plain["model"])
+    assert plain["resign"] is None
+    assert plain["capture_stats"]["games"] == 2
+    # Resume the SAME checkpoint with both options on: the head is added on load.
+    resumed = list(args)
+    resumed[0:2] = ["--resume", str(output)]
+    resumed += ["--resign", "--resign-threshold", "0.99", "--resign-min-ply", "0",
+                "--resign-patience", "1", "--capture-target-weight", "0.1"]
+    assert cli.main(resumed) == 0
+    state = torch.load(output, weights_only=False)
+    assert state["games"] == 4
+    assert state["config"]["capture_target_weight"] == 0.1
+    assert any(key.startswith("capture_out.") for key in state["model"])
+    assert state["resign"]["state"] == "shadow"          # never live in two games
+    assert state["resign"]["counts"]["triggered"] == 2
+    assert state["capture_stats"]["games"] == 4
+    rows = [json.loads(line) for path in (tmp_path / "history").glob("*.jsonl")
+            for line in path.read_text().splitlines()]
+    # Two runs; glob order between their history files is not guaranteed.
+    finals = [row for row in rows if row["kind"] == "metrics" and row["final"]]
+    assert len(finals) == 2
+    with_resign = [row for row in finals if "resign" in row]
+    assert len(with_resign) == 1                 # the first run, options off, has none
+    metrics = with_resign[0]
+    assert metrics["resign"]["state"] == "shadow" and "captures" in metrics
+    assert "capture_loss" in metrics["loss"]

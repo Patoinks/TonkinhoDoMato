@@ -35,23 +35,30 @@ class CognitiveConfig(SurvivalConfig):
     piece_exchange_tolerance: float = 0.5
     piece_exchange_depth: int = 6
     king_safety_weight: float = 0.06
-    capture_weight: float = 0.08
-    capture_scale: float = 3.0
+    # Auxiliary target, opt-in: the piece head also predicts how many captures
+    # that piece goes on to make in the rest of the game. A prediction, never a
+    # reward; it does not touch move selection. Zero keeps the model unchanged.
+    capture_target_weight: float = 0.0
+    capture_target_clip: float = 8.0
+    # Measurement only: a "hot" enemy piece had made this many captures in the
+    # game before TonkAI took it; the report shows how such games end.
+    hot_piece_kills: int = 2
 
     def validate(self):
         super().validate()
         for name in ("archive_capacity", "protected_episodes", "memory_neighbors", "calibration_bins",
                      "calibration_min_samples", "planning_candidates", "planning_replies", "planning_nodes",
                      "skill_capacity", "skill_horizon", "skill_min_support", "experiments_every",
-                     "experiment_plies", "generalization_every", "protected_replay_every", "piece_exchange_depth"):
+                     "experiment_plies", "generalization_every", "protected_replay_every", "piece_exchange_depth",
+                     "hot_piece_kills"):
             if getattr(self, name) < 1:
                 raise ValueError(f"{name} must be positive")
         for name in ("memory_similarity", "memory_weight", "information_bonus", "planning_uncertainty",
                      "planning_gap", "robust_weight", "skill_bonus", "piece_safety_weight", "piece_exchange_tolerance",
-                     "king_safety_weight", "capture_weight"):
+                     "king_safety_weight", "capture_target_weight"):
             if not 0 <= getattr(self, name) <= 1:
                 raise ValueError(f"{name} must be between zero and one")
         if self.external_probability != 1 or self.historical_probability != 0:
             raise ValueError("V3 next-opponent training preserves external-only play")
-        if not 0 < self.capture_scale < float("inf"):
-            raise ValueError("capture_scale must be finite and positive")
+        if not 0 < self.capture_target_clip < float("inf"):
+            raise ValueError("capture_target_clip must be finite and positive")

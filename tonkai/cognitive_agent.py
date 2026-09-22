@@ -8,7 +8,7 @@ import torch
 from .encoding import encode, encode_after_moves
 from .survival_agent import SurvivalAgent, SurvivalChoice
 from .cognitive_memory import structural_keys
-from .piece_safety import piece_senses, pawn_unit, position_risk, exchange_gain
+from .piece_safety import piece_senses, pawn_unit, position_risk
 from .king_safety import king_senses, king_balance
 from .objective import outcome_value, continuation_value
 
@@ -94,25 +94,6 @@ class CognitiveAgent(SurvivalAgent):
                             depth=self.cfg.piece_exchange_depth)
 
     @torch.inference_mode()
-    def capture_scores(self, board, colour, moves):
-        """Small preference for net valuable captures, not raw capture count.
-
-        Same positional piece head and scale as protection; no fixed material
-        table. Legal recaptures account for cost, including EP and promotion.
-        A negative value can make removing that enemy piece undesirable.
-        """
-        bonuses = np.zeros(len(moves))
-        if self.cfg.objective != "victory" or not self.cfg.capture_weight:
-            return bonuses
-        captures = [(i, m) for i, m in enumerate(moves) if board.is_capture(m)]
-        if captures:
-            value = self.piece_valuer(board, colour)
-            for i, move in captures:
-                gain = exchange_gain(board, move, value, self.cfg.piece_exchange_depth)
-                bonuses[i] = self.cfg.capture_weight * np.tanh(gain / self.cfg.capture_scale)
-        return bonuses
-
-    @torch.inference_mode()
     def _robust(self, board, colour, moves, candidate_memory, values, probabilities, root_indices):
         """Search legal enemy replies, retaining likely and dangerous branches.
 
@@ -184,8 +165,6 @@ class CognitiveAgent(SurvivalAgent):
         strength = (self.cfg.memory_weight * retrieved["trust"] * retrieved["similarity"]
                     * retrieved["support"] / (retrieved["support"] + 2))
         scores = (1 - strength) * raw + strength * retrieved["value"]
-        capture_bonuses = self.capture_scores(board, self_color, moves)
-        scores += capture_bonuses
         uncertainty = self.knowledge.calibration.uncertainty(mean, epistemic)
         evidence = self.knowledge.calibration.count[self.knowledge.calibration._bin(mean)]
         uncertainty = np.where(evidence < self.cfg.calibration_min_samples,
@@ -246,8 +225,7 @@ class CognitiveAgent(SurvivalAgent):
             if ending is not None:
                 scores[index] = ending
         self._evaluation = {"keys": keys, "retrieved": retrieved, "uncertainty": uncertainty,
-                            "information": information, "gap": gap, "piece_safety": safety, "king_safety": kings,
-                            "capture_bonus": capture_bonuses}
+                            "information": information, "gap": gap, "piece_safety": safety, "king_safety": kings}
         return SurvivalChoice(moves, scores, mean, epistemic, aleatoric, information)
 
     @torch.inference_mode()
@@ -296,7 +274,6 @@ class CognitiveAgent(SurvivalAgent):
                            "next_prediction": float(choice.mean[choice.index]),
                            "uncertainty": float(self._evaluation["uncertainty"][choice.index]),
                            "gap": self._evaluation["gap"]})
-        self.trace[-1]["capture_bonus"] = float(self._evaluation["capture_bonus"][choice.index])
         if self._evaluation.get("piece_safety"):
             self.trace[-1]["piece_safety"] = self._evaluation["piece_safety"][choice.index]
         if self._evaluation.get("king_safety"):

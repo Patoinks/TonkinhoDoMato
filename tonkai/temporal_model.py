@@ -60,6 +60,11 @@ class SurvivalNet(nn.Module):
         self.rnd_predictor = self._head(d, h, 32)
         self.rnd_target.requires_grad_(False)
         self.rnd_target.eval()
+        # Optional V3 auxiliary output: future captures of a piece, read from the
+        # piece head's hidden layer. Created LAST and only when requested, so
+        # V2 and older checkpoints keep exactly the same parameters and order.
+        if float(getattr(cfg, "capture_target_weight", 0.0) or 0.0) > 0:
+            self.capture_out = nn.Linear(architecture.piece_hidden, 1)
 
     @staticmethod
     def _head(inputs: int, hidden: int, outputs: int) -> nn.Sequential:
@@ -132,6 +137,22 @@ class SurvivalNet(nn.Module):
         features = torch.cat((context, self.type_embed(piece_type),
                               self.square_embed(square), self.side_embed(side)), dim=-1)
         return self.piece_head(features).squeeze(-1)
+
+    @property
+    def has_capture_head(self) -> bool:
+        return hasattr(self, "capture_out")
+
+    def piece_values_and_captures(self, context: torch.Tensor, piece_type: torch.Tensor,
+                                  square: torch.Tensor, side: torch.Tensor):
+        """Contextual value and predicted future captures, from one shared layer.
+
+        The value path is the same three modules ``piece_values`` applies, in the
+        same order, so its output is unchanged by the extra head.
+        """
+        features = torch.cat((context, self.type_embed(piece_type),
+                              self.square_embed(square), self.side_embed(side)), dim=-1)
+        hidden = self.piece_head[1](self.piece_head[0](features))
+        return self.piece_head[2](hidden).squeeze(-1), self.capture_out(hidden).squeeze(-1)
 
     def predict_logits(self, context: torch.Tensor) -> torch.Tensor:
         return self.predict_head(context).squeeze(-1)
