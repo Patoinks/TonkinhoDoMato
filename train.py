@@ -54,6 +54,8 @@ def main() -> int:
         print(f"resuming from {args.resume}")
     cfg = config_from_args(args, cfg)
 
+    if cfg.num_workers < 1 or cfg.weight_refresh_games < 1:
+        ap.error("workers and weight_refresh_games must be positive")
     device = cfg.resolved_device()
     net, agent, opponent, worker, trainer, metrics = tonkai.build(cfg, device)
 
@@ -84,36 +86,49 @@ def main() -> int:
                                 window=args.curriculum_window)
         print(f"curriculum: starting at {curriculum.describe()}")
 
+    from tonkai.parallel import ActorPool
+    pool = ActorPool(cfg, net, metrics) if cfg.num_workers > 1 else None
+    if pool and curriculum:
+        pool.set_opponent(opponent)
     played = 0
-    for _ in range(args.games):
-        if _stop:
-            break
-        record = worker.play_game()
-        trainer.add_game(record)
-        if curriculum is not None:
-            msg = curriculum.update(record.result, metrics.games)
-            if msg:
-                print(msg, flush=True)
-        if not args.no_train:
-            trainer.train(cfg.updates_per_game)
-        played += 1
-
-        if metrics.games % cfg.log_every == 0:
-            if history:
-                history.record(metrics)
-            extra = (f"Replay: {len(trainer.replay):,} value / "
-                     f"{len(trainer.predict_replay):,} predict "
-                     f"(truncated {trainer.predict_replay.truncated})")
+    try:
+        for _ in range(args.games):
+            if _stop:
+                break
+            record = pool.next_game() if pool else worker.play_game()
+            trainer.add_game(record)
             if curriculum is not None:
-                extra += ("\n" + f"Opponent: {curriculum.describe()}   "
-                          f"recent score {curriculum.score:.2f}")
-            print(metrics.report(extra))
-            print("-" * 64, flush=True)
-
-        if cfg.checkpoint_every and metrics.games % cfg.checkpoint_every == 0:
-            path = os.path.join(cfg.checkpoint_dir, "latest.pt")
-            trainer.save(path)
-            print(f"[checkpoint] {path} @ {metrics.games} games", flush=True)
+                msg = curriculum.update(record.result, metrics.games)
+                if msg:
+                    if pool:
+                        pool.set_opponent(opponent)
+                    print(msg, flush=True)
+            if not args.no_train:
+                trainer.train(cfg.updates_per_game)
+            if pool:
+                pool.refresh(net, trainer.games)
+            played += 1
+    
+            if metrics.games % cfg.log_every == 0:
+                if history:
+                    history.record(metrics)
+                extra = (f"Replay: {len(trainer.replay):,} value / "
+                         f"{len(trainer.predict_replay):,} predict "
+                         f"(truncated {trainer.predict_replay.truncated})")
+                if curriculum is not None:
+                    extra += ("\n" + f"Opponent: {curriculum.describe()}   "
+                              f"recent score {curriculum.score:.2f}")
+                print(metrics.report(extra))
+                print("-" * 64, flush=True)
+    
+            if cfg.checkpoint_every and metrics.games % cfg.checkpoint_every == 0:
+                path = os.path.join(cfg.checkpoint_dir, "latest.pt")
+                trainer.save(path)
+                print(f"[checkpoint] {path} @ {metrics.games} games", flush=True)
+    finally:
+        if pool:
+            pool.close()
+        trainer.save(os.path.join(cfg.checkpoint_dir, "latest.pt"))
 
     elapsed = time.perf_counter() - t0
     if history:

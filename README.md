@@ -250,3 +250,15 @@ remainder); `--samples_per_game 0 --batch_size 512 --updates_per_game 4`
 restores the old schedule. Old checkpoints retain that legacy schedule unless
 overridden. Larger batches change Adam's update trajectory, not the labels or
 loss definitions. A step is capped at the current replay size as before.
+
+`--workers N` (alias `--num_workers N`) defaults to 1: the original in-process
+worker and shared seeded RNG are retained. N > 1 uses CPU actors and one learner
+on `--device`; asynchronous arrival order makes this mode **not deterministic**.
+Each actor scores all legal candidates in one network batch. A bounded queue
+limits outstanding records. `--weight_refresh_games 20` publishes a shared
+snapshot every 20 ingested games; actors load it between games. In-flight games
+can therefore use older weights. Curriculum changes also apply between games.
+Ctrl+C finishes the current learner iteration, stops actors, and saves latest.pt;
+a second Ctrl+C forces exit. Worker failures also run cleanup and save a checkpoint.
+Parent timing percentages measure waiting, learning and publication; actor CPU
+work overlaps and is recorded separately in `metrics.actor_times`.

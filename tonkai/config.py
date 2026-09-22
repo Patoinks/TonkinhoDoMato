@@ -60,6 +60,7 @@ class Config:
     device: str = "auto"
     seed: int = 42
     num_workers: int = 1
+    weight_refresh_games: int = 20
     tonkai_plays_white_prob: float = 0.5
 
     def to_dict(self) -> dict:
@@ -83,6 +84,7 @@ class Config:
 
 def add_config_args(parser) -> None:
     """Expose every scalar field as --flag so experiments need no code edits."""
+    parser.add_argument("--workers", dest="num_workers", type=int, default=None)
     for f in dataclasses.fields(Config):
         if f.type in ("bool", bool):
             parser.add_argument(

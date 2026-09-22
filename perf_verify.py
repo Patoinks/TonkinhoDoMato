@@ -39,7 +39,9 @@ def run(label):
                 for _ in range(60):
                     tr.add_game(pool.next_game()); tr.train(cfg.updates_per_game); pool.refresh(net,tr.games)
         dt=time.perf_counter()-start
-        result['workers'][workers]={'games_s':60/dt,'positions_s':(m.tonkai_positions-pos)/dt,'wall_s':dt,'times':{k:v-times.get(k,0) for k,v in m.times.items()},'timing_breakdown':m.timing_breakdown()}
+        from tonkai.metrics import Metrics
+        delta=Metrics(); delta.times.update({k:v-times.get(k,0) for k,v in m.times.items()})
+        result['workers'][workers]={'games_s':60/dt,'positions_s':(m.tonkai_positions-pos)/dt,'wall_s':dt,'times':{k:v-times.get(k,0) for k,v in m.times.items()},'timing_breakdown':delta.timing_breakdown(),'actor_times':dict(getattr(m,'actor_times',{}))}
     subprocess.run([sys.executable,'export_web.py','--checkpoint','checkpoints/deployed_5020games.pt','--out',str(OUT/'export')],check=True,stdout=subprocess.DEVNULL)
     assert json.loads((OUT/'export/golden.json').read_text())==json.loads(Path('web/golden.json').read_text())
     if label!='baseline':
