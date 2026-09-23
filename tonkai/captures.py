@@ -21,6 +21,7 @@ import chess
 import numpy as np
 
 from .encoding import OFF_STM, PIECE_NAMES, unpack_many
+from . import fast_rules
 
 MAX_TARGET = 255
 OUTCOMES = ("win", "draw", "loss", "resigned", "unfinished")
@@ -179,8 +180,14 @@ class CaptureStats:
         if outcome not in OUTCOMES:
             raise ValueError(f"unknown outcome {outcome!r}")
         snapshots, _, events, _ = track(moves, initial_fen)
+        if fast_rules.ENABLED:
+            root = chess.Board(initial_fen or chess.STARTING_FEN)
+            codes = [fast_rules.code(chess.Move.from_uci(move) if isinstance(move, str) else move) for move in moves]
+            measurements = fast_rules.board(root).activity(codes)
+        else:
+            measurements = activity(moves, snapshots, initial_fen)
         self.games += 1
-        for colour, rows in activity(moves, snapshots, initial_fen).items():
+        for colour, rows in measurements.items():
             side = "self" if colour == self_color else "opponent"
             for key, counter in rows.items():
                 for kind, value in counter.items():

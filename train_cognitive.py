@@ -19,6 +19,7 @@ import numpy as np
 import torch
 
 from tonkai.captures import CaptureStats
+from tonkai import fast_rules
 from tonkai.cognitive_config import CognitiveConfig
 from tonkai.cognitive_pool import CognitivePool
 from tonkai.cognitive_trainer import CognitiveTrainer
@@ -193,7 +194,8 @@ def main(argv=None):
 
     def metrics(final=False):
         seconds = time.perf_counter() - started
-        result = dict(games=completed, final=final, state=status, objective=cfg.objective, wins=counts["wins"],
+        result = dict(games=completed, final=final, state=status, objective=cfg.objective,
+                      rules_backend=fast_rules.BACKEND, wins=counts["wins"],
                       losses=counts["losses"], draws=counts["draws"], truncated=counts["truncated"],
                       draw_reasons=dict(reasons), games_per_second=completed / max(.001, seconds),
                       positions_per_second=plies / max(.001, seconds), survival_plies_mean=plies / max(1, completed),
@@ -218,6 +220,7 @@ def main(argv=None):
     try:
         external = UCIOpponent(cfg.opponent_path, cfg.opponent_elo, cfg.opponent_move_time)
         launch = dict(pid=os.getpid(), run_id=run_id, resume_games=initial_games, additional_games=args.games,
+                      rules_backend=fast_rules.BACKEND,
                       pretrained_games=pretrained_games, objective=cfg.objective, version="cognitive-v3",
                       history=str(history_path.resolve()), checkpoint=str(output), source_checkpoint=str(source_path),
                       stop_file=str(stop_file.resolve()), opponent=external.info,

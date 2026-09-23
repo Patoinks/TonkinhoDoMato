@@ -61,9 +61,10 @@ class CognitivePool:
     def submit(self, net, knowledge, seed, game_number=0, resign_plan=None, kd_values=None):
         if len(self.pending) >= self.capacity:
             raise RuntimeError("Actor pool is full")
-        weights = {key: tensor.detach().cpu().clone() for key, tensor in net.state_dict().items()}
-        state = knowledge.state_dict()
-        state["memory"]["episodes"] = []  # Protected rehearsal belongs only to learner.
+        # Serialize synchronously before the learner can update again. The bytes
+        # are the independent snapshot; cloning/deepcopying first duplicates work.
+        weights = {key: tensor.detach().cpu() for key, tensor in net.state_dict().items()}
+        state = knowledge.state_dict(include_episodes=False, copy=False)
         payload = pickle.dumps((weights, state), protocol=pickle.HIGHEST_PROTOCOL)
         self.pending.add(self.executor.submit(_play, payload, int(seed), game_number,
                                               resign_plan, kd_values))

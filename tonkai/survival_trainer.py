@@ -15,7 +15,8 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 
-from .captures import episode_capture_targets
+from .captures import episode_capture_targets, episode_owner_color
+from . import fast_rules
 from .encoding import encode_after_moves, unpack_many
 from .sequence_replay import SequenceReplay
 from .temporal_model import SurvivalNet
@@ -94,13 +95,22 @@ class SurvivalTrainer:
         self.last_capture_loss = None
         self._capture_tables = OrderedDict()
 
-    def _unroll(self, net, x, valid, burn_in, learn_length, gradients=False):
+    def _unroll(self, net, x, valid, burn_in, learn_length, gradients=False, *, learner_window_only=False):
+        """Preserve all burn-in and learned states; optionally omit unused outputs.
+
+        The learner consumes only the learning window. Its trailing recurrent
+        states and burn-in fusion outputs never feed a loss. The target network
+        still unrolls the complete future horizon for bootstrap targets.
+        """
+        if learner_window_only and not gradients:
+            raise ValueError("Window-only outputs are for the learner, not the target network")
         memory = net.initial_memory(len(x))
         contexts, before, after = [], [], []
         # Encode all positions together. GRU time dependency remains sequential.
         with torch.set_grad_enabled(gradients):
             latent = net.encode(x.flatten(0, 1)).reshape(len(x), x.shape[1], -1)
-        for t in range(x.shape[1]):
+        stop = min(x.shape[1], burn_in + learn_length) if learner_window_only else x.shape[1]
+        for t in range(stop):
             learning = gradients and burn_in <= t < burn_in + learn_length
             if t == burn_in or t == burn_in + learn_length:
                 memory = memory.detach()
@@ -109,8 +119,16 @@ class SurvivalTrainer:
                 before.append(memory)
                 candidate = net.memory_cell(features, memory)
                 memory = torch.where(valid[:, t, None], candidate, memory)
-                contexts.append(net.context_from_latent(features, memory))
+                contexts.append(features.new_zeros(features.shape) if learner_window_only and t < burn_in
+                                else net.context_from_latent(features, memory))
                 after.append(memory)
+        if stop < x.shape[1]:
+            # Keep the original tensor layouts for every downstream operation.
+            # These placeholders are outside every learner loss/index window.
+            for _ in range(stop, x.shape[1]):
+                contexts.append(latent.new_zeros((len(x), latent.shape[-1])))
+                before.append(memory.new_zeros(memory.shape))
+                after.append(memory.new_zeros(memory.shape))
         return torch.stack(contexts, 1), torch.stack(before, 1), torch.stack(after, 1)
 
     def _reply_loss(self, batch, x, memories, offset, length):
@@ -128,12 +146,24 @@ class SurvivalTrainer:
             local = int(self.rng.choice(possible))
             index = int(indices[local])
             board = chess.Board(episode.initial_fen or chess.STARTING_FEN)
-            for action in episode.actions[:index]:
-                board.push_uci(action)
+            if fast_rules.ENABLED:
+                fast = fast_rules.board(board)
+                fast.push_many_checked([fast_rules.code(chess.Move.from_uci(action))
+                                        for action in episode.actions[:index]])
+                # Legal-move order is still python-chess's. The native board
+                # retains the history; this FEN is only for move enumeration.
+                board = chess.Board(fast.fen())
+            else:
+                for action in episode.actions[:index]:
+                    board.push_uci(action)
             moves = list(board.legal_moves)
             actual = chess.Move.from_uci(episode.actions[index])
             labels.append(moves.index(actual))
-            candidates.append(encode_after_moves(board, moves, not board.turn))
+            if fast_rules.ENABLED:
+                candidates.append(fast_rules.encode_after_moves(fast,
+                                  [fast_rules.code(m) for m in moves], not board.turn))
+            else:
+                candidates.append(encode_after_moves(board, moves, not board.turn))
             prefixes.append(memories[row, offset + local].expand(len(moves), -1))
             sizes.append(len(moves))
             weights.append(batch["importance_weights"][row])
@@ -167,7 +197,12 @@ class SurvivalTrainer:
         if table is not None or episode_id in self._capture_tables:
             self._capture_tables.move_to_end(episode_id)
             return table
-        table = episode_capture_targets(episode)
+        if fast_rules.ENABLED and episode.actions and len(episode.actions) == len(episode.packed) - 1:
+            root = chess.Board(episode.initial_fen or chess.STARTING_FEN)
+            codes = [fast_rules.code(chess.Move.from_uci(action)) for action in episode.actions]
+            table = fast_rules.board(root).capture_targets(codes, episode_owner_color(episode))
+        else:
+            table = episode_capture_targets(episode)
         self._capture_tables[episode_id] = table
         if len(self._capture_tables) > CAPTURE_CACHE:
             self._capture_tables.popitem(last=False)
@@ -250,7 +285,7 @@ class SurvivalTrainer:
         offset, length = cfg.burn_in, cfg.sequence_length
         selection = slice(offset, offset + length)
         self.net.train()
-        context, before, after = self._unroll(self.net, x, valid, offset, length, True)
+        context, before, after = self._unroll(self.net, x, valid, offset, length, True, learner_window_only=True)
         with torch.no_grad():
             target_context, _, _ = self._unroll(self.target, x, valid, offset, length)
             target_values = self.target.survival(target_context.flatten(0, 1))[0].mean(-1).reshape(b, total)

@@ -73,6 +73,7 @@ class ExperienceMemory:
         self.episodes = []
         self.next_id = 0
         self._keys = None
+        self._retention = None
 
     def _matrix(self):
         if self._keys is None and self.entries:
@@ -101,13 +102,22 @@ class ExperienceMemory:
             weights = np.array([max(0.01, values[i] - self.cfg.memory_similarity + .01)
                                 * entry["trust"] for i, entry in zip(best, entries)])
             targets = np.array([entry["target"] for entry in entries])
-            mean = float(np.average(targets, weights=weights))
-            variance = float(np.average((targets - mean) ** 2, weights=weights))
+            # np.average performs these same reductions for each statistic.
+            # Reuse the denominator without changing dtype or summation order.
+            dtype = np.result_type(targets.dtype, weights.dtype)
+            total = weights.sum(dtype=dtype)
+            if total == 0:
+                raise ZeroDivisionError("Weights sum to zero, can't be normalized")
+            mean = float(np.multiply(targets, weights, dtype=dtype).sum() / total)
+            variance = float(np.multiply((targets - mean) ** 2, weights, dtype=dtype).sum() / total)
             # Repeated examples from one game do not pretend to be independent evidence.
             support = len({entry["game"] for entry in entries})
             result["value"][row], result["variance"][row] = mean, variance
             result["support"][row], result["similarity"][row] = support, float(values[best[0]])
-            result["trust"][row] = float(np.average([entry["trust"] for entry in entries], weights=weights))
+            trust = np.array([entry["trust"] for entry in entries])
+            trust_dtype = np.result_type(trust.dtype, weights.dtype)
+            trust_total = total if trust_dtype == dtype else weights.sum(dtype=trust_dtype)
+            result["trust"][row] = float(np.multiply(trust, weights, dtype=trust_dtype).sum() / trust_total)
             # Local expected evidence gain proxy: shrinks with independent experience
             # and conflicting outcomes, rather than rewarding raw prediction noise.
             result["information"][row] = 1 / ((support + 1) * (1 + 8 * variance))
@@ -124,16 +134,21 @@ class ExperienceMemory:
         self.next_id += 1
         if len(self.entries) >= self.cfg.archive_capacity:
             # Protect high-error/rare memories; discount redundant neighbours.
-            matrix = self._matrix()
-            duplicate = matrix @ matrix.T
-            np.fill_diagonal(duplicate, -1)
-            retention = np.array([e["priority"] for e in self.entries]) + .25 * (1 - duplicate.max(axis=1))
+            # Rejected candidates do not change the archive. Its pairwise
+            # redundancy and priorities remain exactly the same until insertion.
+            if self._retention is None:
+                matrix = self._matrix()
+                duplicate = matrix @ matrix.T
+                np.fill_diagonal(duplicate, -1)
+                self._retention = np.array([e["priority"] for e in self.entries]) + .25 * (1 - duplicate.max(axis=1))
+            retention = self._retention
             index = int(retention.argmin())
             if priority < retention[index]:
                 return None
             self.entries.pop(index)
         self.entries.append(entry)
         self._keys = None
+        self._retention = None
         return entry["id"]
 
     def protect_episode(self, episode, priority, game):
@@ -150,12 +165,15 @@ class ExperienceMemory:
                 entry["trust"] = float(np.clip((1 - weight) * entry["trust"] + weight * agreement, .1, 1))
                 entry["audits"] += 1
 
-    def state_dict(self):
-        return deepcopy({"entries": self.entries, "episodes": self.episodes, "next_id": self.next_id})
+    def state_dict(self, *, include_episodes=True, copy=True):
+        state = {"entries": self.entries, "episodes": self.episodes if include_episodes else [],
+                 "next_id": self.next_id}
+        return deepcopy(state) if copy else state
 
     def load_state_dict(self, state):
         self.entries, self.episodes = deepcopy(state["entries"]), deepcopy(state["episodes"])
         self.next_id, self._keys = state["next_id"], None
+        self._retention = None
 
 
 class SkillLibrary:
@@ -186,7 +204,7 @@ class SkillLibrary:
             worst = min(range(len(self.skills)), key=lambda i: (len(self.skills[i]["games"]), self.skills[i]["value"]))
             self.skills.pop(worst)
 
-    def retrieve(self, key, board, colour):
+    def retrieve(self, key, board, colour, fast=None):
         candidates = []
         for skill in self.skills:
             similarity = float(skill["key"] @ key)
@@ -194,14 +212,25 @@ class SkillLibrary:
                     or skill["trust"] < .5):
                 continue
             actions = tuple(perspective_action(action, colour) for action in skill["actions"])
-            replay = board.copy(stack=True)
-            for action in actions:
-                move = chess.Move.from_uci(action)
-                if move not in replay.legal_moves or replay.is_game_over(claim_draw=True):
-                    break
-                replay.push(move)
+            if fast is not None:
+                from .fast_rules import code, NONE
+                replay = fast.copy()
+                for action in actions:
+                    move = code(chess.Move.from_uci(action))
+                    if move not in replay.legal_moves() or replay.terminal() != NONE:
+                        break
+                    replay.push(move)
+                else:
+                    candidates.append((similarity * skill["value"] * skill["trust"], actions))
             else:
-                candidates.append((similarity * skill["value"] * skill["trust"], actions))
+                replay = board.copy(stack=True)
+                for action in actions:
+                    move = chess.Move.from_uci(action)
+                    if move not in replay.legal_moves or replay.is_game_over(claim_draw=True):
+                        break
+                    replay.push(move)
+                else:
+                    candidates.append((similarity * skill["value"] * skill["trust"], actions))
         return max(candidates, key=lambda item: item[0])[1] if candidates else ()
 
     def audit(self, key, agreement, *, observed=False):
@@ -210,8 +239,8 @@ class SkillLibrary:
             if float(skill["key"] @ key) >= self.cfg.memory_similarity:
                 skill["trust"] = float(np.clip((1 - weight) * skill["trust"] + weight * agreement, .1, 1))
 
-    def state_dict(self):
-        return deepcopy(self.skills)
+    def state_dict(self, *, copy=True):
+        return deepcopy(self.skills) if copy else self.skills
 
     def load_state_dict(self, state):
         self.skills = deepcopy(state)

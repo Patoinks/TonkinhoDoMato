@@ -75,3 +75,24 @@ def test_games_are_identical_with_and_without_cpp(seed, objective, kd):
     for (a, i), (b, j) in zip(quick[4], slow[4]):
         assert i == j and np.array_equal(a, b)              # bit-identical move scores
     assert quick[5] == slow[5]
+
+
+def test_reply_predictions_keep_order_probabilities_and_real_memory():
+    from tonkai.survival_agent import SurvivalAgent
+    torch.set_num_threads(1)
+    cfg = CognitiveConfig()
+    net = SurvivalNet(cfg).eval()
+    agent = CognitiveAgent(net, cfg, CognitiveKnowledge(cfg, net.encoder))
+    board = chess.Board()
+    for action in ("e2e4", "e7e5", "g1f3", "b8c6"):
+        board.push_uci(action)
+    for colour in (True, False):
+        moves, probabilities = SurvivalAgent.predict_reply(agent, board, colour)
+        memory, context = agent.memory.clone(), agent.context.clone()
+        fen, history = board.fen(), list(board.move_stack)
+        agent.use_fast_rules = True
+        fast_moves, fast_probabilities = agent.predict_reply(board, colour)
+        assert fast_moves == moves
+        np.testing.assert_array_equal(fast_probabilities, probabilities)
+        assert torch.equal(agent.memory, memory) and torch.equal(agent.context, context)
+        assert board.fen() == fen and board.move_stack == history

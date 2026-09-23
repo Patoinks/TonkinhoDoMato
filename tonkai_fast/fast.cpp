@@ -544,6 +544,11 @@ struct Promotions {
 
 // CPython (3.12+) sum() over floats: 0 + first item, then Neumaier compensation.
 double python_sum(const std::vector<double>& items) {
+#if PY_VERSION_HEX < 0x030C0000
+    double total = 0.0;
+    for (double x : items) total += x;
+    return total;
+#else
     if (items.empty()) return 0.0;
     double total = 0.0 + items[0], compensation = 0.0;
     for (size_t i = 1; i < items.size(); ++i) {
@@ -556,6 +561,7 @@ double python_sum(const std::vector<double>& items) {
     }
     if (compensation != 0.0 && std::isfinite(compensation)) total += compensation;
     return total;
+#endif
 }
 
 // piece_safety._exchange_probe's `follow`: work and values are this probe's own copies.
@@ -694,6 +700,53 @@ public:
     void push_many(const std::vector<int>& ms) {
         for (int m : ms) push(m);
     }
+    void push_many_checked(const std::vector<int>& ms) {
+        for (int m : ms) {
+            std::vector<int> legal;
+            pos.legal_moves(legal);
+            if (std::find(legal.begin(), legal.end(), m) == legal.end())
+                throw std::invalid_argument("illegal move in replay history");
+            push(m);
+        }
+    }
+    // Complete standard FEN with the raw EP square (python-chess fen's
+    // en_passant="fen" option). Used for move enumeration, never for history.
+    std::string fen() const {
+        static const char symbols[2][7] = {{' ', 'p', 'n', 'b', 'r', 'q', 'k'},
+                                           {' ', 'P', 'N', 'B', 'R', 'Q', 'K'}};
+        std::string out;
+        for (int rank = 7; rank >= 0; --rank) {
+            int empty = 0;
+            for (int file = 0; file < 8; ++file) {
+                int sq = rank * 8 + file, type = pos.type_at(sq);
+                if (type == NO_PIECE) { ++empty; continue; }
+                if (empty) { out += char('0' + empty); empty = 0; }
+                out += symbols[pos.color_at(sq)][type];
+            }
+            if (empty) out += char('0' + empty);
+            if (rank) out += '/';
+        }
+        out += pos.turn == WHITE ? " w " : " b ";
+        U64 rights = pos.clean_castling();
+        if (!rights) out += '-';
+        if (rights & bit(7)) out += 'K';
+        if (rights & bit(0)) out += 'Q';
+        if (rights & bit(63)) out += 'k';
+        if (rights & bit(56)) out += 'q';
+        out += " " + (pos.ep < 0 ? std::string("-") : square_name(pos.ep));
+        out += " " + std::to_string(pos.halfmove) + " " + std::to_string(pos.fullmove);
+        return out;
+    }
+    std::vector<bool> checks_after(const std::vector<int>& ms) const {
+        std::vector<bool> result;
+        result.reserve(ms.size());
+        for (int m : ms) {
+            Pos next = pos;
+            next.make(m);
+            result.push_back(next.is_check());
+        }
+        return result;
+    }
     void pop() {
         if (states.empty()) throw std::runtime_error("pop from an empty board");
         pos = states.back();
@@ -758,6 +811,108 @@ public:
         Promotions table(std::move(promotion));
         return piece_risks(pos, values, table, tolerance, depth);
     }
+    // captures.track + capture_targets, retaining identity through EP, castling
+    // and promotion. Integer targets are exactly the Python uint8 result.
+    py::array_t<std::uint8_t> capture_targets(const std::vector<int>& ms, bool self_colour) const {
+        Pos work = pos;
+        std::array<int, 64> ids;
+        ids.fill(-1);
+        int next_id = 0;
+        for (int s = 0; s < 64; ++s) if (work.occupied() & bit(s)) ids[s] = next_id++;
+        std::vector<std::array<int, 64>> snapshots{ids};
+        std::vector<int> capturers;
+        snapshots.reserve(ms.size() + 1);
+        capturers.reserve(ms.size());
+        for (int m : ms) {
+            std::vector<int> legal;
+            work.legal_moves(legal);
+            if (std::find(legal.begin(), legal.end(), m) == legal.end())
+                throw std::invalid_argument("illegal move in capture history");
+            int from = mfrom(m), to = mto(m), mover = ids[from];
+            int target = work.captured_square(m);
+            bool capture = (work.occ[work.turn ^ 1] & bit(target)) != 0;
+            capturers.push_back(capture ? mover : -1);
+            bool castle = work.type_at(from) == KING && std::abs(file_of(to) - file_of(from)) == 2;
+            ids[from] = -1;
+            if (capture) ids[target] = -1;
+            if (castle) {
+                int base = rank_of(from) * 8;
+                int rook_from = base + (file_of(to) == 6 ? 7 : 0);
+                int rook_to = base + (file_of(to) == 6 ? 5 : 3);
+                ids[rook_to] = ids[rook_from]; ids[rook_from] = -1;
+            }
+            ids[to] = mover;
+            work.make(m);
+            snapshots.push_back(ids);
+        }
+        int n = int(snapshots.size());
+        py::array_t<std::uint8_t> out({n, 64});
+        auto r = out.mutable_unchecked<2>();
+        std::array<int, 64> future{};
+        for (int k = n - 1; k >= 0; --k) {
+            for (int sq = 0; sq < 64; ++sq) {
+                int id = snapshots[k][sq];
+                r(k, self_colour ? sq : sq ^ 56) = id < 0 ? 0 : std::min(255, future[id]);
+            }
+            if (k > 0 && capturers[k - 1] >= 0) ++future[capturers[k - 1]];
+        }
+        return out;
+    }
+
+    // captures.activity: integer measurements, including the original rule
+    // that castling alone does not count as the rook's first individual move.
+    py::dict activity(const std::vector<int>& ms) const {
+        Pos work = pos;
+        U64 moved = 0;
+        std::array<std::array<std::array<int, 7>, 4>, 2> totals{};
+        for (int m : ms) {
+            std::vector<int> legal;
+            work.legal_moves(legal);
+            if (std::find(legal.begin(), legal.end(), m) == legal.end())
+                throw std::invalid_argument("illegal move in activity history");
+            std::array<int, 64> destinations{};
+            for (int action : legal) ++destinations[mfrom(action)];
+            int turn = work.turn;
+            U64 enemy = work.occ[turn ^ 1] & ~work.bb[KING];
+            for (U64 own = work.occ[turn] & ~work.bb[KING]; own; own &= own - 1) {
+                int sq = lsb(own), kind = work.type_at(sq);
+                if (moved & bit(sq)) {
+                    totals[turn][0][kind] += destinations[sq];
+                    ++totals[turn][1][kind];
+                }
+                for (U64 targets = work.attacks_mask(sq) & enemy; targets; targets &= targets - 1)
+                    if (work.attackers(turn ^ 1, lsb(targets), work.occupied())) ++totals[turn][2][kind];
+                ++totals[turn][3][kind];
+            }
+            int from = mfrom(m), to = mto(m), captured = work.captured_square(m);
+            if (work.type_at(from) == KING && std::abs(file_of(to) - file_of(from)) == 2) {
+                int base = rank_of(from) * 8;
+                int rook_from = base + (file_of(to) == 6 ? 7 : 0);
+                int rook_to = base + (file_of(to) == 6 ? 5 : 3);
+                bool rook_moved = (moved & bit(rook_from)) != 0;
+                moved &= ~(bit(rook_from) | bit(rook_to));
+                if (rook_moved) moved |= bit(rook_to);
+            }
+            moved &= ~(bit(from) | bit(captured));
+            moved |= bit(to);
+            work.make(m);
+        }
+        static const char* names[] = {"mobility", "mobility_n", "threats", "threats_n"};
+        py::dict out;
+        for (int colour : {WHITE, BLACK}) {
+            py::dict row;
+            for (int metric = 0; metric < 4; ++metric) {
+                py::dict values;
+                for (int kind = PAWN; kind <= QUEEN; ++kind)
+                    if (totals[colour][metric < 2 ? 1 : 3][kind])
+                        values[py::int_(kind)] = totals[colour][metric][kind];
+                row[names[metric]] = values;
+            }
+            out[py::bool_(colour == WHITE)] = row;
+        }
+        return out;
+    }
+
     // encoding.encode_after_moves: the position after each move, from self_color's side.
     py::array_t<float> encode_after(const std::vector<int>& ms, bool self_colour) const {
         int self = self_colour ? WHITE : BLACK, n = int(ms.size());
@@ -893,7 +1048,11 @@ PYBIND11_MODULE(tonkai_fast, m) {
         .def(py::init<U64, U64, U64, U64, U64, U64, U64, U64, bool, U64, int, int, int>())
         .def("push", &Board::push)
         .def("push_many", &Board::push_many)
+        .def("push_many_checked", &Board::push_many_checked)
+        .def("fen", &Board::fen)
+        .def("checks_after", &Board::checks_after)
         .def("pop", &Board::pop)
+        .def("copy", [](const Board& board) { return board; })
         .def_property_readonly("turn", &Board::turn)
         .def_property_readonly("ply", &Board::ply)
         .def("terminal", &Board::terminal)
@@ -902,6 +1061,8 @@ PYBIND11_MODULE(tonkai_fast, m) {
         .def("piece_risks", &Board::piece_risks_py, py::arg("values"), py::arg("promotion"), py::arg("tolerance"),
              py::arg("depth"))
         .def("encode_after", &Board::encode_after, py::arg("moves"), py::arg("self_color"))
+        .def("capture_targets", &Board::capture_targets, py::arg("moves"), py::arg("self_color"))
+        .def("activity", &Board::activity, py::arg("moves"))
         .def("pieces", &Board::pieces)
         .def("promotion_keys", &Board::promotion_keys)
         .def("legal_moves", &Board::legal_moves);

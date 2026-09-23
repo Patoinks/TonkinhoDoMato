@@ -62,6 +62,22 @@ def test_legal_moves_match_python_chess():
         assert sorted(fast.legal_moves()) == sorted(fast_rules.code(m) for m in board.legal_moves), board.fen()
 
 
+def test_native_replay_fen_and_check_order_match_python():
+    for board in games(92, 12, plies=120):
+        native = fast_rules.board(board.root())
+        native.push_many_checked([fast_rules.code(m) for m in board.move_stack])
+        assert native.fen() == board.fen(en_passant="fen")
+        moves = list(board.legal_moves)
+        assert list(chess.Board(native.fen()).legal_moves) == moves
+        assert native.checks_after([fast_rules.code(m) for m in moves]) == [board.gives_check(m) for m in moves]
+        assert native.fen() == board.fen(en_passant="fen")
+
+
+def test_checked_replay_rejects_illegal_actions():
+    with pytest.raises(ValueError):
+        fast_rules.board(chess.Board()).push_many_checked([fast_rules.code(chess.Move.from_uci("e2e5"))])
+
+
 @pytest.mark.parametrize("shuffle", [False, True])
 def test_terminal_value_matches(shuffle):
     seen = set()

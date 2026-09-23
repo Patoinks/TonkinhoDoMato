@@ -10,6 +10,19 @@ from .sequence_replay import SequenceEpisode
 from .objective import outcome_value
 
 
+def observation_key(board):
+    """The position information used by standard FEN, without formatting text.
+
+    History is compared separately in observe. As in board.fen(), an en-passant
+    square matters only when a legal capture exists, and castling is cleaned.
+    """
+    return (board.pawns, board.knights, board.bishops, board.rooks, board.queens,
+            board.kings, board.occupied_co[chess.WHITE], board.occupied_co[chess.BLACK],
+            board.turn, board.clean_castling_rights(),
+            board.ep_square if board.has_legal_en_passant() else None,
+            board.halfmove_clock, board.fullmove_number)
+
+
 @dataclass
 class SurvivalChoice:
     moves: list
@@ -36,19 +49,19 @@ class SurvivalAgent:
         self._position = None
         self._ply = -1
         self._history = ()
-        self._root_fen = None
+        self._root_position = None
 
     @torch.inference_mode()
     def observe(self, board, self_color):
-        position = (board.fen(), self_color)
+        position = (observation_key(board), self_color)
         ply = len(board.move_stack)
         history = tuple(board.move_stack)
-        root_fen = board.root().fen()
-        if self._position == position and self._history == history and self._root_fen == root_fen:
+        root_position = observation_key(board.root())
+        if self._position == position and self._history == history and self._root_position == root_position:
             return self.context
         # Undo, a replaced board, or skipped observations require the real prefix.
         incremental = (self._position is not None and self._position[1] == self_color
-                       and self._root_fen == root_fen and ply == self._ply + 1
+                       and self._root_position == root_position and ply == self._ply + 1
                        and history[:-1] == self._history)
         if (self._position is None and ply > 0) or (self._position is not None and not incremental):
             self.reset()
@@ -61,7 +74,7 @@ class SurvivalAgent:
         x = torch.from_numpy(encode(board, self_color)[None]).to(self.device)
         self.context, self.memory = self.net.observe(x, self.memory)
         self._position, self._ply = position, ply
-        self._history, self._root_fen = history, root_fen
+        self._history, self._root_position = history, root_position
         return self.context
 
     @torch.inference_mode()
@@ -143,7 +156,8 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
     measure = (getattr(cfg, "objective", "survival") == "shaped"
                and callable(getattr(agent, "position_proxy", None)))
     proxies = [agent.position_proxy(board, self_color)] if measure else None
-    while not board.is_game_over(claim_draw=True) and len(board.move_stack) < cfg.max_plies:
+    game_over = getattr(agent, "game_over", lambda b: b.is_game_over(claim_draw=True))
+    while not game_over(board) and len(board.move_stack) < cfg.max_plies:
         if board.turn == self_color:
             choice = agent.choose(board, self_color, rng, temperature=temperature,
                                   explore=explore, head=head)

@@ -53,9 +53,10 @@ python setup.py build_ext --inplace
 python -m pytest
 ```
 
-The extension lands in the project root as `tiny_opponent*.pyd` / `.so`, so
-`import tiny_opponent` works from there with no install step. A C++17 compiler
-is required (MSVC, gcc or clang).
+The extensions land in the project root as `tiny_opponent*.pyd` and
+`tonkai_fast*.pyd` (or `.so`), with no install step. A C++20 compiler is
+required for the V3 rules (MSVC, gcc or clang). See
+[C++ acceleration, validation and benchmarks](docs/cpp_acceleration.md).
 
 ## Running
 

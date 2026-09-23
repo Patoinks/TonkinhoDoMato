@@ -44,7 +44,7 @@ def terminal_value(board, colour, objective="survival", weight=0.5):
 class CognitiveAgent(SurvivalAgent):
     # The C++ rules return exactly what the Python ones do (tests/test_fast_rules.py,
     # tests/test_fast_agent.py); False keeps the Python reference path.
-    use_fast_rules = fast_rules.AVAILABLE
+    use_fast_rules = fast_rules.ENABLED
 
     def __init__(self, net, cfg, knowledge, device="cpu", kd_values=None):
         self.knowledge = knowledge
@@ -59,11 +59,45 @@ class CognitiveAgent(SurvivalAgent):
         self.diagnostics = Counter()
         self.plan = ()
         self.plan_prefix = ()
+        self._piece_embedding_cache = None
+
+    def _piece_features(self, items, self_color):
+        # Embeddings do not depend on the candidate context. Reuse their exact
+        # concatenated rows, but invalidate on optimizer/load/device changes.
+        layers = (self.net.type_embed, self.net.square_embed, self.net.side_embed)
+        stamp = tuple((id(layer.weight), layer.weight._version, layer.weight.device,
+                       layer.weight.dtype) for layer in layers)
+        if self._piece_embedding_cache is None or self._piece_embedding_cache[0] != stamp:
+            type_rows = layers[0].weight[None, :, None, :].expand(2, 6, 64, -1)
+            square_rows = layers[1].weight[None, None, :, :].expand(2, 6, 64, -1)
+            side_rows = layers[2].weight[:, None, None, :].expand(2, 6, 64, -1)
+            table = torch.cat((type_rows, square_rows, side_rows), dim=-1).reshape(768, -1)
+            self._piece_embedding_cache = (stamp, table)
+        indices = torch.tensor([int(p.color != self_color) * 384 + (p.piece_type - 1) * 64
+                                + (sq if self_color else sq ^ 56) for sq, p in items], device=self.device)
+        return self._piece_embedding_cache[1][indices]
+
+    def game_over(self, board):
+        if self.use_fast_rules:
+            return fast_rules.board(board).terminal() != fast_rules.NONE
+        return board.is_game_over(claim_draw=True)
 
     @torch.inference_mode()
     def keys(self, x):
         latent = self.knowledge.encoder(x.to("cpu")).cpu().numpy()
         return structural_keys(x.detach().cpu().numpy(), latent)
+
+    @torch.inference_mode()
+    def predict_reply(self, board, self_color):
+        if not self.use_fast_rules:
+            return super().predict_reply(board, self_color)
+        self.observe(board, self_color)
+        # Preserve python-chess move order, which defines the reply labels.
+        moves = list(board.legal_moves)
+        encoded = fast_rules.encode_after_moves(fast_rules.board(board),
+                                               [fast_rules.code(m) for m in moves], self_color)
+        context, _ = self.net.candidates(torch.from_numpy(encoded).to(self.device), self.memory)
+        return moves, self.net.predict_logits(context).softmax(0).cpu().numpy()
 
     @torch.inference_mode()
     def piece_valuer(self, board, self_color, context=None, items=None):
@@ -74,10 +108,14 @@ class CognitiveAgent(SurvivalAgent):
         if items is None:
             items = sorted(board.piece_map().items())
         pieces = [piece for _, piece in items]
-        types = torch.tensor([p.piece_type - 1 for p in pieces], device=self.device)
-        squares = torch.tensor([sq if self_color else sq ^ 56 for sq, _ in items], device=self.device)
-        sides = torch.tensor([int(p.color != self_color) for p in pieces], device=self.device)
-        raw = self.net.piece_values(context.expand(len(items), -1), types, squares, sides).cpu().numpy()
+        if self.use_fast_rules:
+            features = torch.cat((context.expand(len(items), -1), self._piece_features(items, self_color)), dim=-1)
+            raw = self.net.piece_head(features).squeeze(-1).cpu().numpy()
+        else:
+            types = torch.tensor([p.piece_type - 1 for p in pieces], device=self.device)
+            squares = torch.tensor([sq if self_color else sq ^ 56 for sq, _ in items], device=self.device)
+            sides = torch.tensor([int(p.color != self_color) for p in pieces], device=self.device)
+            raw = self.net.piece_values(context.expand(len(items), -1), types, squares, sides).cpu().numpy()
         unit = pawn_unit(raw, pieces)
         signed = raw * np.array([1 if p.color == self_color else -1 for p in pieces])
         normalized = np.clip(signed / unit, -12, 12)
@@ -123,13 +161,18 @@ class CognitiveAgent(SurvivalAgent):
         with piece values as used in decisions (K/D blend when enabled).
         A finished game overrides it: win 1, draw 0.5, loss 0.
         """
-        outcome = board.outcome(claim_draw=True)
-        if outcome is not None:
-            return 0.5 if outcome.winner is None else float(outcome.winner == self_color)
+        fast = fast_rules.board(board) if self.use_fast_rules else None
+        if fast is not None:
+            ending = fast_rules.terminal_value(fast, self_color, "victory")
+            if ending is not None:
+                return ending
+        else:
+            outcome = board.outcome(claim_draw=True)
+            if outcome is not None:
+                return 0.5 if outcome.winner is None else float(outcome.winner == self_color)
         if self.context is None:
             self.observe(board, self_color)
         if self.use_fast_rules:
-            fast = fast_rules.board(board)
             king = fast_rules.king_balance(fast, self_color)
             own, enemy = self._fast_piece_risks(fast, self_color, self.context)
             pieces = enemy - own
@@ -183,7 +226,11 @@ class CognitiveAgent(SurvivalAgent):
             # Force/check/capture coverage plus deterministic diversity within the
             # strict node cap. Diagnostics expose any replies left unexplored.
             if len(replies) > available:
-                replies.sort(key=lambda move: (not candidate.gives_check(move), not candidate.is_capture(move), move.uci()))
+                if fast is not None:
+                    checks = dict(zip(replies, fast.checks_after([fast_rules.code(move) for move in replies])))
+                    replies.sort(key=lambda move: (not checks[move], not candidate.is_capture(move), move.uci()))
+                else:
+                    replies.sort(key=lambda move: (not candidate.gives_check(move), not candidate.is_capture(move), move.uci()))
                 self.diagnostics["unsearched_replies"] += len(replies) - available
                 replies = replies[:available]
             if fast is not None:
@@ -341,7 +388,8 @@ class CognitiveAgent(SurvivalAgent):
         expected = self.plan_prefix + self.plan
         consumed = len(history) - len(self.plan_prefix)
         if not self.plan or consumed < 0 or history != expected[:len(history)] or consumed >= len(self.plan):
-            self.plan = self.knowledge.skills.retrieve(position_key, board, self_color)
+            self.plan = self.knowledge.skills.retrieve(position_key, board, self_color,
+                                                      fast=self._evaluation.get("fast"))
             self.plan_prefix = history
             consumed = 0
         if self.plan:

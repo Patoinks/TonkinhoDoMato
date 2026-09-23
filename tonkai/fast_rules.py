@@ -8,6 +8,7 @@ extension is not built, ``AVAILABLE`` is False and the agent uses Python.
 from __future__ import annotations
 
 import chess
+import os
 
 try:
     import tonkai_fast
@@ -15,6 +16,13 @@ except ImportError:  # extension not built: python setup.py build_ext --inplace
     tonkai_fast = None
 
 AVAILABLE = tonkai_fast is not None
+REQUESTED_BACKEND = os.environ.get("TONKAI_RULES_BACKEND", "auto").lower()
+if REQUESTED_BACKEND not in ("auto", "python", "cpp"):
+    raise ValueError("TONKAI_RULES_BACKEND must be auto, python or cpp")
+if REQUESTED_BACKEND == "cpp" and not AVAILABLE:
+    raise RuntimeError("C++ rules requested but tonkai_fast is unavailable. Run python setup.py build_ext --inplace")
+ENABLED = AVAILABLE and REQUESTED_BACKEND != "python"
+BACKEND = "cpp" if ENABLED else "python"
 NONE, DRAW, WHITE_WINS, BLACK_WINS = -1, 0, 1, 2
 PIECES = {(kind, colour): chess.Piece(kind, colour) for kind in range(1, 7) for colour in (True, False)}
 
@@ -25,6 +33,8 @@ def code(move: chess.Move) -> int:
 
 def board(position: chess.Board):
     """A C++ board with the same root position and complete move history."""
+    if position.chess960:
+        raise ValueError("tonkai_fast supports standard chess only")
     root = position.root()
     fast = tonkai_fast.Board(root.pawns, root.knights, root.bishops, root.rooks, root.queens, root.kings,
                              root.occupied_co[chess.WHITE], root.occupied_co[chess.BLACK], root.turn,

@@ -135,13 +135,41 @@ def test_default_learning_window_backpropagates_more_than_twenty_states_and_deta
     assert trainer.net.memory_cell.weight_hh.grad.abs().sum() > 0
 
 
+def test_omitting_unused_recurrent_outputs_preserves_every_learning_gradient():
+    torch.manual_seed(381)
+    cfg = config(sequence_length=40, burn_in=8)
+    trainer = SurvivalTrainer(cfg)
+    optimized = deepcopy(trainer.net)
+    total = cfg.burn_in + cfg.sequence_length + max(cfg.future_horizons)
+    original_x = torch.rand(3, total, 782, requires_grad=True)
+    optimized_x = original_x.detach().clone().requires_grad_(True)
+    valid = torch.ones((3, total), dtype=torch.bool)
+    valid[1, -12:] = False
+    valid[2, :4] = False
+    full = trainer._unroll(trainer.net, original_x, valid, cfg.burn_in, cfg.sequence_length, True)
+    short = trainer._unroll(optimized, optimized_x, valid, cfg.burn_in, cfg.sequence_length, True,
+                            learner_window_only=True)
+    window = slice(cfg.burn_in, cfg.burn_in + cfg.sequence_length)
+    for a, b in zip(full, short):
+        assert a.shape == b.shape
+        assert torch.equal(a[:, window], b[:, window])
+    sum(t[:, window].square().sum() for t in full).backward()
+    sum(t[:, window].square().sum() for t in short).backward()
+    assert torch.equal(original_x.grad, optimized_x.grad)
+    for a, b in zip(trainer.net.parameters(), optimized.parameters()):
+        assert (a.grad is None and b.grad is None) or torch.equal(a.grad, b.grad)
+    # Real long-range credit assignment is still present in the first learned state.
+    assert optimized_x.grad[:, cfg.burn_in].abs().sum() > 0
+
+
 def test_update_has_finite_losses_and_gradients_and_trains_every_requested_component():
     trainer = populated_trainer()
     before = {key: value.detach().clone() for key, value in trainer.net.state_dict().items()}
     fixed_future = deepcopy(trainer.future_encoder.state_dict())
     metrics = trainer.update()
     assert metrics is not None and trainer.steps == 1
-    assert all(np.isfinite(value) for value in metrics.values())
+    assert metrics["objective"] == trainer.cfg.objective
+    assert all(np.isfinite(value) for key, value in metrics.items() if key != "objective")
     for name in ("loss", "survival_loss", "future_loss", "novelty_loss", "reply_loss", "piece_loss", "gradient_norm"):
         assert metrics[name] > 0, name
     assert metrics["learned_positions"] > 0
@@ -190,6 +218,24 @@ def observe_history(agent, board, color):
     for move in board.move_stack:
         replay.push(move)
         agent.observe(replay, color)
+
+
+def test_observation_key_preserves_fen_distinctions():
+    from tonkai.survival_agent import observation_key
+    board = chess.Board()
+    for san in "e4 a6 e5 d5".split():
+        board.push_san(san)
+    positions = [board, board.root(), chess.Board(board.fen()), board.mirror()]
+    for field, value in (("turn", False), ("castling_rights", 0), ("ep_square", None),
+                         ("halfmove_clock", 91), ("fullmove_number", 108)):
+        changed = board.copy()
+        setattr(changed, field, value)
+        positions.append(changed)
+    pinned = chess.Board("4r1k1/8/8/3pP3/8/8/8/4K3 w - d6 0 1")
+    positions.extend([pinned, chess.Board(pinned.fen())])
+    for a in positions:
+        for b in positions:
+            assert (observation_key(a) == observation_key(b)) == (a.fen() == b.fen())
 
 
 def board_after(sans):

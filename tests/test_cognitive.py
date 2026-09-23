@@ -110,6 +110,22 @@ def test_information_gain_downweights_conflicting_outcomes():
     assert noisy < clean.query(key[None])["information"][0]
 
 
+def test_memory_retention_cache_matches_uncached_rejections_replacements_and_load():
+    cached, reference = ExperienceMemory(config(archive_capacity=8)), ExperienceMemory(config(archive_capacity=8))
+    rng = np.random.default_rng(291)
+    keys = np.eye(10, dtype=np.float32)
+    for game in range(160):
+        key = keys[int(rng.integers(len(keys)))]
+        target, prediction = map(float, rng.random(2))
+        reference._retention = None
+        assert cached.add(key, target, prediction, game, '') == reference.add(key, target, prediction, game, '')
+        assert [e['id'] for e in cached.entries] == [e['id'] for e in reference.entries]
+        np.testing.assert_array_equal(cached.query(key[None])['value'], reference.query(key[None])['value'])
+        if game == 80:
+            cached.load_state_dict(reference.state_dict())
+            assert cached._retention is None
+
+
 def test_retrieval_respects_whose_turn_it_is():
     memory = ExperienceMemory(config())
     key = np.array([1., 0.])

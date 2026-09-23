@@ -24,9 +24,10 @@ class CognitiveKnowledge:
         self.calibration = ErrorCalibration(cfg.calibration_bins)
         self.skills = SkillLibrary(cfg)
 
-    def state_dict(self):
-        return {"encoder": self.encoder.state_dict(), "memory": self.memory.state_dict(),
-                "calibration": self.calibration.state_dict(), "skills": self.skills.state_dict()}
+    def state_dict(self, *, include_episodes=True, copy=True):
+        return {"encoder": self.encoder.state_dict(),
+                "memory": self.memory.state_dict(include_episodes=include_episodes, copy=copy),
+                "calibration": self.calibration.state_dict(), "skills": self.skills.state_dict(copy=copy)}
 
     def load_state_dict(self, state):
         self.encoder.load_state_dict(state["encoder"])
