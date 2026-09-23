@@ -199,6 +199,11 @@ class CognitiveAgent(SurvivalAgent):
             outcome = board.outcome(claim_draw=True)
             if outcome is not None:
                 return 0.5 if outcome.winner is None else float(outcome.winner == self_color)
+        labels = int(getattr(self.cfg, "mate_labels", 0) or 0)
+        if labels and fast_rules.AVAILABLE:
+            proven = self._proven_ending(board if fast is None else fast, self_color, labels)
+            if proven is not None:
+                return proven
         if self.context is None:
             self.observe(board, self_color)
         value = self.piece_valuer(board, self_color, self.context)
@@ -555,6 +560,41 @@ class CognitiveAgent(SurvivalAgent):
             if scores[index] > -1e8:
                 scores[index] = floor + 1e-3 * found
 
+    def _proven_ending(self, position, self_color, depth):
+        """Rules-only truth for the victory measure: 1 if TonkAI forces mate
+        within `depth` moves, 0 if the opponent does, else None."""
+        fast = fast_rules.board(position) if isinstance(position, chess.Board) else position
+        limit = int(getattr(self.cfg, "mate_node_limit", 20_000))
+        if fast.forced_mate(self_color, depth, limit)[0]:
+            self.diagnostics["mate_labels_won"] += 1
+            return 1.0
+        if fast.forced_mate(not self_color, depth, limit)[0]:
+            self.diagnostics["mate_labels_lost"] += 1
+            return 0.0
+        return None
+
+    def _threat_move(self, board, self_color, choice, rng):
+        """Exploration: index of a move that creates a mate threat (were the
+        opponent to pass, TonkAI would force mate within threat_moves), sampled by
+        TonkAI's own scores among those moves; None when there is none. Moves that
+        allow the opponent a forced mate are never tried."""
+        fast = self._evaluation.get("fast")
+        fast = fast_rules.board(board) if fast is None else fast
+        codes = self._evaluation.get("codes")
+        codes = [fast_rules.code(move) for move in choice.moves] if codes is None else codes
+        position = {code: index for index, code in enumerate(codes)}
+        found, depths, _ = fast.threats(int(getattr(self.cfg, "threat_moves", 1)),
+                                        int(getattr(self.cfg, "mate_node_limit", 20_000)))
+        vetoed = self._evaluation.get("allows_mate") or {}
+        candidates = [position[code] for code, depth in zip(found, depths)
+                      if depth and code in position and position[code] not in vetoed]
+        if not candidates:
+            return None
+        scores = choice.scores[candidates]
+        weights = np.exp((scores - scores.max()) / max(1e-6, float(self.cfg.temperature)))
+        self.diagnostics["threat_moves_explored"] += 1
+        return candidates[int(rng.choice(len(candidates), p=weights / weights.sum()))]
+
     def _mating_line(self, board, self_color, moves, depth):
         """Mate calculation, rules only: (indices of the moves on a shortest
         forced mate within `depth` own moves, its length), ([], 0) if none."""
@@ -640,8 +680,14 @@ class CognitiveAgent(SurvivalAgent):
         attack = int(getattr(self.cfg, "mate_search_moves", 0) or 0)
         if not winning and attack > 0 and fast_rules.AVAILABLE:
             winning, choice.forced_mate = self._mating_line(board, self_color, choice.moves, attack)
+        threat = None
+        share = float(getattr(self.cfg, "threat_explore", 0.0) or 0.0)
+        if not winning and explore and share > 0 and fast_rules.AVAILABLE and rng.random() < share:
+            threat = self._threat_move(board, self_color, choice, rng)
         if winning:
             choice.index = winning[0]
+        elif threat is not None:
+            choice.index = threat
         elif explore and temperature > 0:
             weights = np.exp((choice.scores - choice.scores.max()) / temperature)
             choice.index = int(rng.choice(len(weights), p=weights / weights.sum()))

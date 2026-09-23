@@ -92,6 +92,11 @@ def main(argv=None):
     parser.add_argument("--mate-defense-moves", type=int,
                         help="avoid moves after which the opponent forces mate within N moves")
     parser.add_argument("--mate-node-limit", type=int, help="nodes per mate search")
+    parser.add_argument("--threat-explore", type=float,
+                        help="share of exploring decisions that try a move creating a mate threat")
+    parser.add_argument("--threat-moves", type=int, help="mate threat = forced mate within N moves after a pass")
+    parser.add_argument("--mate-labels", type=int,
+                        help="victory measure = proven result when a forced mate within N moves exists")
     parser.add_argument("--avoid-repetition-margin", type=float,
                         help="when ahead by this many pawns (own piece values), avoid drawing by repetition")
     parser.add_argument("--value-opponents",
@@ -158,7 +163,8 @@ def main(argv=None):
                             ("avoid_repetition_margin", "avoid_repetition_margin"),
                             ("king_safety_log_every", "king_safety_log_every"),
                             ("mate_search_moves", "mate_search_moves"), ("mate_defense_moves", "mate_defense_moves"),
-                            ("mate_node_limit", "mate_node_limit"),
+                            ("mate_node_limit", "mate_node_limit"), ("threat_explore", "threat_explore"),
+                            ("threat_moves", "threat_moves"), ("mate_labels", "mate_labels"),
                             ("fairy_elo", "fairy_elo")):
         value = getattr(args, argument)
         if value is not None:

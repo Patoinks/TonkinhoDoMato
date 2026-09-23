@@ -5,7 +5,7 @@
 # UTF-8 console output (the localised MSVC help otherwise breaks PyTorch decoding).
 # A completed campaign auto-publishes the model to the site; history/<run>/STOP
 # stops gracefully without publishing.
-param([int]$Workers = 6, [int]$Games = 20000, [int]$Elo = 1800, [switch]$NoCompile, [switch]$CudaGraphs, [switch]$BatchSearch)
+param([int]$Workers = 6, [int]$Games = 20000, [int]$Elo = 1800, [double]$ThreatExplore = 0, [int]$MateLabels = 0, [switch]$NoCompile, [switch]$CudaGraphs, [switch]$BatchSearch)
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $python = 'C:\Users\Martim\AppData\Local\Programs\Python\Python313\python.exe'
@@ -25,7 +25,8 @@ $arguments = @('train_cognitive.py', '--resume', $source,
     '--resign', '--resign-min-non-loss', '0', '--capture-target-weight', '0.05',
     '--objective', 'shaped', '--victory-weight', '0.5', '--kd-weight', '0.75',
     '--king-safety-model', 'checkpoints\king_safety\latest.pt',
-    '--mate-search-moves', '3', '--mate-defense-moves', '2')
+    '--mate-search-moves', '3', '--mate-defense-moves', '2',
+    '--threat-explore', "$ThreatExplore", '--mate-labels', "$MateLabels")
 if ($CudaGraphs) { $arguments += @('--learner-device', 'cuda', '--cuda-graphs') }
 elseif (-not $NoCompile) { $arguments += '--compile-learner' }
 if ($BatchSearch) { $arguments += '--batch-search' }

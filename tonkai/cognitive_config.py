@@ -94,6 +94,16 @@ class CognitiveConfig(SurvivalConfig):
     mate_search_moves: int = 0
     mate_defense_moves: int = 0
     mate_node_limit: int = 20_000
+    # Organic attack learning (off by default):
+    # threat_explore - share of exploring decisions that TRY a move creating a
+    #   mate threat (were the opponent to pass, mate within threat_moves), found
+    #   by the rules alone; the game's result teaches whether it was good.
+    # mate_labels - the shaped victory measure of a real position is the proven
+    #   truth when the exact search finds a forced mate within this many moves
+    #   (1 if TonkAI forces it, 0 if the opponent does).
+    threat_explore: float = 0.0
+    threat_moves: int = 1
+    mate_labels: int = 0
 
     def validate(self):
         super().validate()
@@ -119,5 +129,7 @@ class CognitiveConfig(SurvivalConfig):
             raise ValueError("mix_fairy needs fairy_path and a positive fairy_elo")
         if not 0 < self.capture_target_clip < float("inf"):
             raise ValueError("capture_target_clip must be finite and positive")
+        if not 0 <= self.threat_explore <= 1 or self.threat_moves < 1 or self.mate_labels < 0:
+            raise ValueError("threat_explore must be in [0, 1], threat_moves positive, mate_labels >= 0")
         if self.mate_search_moves < 0 or self.mate_defense_moves < 0 or self.mate_node_limit < 1:
             raise ValueError("mate_search_moves/mate_defense_moves must be >= 0 and mate_node_limit positive")
