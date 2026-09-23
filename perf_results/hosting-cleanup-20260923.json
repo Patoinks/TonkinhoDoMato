@@ -1,0 +1,137 @@
+{
+  "site": "anw-games",
+  "startedAt": "2026-09-23T03:37:19.932Z",
+  "preserved": [
+    "50181d1602984087",
+    "440b16b3482dd322",
+    "c16799af54287dd5"
+  ],
+  "finalizedCount": 97,
+  "candidates": [
+    {
+      "id": "fadda24eb7170e25",
+      "created": "2026-09-22T16:14:10.955221Z",
+      "bytes": "110066510"
+    },
+    {
+      "id": "e11c20498be6aab1",
+      "created": "2026-09-22T16:29:10.645548Z",
+      "bytes": "110067611"
+    },
+    {
+      "id": "35bcc310ab526c50",
+      "created": "2026-09-22T16:29:47.899307Z",
+      "bytes": "110067610"
+    },
+    {
+      "id": "1fbac188b3aec677",
+      "created": "2026-09-22T16:30:59.325496Z",
+      "bytes": "110067610"
+    },
+    {
+      "id": "5c74d55165b18b06",
+      "created": "2026-09-22T16:32:10.749858Z",
+      "bytes": "110067610"
+    },
+    {
+      "id": "a0fd7c749b3a6bc8",
+      "created": "2026-09-22T16:33:22.195264Z",
+      "bytes": "110067610"
+    },
+    {
+      "id": "9eb175d3015f6258",
+      "created": "2026-09-22T16:34:33.192197Z",
+      "bytes": "110067609"
+    },
+    {
+      "id": "a1eb000461840755",
+      "created": "2026-09-22T16:35:44.385309Z",
+      "bytes": "110067609"
+    },
+    {
+      "id": "d96ee152e6bf93a3",
+      "created": "2026-09-22T16:36:55.780794Z",
+      "bytes": "110067610"
+    },
+    {
+      "id": "cae2b079969ff2c6",
+      "created": "2026-09-22T16:38:06.435509Z",
+      "bytes": "110067608"
+    },
+    {
+      "id": "a217a69f55d5c203",
+      "created": "2026-09-22T16:39:18.201413Z",
+      "bytes": "110067609"
+    },
+    {
+      "id": "da44bcbde61eb63c",
+      "created": "2026-09-22T16:40:29.624827Z",
+      "bytes": "110067608"
+    }
+  ],
+  "deleted": [
+    {
+      "id": "fadda24eb7170e25",
+      "deletedAt": "2026-09-23T03:37:22.342Z"
+    },
+    {
+      "id": "e11c20498be6aab1",
+      "deletedAt": "2026-09-23T03:37:24.487Z"
+    },
+    {
+      "id": "35bcc310ab526c50",
+      "deletedAt": "2026-09-23T03:37:26.327Z"
+    },
+    {
+      "id": "1fbac188b3aec677",
+      "deletedAt": "2026-09-23T03:37:28.471Z"
+    },
+    {
+      "id": "5c74d55165b18b06",
+      "deletedAt": "2026-09-23T03:37:30.145Z"
+    },
+    {
+      "id": "a0fd7c749b3a6bc8",
+      "deletedAt": "2026-09-23T03:37:32.018Z"
+    },
+    {
+      "id": "9eb175d3015f6258",
+      "deletedAt": "2026-09-23T03:37:33.937Z"
+    },
+    {
+      "id": "a1eb000461840755",
+      "deletedAt": "2026-09-23T03:37:35.768Z"
+    },
+    {
+      "id": "d96ee152e6bf93a3",
+      "deletedAt": "2026-09-23T03:37:37.670Z"
+    },
+    {
+      "id": "cae2b079969ff2c6",
+      "deletedAt": "2026-09-23T03:37:39.591Z"
+    },
+    {
+      "id": "a217a69f55d5c203",
+      "deletedAt": "2026-09-23T03:37:41.442Z"
+    },
+    {
+      "id": "da44bcbde61eb63c",
+      "deletedAt": "2026-09-23T03:37:43.295Z"
+    }
+  ],
+  "finishedAt": "2026-09-23T03:37:43.296Z",
+  "deployment": {
+    "state": "published",
+    "version": "bfdac3dd865d278b",
+    "url": "https://anw-games.web.app/tonkai",
+    "verified_index_matches_dist": true,
+    "verified_featured_pgn_matches_dist": true,
+    "browser_replay": {
+      "plies": 8,
+      "last_move": "Nd3#",
+      "result": "0-1",
+      "opponent_nominal_elo": 1500
+    },
+    "deleted_version_bytes_sum": 1320810214
+  }
+}
