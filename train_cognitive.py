@@ -95,6 +95,8 @@ def main(argv=None):
     parser.add_argument("--threat-explore", type=float,
                         help="share of exploring decisions that try a move creating a mate threat")
     parser.add_argument("--threat-moves", type=int, help="mate threat = forced mate within N moves after a pass")
+    parser.add_argument("--set", action="append", default=[], dest="settings",
+                        help="any decision setting name=value (repeatable), e.g. from a tournament player")
     parser.add_argument("--exchange-depth", type=int, help="exact capture search depth for piece safety (0 = off)")
     parser.add_argument("--exchange-labels", type=int, choices=(0, 1),
                         help="1: the victory measure's piece part is the exact exchange result")
@@ -176,6 +178,13 @@ def main(argv=None):
             setattr(cfg, field, str(value) if isinstance(value, Path) else value)
     if args.exchange_labels is not None:
         cfg.exchange_labels = bool(args.exchange_labels)
+    for item in args.settings:
+        key, _, raw = item.partition("=")
+        if not hasattr(cfg, key):
+            parser.error(f"unknown setting {key}")
+        current = getattr(CognitiveConfig(), key)
+        kind = type(current) if current is not None else float
+        setattr(cfg, key, (raw.lower() in ("1", "true")) if kind is bool else kind(raw))
     cfg.validate()
     output = (Path(cfg.checkpoint_dir) / "latest.pt").resolve()
     if args.new_campaign and (not args.resume or state.get("status") not in ("completed", "stopped")
