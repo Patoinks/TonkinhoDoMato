@@ -154,6 +154,9 @@ def test_explicit_new_campaign_retains_learning_and_resets_only_cap_and_openings
     assert state['games'] == 4 and state['campaign_start_games'] == 2
     assert state['campaign_cap'] == 100000 and len(state['opening_history']) == 2
     assert sum(state['campaign_results'].values()) == 2
+    # The measured piece values are the game's, not the campaign's: they carry over.
+    source = torch.load(previous, weights_only=False)['capture_stats']
+    assert state['capture_stats']['games'] == source['games'] + 2
     assert previous.read_bytes() == previous_bytes
 
 

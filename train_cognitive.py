@@ -244,12 +244,14 @@ def main(argv=None):
                         else "verification restarts in shadow")
                 print(f"[resign] threshold changed {state['resign']['initial_threshold']:.4f} -> "
                       f"{resign.initial_threshold:.4f}; {mode}", flush=True)
-        if state.get("capture_stats") and state["capture_stats"].get("hot_kills") == cfg.hot_piece_kills:
-            capture_stats.load_state_dict(state["capture_stats"])
-        if capture_stats.needs_seed() and state.get("replay"):
-            # Piece values v2: the new measures start from the stored real games.
-            seeded = capture_stats.seed_new_measures(replay_games(state["replay"]["episodes"]))
-            print(f"[piece values] v2 measures seeded from {seeded} stored games", flush=True)
+    # The measured piece values belong to the game, not to a campaign: a new
+    # campaign keeps them (without them the exact exchange search is off).
+    if state.get("capture_stats") and state["capture_stats"].get("hot_kills") == cfg.hot_piece_kills:
+        capture_stats.load_state_dict(state["capture_stats"])
+    if capture_stats.needs_seed() and state.get("replay"):
+        # Piece values v2: the new measures start from the stored real games.
+        seeded = capture_stats.seed_new_measures(replay_games(state["replay"]["episodes"]))
+        print(f"[piece values] v2 measures seeded from {seeded} stored games", flush=True)
     saved_rival = None if args.new_campaign else state.get("self_play_rival")
     del state
     initial_games = trainer.games
