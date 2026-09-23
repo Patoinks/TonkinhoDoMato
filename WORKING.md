@@ -23,7 +23,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 
 
-- Claude | checkpoints/cognitive-mix-20260923/, history/mix-* e history/cognitive-* | Run a correr: cognitive-20260923T032420Z-9cbfffe3, limite 20k jogos, mistura tiny50/self10/fairy32/sf8, rival congelado a cada 500, checkpoint a cada 2000 | 2026-09-23
+- Claude | checkpoints/cognitive-mix-20260923/, history/mix-* e history/cognitive-* | Run v3.1 a correr: cognitive-20260923T034359Z-a4addaea (20k jogos; tiny56/fairy36/sf9; série de 50 vs congelado a cada 2000; valores 35% fairy/65% SF; desistência forçada; sem repetição à frente ≥2 peões) | 2026-09-23
 
 ## Pedidos
 
