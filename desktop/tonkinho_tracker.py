@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import sys
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 
 from tracker_data import TrainingReader
 
@@ -80,7 +80,7 @@ class Tracker:
         root.minsize(940, min(900,height))
         root.option_add('*Font', '{Segoe UI} 10')
         root.grid_columnconfigure(0, weight=1)
-        root.grid_rowconfigure(3, weight=1, minsize=180)
+        root.grid_rowconfigure(3, weight=1, minsize=240)
         header = tk.Frame(root, bg=BG)
         header.grid(row=0, column=0, sticky='ew', padx=28, pady=(24,18))
         header.grid_columnconfigure(0, weight=1)
@@ -119,13 +119,48 @@ class Tracker:
             value = tk.Label(frame,text='—',bg=CARD,fg=TEXT,font=('Segoe UI',21,'bold'))
             value.pack(anchor='w',pady=(4,2)); self.values[key] = value
             tk.Label(frame,text=subtitle,bg=CARD,fg=MUTED,font=('Segoe UI',8)).pack(anchor='w')
-        charts = tk.Frame(root,bg=BG)
-        charts.grid(row=3,column=0,sticky='nsew',padx=28,pady=(0,14))
+        style = ttk.Style(root)
+        style.theme_use('clam')
+        style.configure('Tracker.TNotebook', background=BG, borderwidth=0)
+        style.configure('Tracker.TNotebook.Tab', background=CARD, foreground=MUTED, padding=(16,8))
+        style.map('Tracker.TNotebook.Tab', background=[('selected', '#304132')], foreground=[('selected', TEXT)])
+        style.configure('Tracker.Treeview', background=CARD, fieldbackground=CARD, foreground=TEXT,
+                        rowheight=30, borderwidth=0, font=('Segoe UI', 10))
+        style.configure('Tracker.Treeview.Heading', background='#26372c', foreground=MUTED,
+                        relief='flat', font=('Segoe UI', 9, 'bold'))
+        style.map('Tracker.Treeview', background=[('selected', '#364d3c')], foreground=[('selected', TEXT)])
+        self.tabs = ttk.Notebook(root, style='Tracker.TNotebook')
+        self.tabs.grid(row=3,column=0,sticky='nsew',padx=28,pady=(0,14))
+        opponents = tk.Frame(self.tabs, bg=CARD, padx=12, pady=10)
+        opponents.grid_columnconfigure(0, weight=1)
+        opponents.grid_rowconfigure(1, weight=1)
+        self.tabs.add(opponents, text='Score por adversário')
+        tk.Label(opponents, text='Campanha atual · 1 ponto por vitória, ½ por empate · limites excluídos do score',
+                 bg=CARD, fg=MUTED, anchor='w', font=('Segoe UI',9)).grid(row=0,column=0,sticky='ew',pady=(0,8))
+        columns = ('name', 'games', 'wins', 'draws', 'losses', 'truncated', 'points', 'score')
+        self.opponent_table = ttk.Treeview(opponents, columns=columns, show='headings',
+                                           style='Tracker.Treeview', height=5, selectmode='browse')
+        for key, title, width in zip(columns, ('ADVERSÁRIO', 'JOGOS', 'VIT.', 'EMP.', 'DER.', 'LIMITE', 'PONTOS', 'SCORE'),
+                                     (310, 85, 65, 65, 75, 75, 85, 90)):
+            self.opponent_table.heading(key, text=title)
+            self.opponent_table.column(key, width=width, minwidth=55 if key != 'name' else 190,
+                                       anchor='w' if key == 'name' else 'e', stretch=key == 'name')
+        self.opponent_table.grid(row=1,column=0,sticky='nsew')
+        scrollbar = ttk.Scrollbar(opponents, orient='vertical', command=self.opponent_table.yview)
+        scrollbar.grid(row=1,column=1,sticky='ns')
+        self.opponent_table.configure(yscrollcommand=scrollbar.set)
+        self.opponent_detail = tk.Label(opponents, text='A aguardar resultados por adversário…', bg=CARD, fg=MUTED,
+                                        anchor='w', font=('Segoe UI',9))
+        self.opponent_detail.grid(row=2,column=0,columnspan=2,sticky='ew',pady=(8,0))
+        self.opponent_rows = {}
+        self.opponent_table.bind('<<TreeviewSelect>>', lambda _: self.show_opponent_detail())
+        charts = tk.Frame(self.tabs,bg=BG)
+        self.tabs.add(charts, text='Ritmo e duração')
         for column in (0,1): charts.grid_columnconfigure(column,weight=1,uniform='chart')
         charts.grid_rowconfigure(0,weight=1)
         self.speed_chart = Chart(charts,'Ritmo do treino','jogos / s',GREEN)
         self.speed_chart.grid(row=0,column=0,sticky='nsew',padx=(0,7))
-        self.survival_chart = Chart(charts,'Sobrevivência','turnos / jogo',BLUE)
+        self.survival_chart = Chart(charts,'Duração das partidas','turnos / jogo',BLUE)
         self.survival_chart.grid(row=0,column=1,sticky='nsew',padx=(7,0))
         results = tk.Frame(root,bg=CARD,padx=20,pady=14)
         results.grid(row=4,column=0,sticky='ew',padx=28)
@@ -155,6 +190,40 @@ class Tracker:
         ratio = min(1, self.snapshot['games']/max(1,self.snapshot['total'])) if self.snapshot else 0
         self.bar.create_rectangle(0,0,self.bar.winfo_width()*ratio,7,fill=GREEN,outline='')
 
+    def render_opponents(self, rows):
+        self.opponent_rows = {row['id']: row for row in rows}
+        for identifier in self.opponent_table.get_children():
+            if identifier not in self.opponent_rows:
+                self.opponent_table.delete(identifier)
+        for index, row in enumerate(rows):
+            name = row['name'] + (f" · {row['elo']} Elo" if row['elo'] is not None else '')
+            values = (name, *(number(row[key]) for key in ('games','wins','draws','losses','truncated')),
+                      f"{row['points']:g}", f"{100*row['score']:.2f}%" if row['score'] is not None else '—')
+            if self.opponent_table.exists(row['id']):
+                self.opponent_table.item(row['id'], values=values)
+                self.opponent_table.move(row['id'], '', index)
+            else:
+                self.opponent_table.insert('', index, iid=row['id'], values=values)
+        if rows and not self.opponent_table.selection():
+            self.opponent_table.selection_set(rows[0]['id'])
+        self.show_opponent_detail()
+
+    def show_opponent_detail(self):
+        selected = self.opponent_table.selection()
+        row = self.opponent_rows.get(selected[0]) if selected else None
+        if not row:
+            text = 'A aguardar resultados por adversário…'
+        elif row['kind'] == 'unknown':
+            text = 'Os logs antigos não identificam o adversário destes resultados.'
+        else:
+            rate = f"{100*row['win_rate']:.2f}%" if row['win_rate'] is not None else '—'
+            text = f"Vitórias: {rate} · {number(row['finished'])} jogos concluídos · {number(row['resigned'])} desistências registadas"
+            if row['move_time'] is not None:
+                text += f" · {1000*row['move_time']:g} ms/jogada"
+            if row['kind'] == 'self':
+                text += ' · Self-play: resultado do lado treinado'
+        self.opponent_detail.configure(text=text)
+
     def refresh(self):
         try:
             self.snapshot = data = self.reader.snapshot()
@@ -165,7 +234,12 @@ class Tracker:
                 self.fraction.configure(text=f"{number(data['games'])} / {number(data['total'])} jogos")
                 self.percent.configure(text=f"{100*data['games']/max(1,data['total']):.1f}%")
                 opponent = data['launch'].get('opponent',{})
-                self.opponent.configure(text=f"{opponent.get('engine_name','Adversário externo')}  ·  {opponent.get('elo','—')} Elo nominal  ·  Objetivo: sobrevivência")
+                objective = data.get('metrics',{}).get('objective', data['launch'].get('objective', 'survival'))
+                objective = {'survival':'sobrevivência', 'victory':'vitória', 'shaped':'vitória + avaliação posicional'}.get(objective,objective)
+                known = [row for row in data.get('opponents',[]) if row['kind'] != 'unknown']
+                adversaries = f"{len(known)} adversários registados" if len(known) > 1 else opponent.get('engine_name','Adversário externo')
+                self.opponent.configure(text=f"{adversaries}  ·  Objetivo: {objective}")
+                self.render_opponents(data.get('opponents', []))
                 if 'metrics' in data:
                     for key in ('wins','draws','losses','truncated'): self.values[key].configure(text=number(data['counts'][key]))
                     self.values['speed'].configure(text=f"{data['speed']:.2f}")
@@ -176,7 +250,9 @@ class Tracker:
                     names = {'stalemate':'Afogamento', 'threefold_repetition':'Repetição tripla', 'fivefold_repetition':'Repetição quíntupla',
                              'insufficient_material':'Material insuficiente','fifty_moves':'50 lances','seventyfive_moves':'75 lances'}
                     reasons = '   ·   '.join(f'{names.get(k,k)}: {v}' for k,v in data['draw_reasons'].items() if v)
-                    self.reasons.configure(text=reasons or 'Resultados acumulados desta campanha · ainda sem empates')
+                    scope = ('Adversários externos · self-play separado na tabela' if any(r['kind']=='self' for r in known)
+                             and sum(data['counts'].values()) < data['games'] else 'Resultados acumulados desta campanha')
+                    self.reasons.configure(text=scope + (' · '+reasons if reasons else ' · ainda sem empates'))
                     updated = datetime.fromtimestamp(data['timestamp']).strftime('%H:%M:%S')
                     self.updated.configure(text=f"Últimos dados: {updated}  ·  há {int(data['age'])} s  ·  leitura local a cada 2 s")
                     self.detail.configure(text=f"PID {data['launch'].get('pid','—')}  ·  {data['launch']['run_id']}")
@@ -222,8 +298,9 @@ def main():
             root.update()
             box = (root.winfo_rootx(),root.winfo_rooty(),root.winfo_rootx()+root.winfo_width(),root.winfo_rooty()+root.winfo_height())
             ImageGrab.grab().crop(box).save(args.smoke_test)
-            result = {k:app.snapshot[k] for k in ('state','games','total','speed')}
+            result = {k:app.snapshot.get(k) for k in ('state','games','total','speed','opponents')}
             result['chart_height'] = app.speed_chart.winfo_height()
+            result['opponent_rows'] = len(app.opponent_table.get_children())
             args.smoke_test.with_suffix('.json').write_text(json.dumps(result,ensure_ascii=False),encoding='utf-8')
             if sys.stdout:
                 print(json.dumps(result,ensure_ascii=False))

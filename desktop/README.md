@@ -11,6 +11,27 @@ A ETA usa o ritmo observado nos últimos cinco minutos. Os gráficos usam até
 160 pontos e suavizam quatro registos consecutivos (normalmente 100 jogos).
 Mais sobrevivência não equivale por si só a maior força de jogo.
 
+A aba **Score por adversário** mostra jogos, vitórias, empates, derrotas,
+partidas no limite, pontos e score por adversário na campanha atual. Diferentes
+níveis de Elo nominal/configurações de um motor ficam separados. Selecionar uma
+linha mostra a percentagem de vitórias, jogos concluídos, desistências registadas
+e tempo por jogada quando disponível. Self-play tem uma linha própria e mantém
+a distinção dos totais externos usada pelo treino.
+
+Pontos = vitórias + 0,5 × empates. Score = pontos / (vitórias + empates + derrotas).
+Desistências contam como derrotas; jogos truncados não entram no denominador.
+Sem jogos concluídos, o score aparece como «—». O score não é uma estimativa de Elo.
+
+Lê os contadores `metrics.opponents` por sessão (`self`, `tiny`, `fairy`, `external`)
+e a configuração do registo `run`. Nas retomas, conserva o prefixo do checkpoint
+e descarta jogos posteriores que não foram gravados. Logs antigos de um único
+motor permitem recuperar a separação pelas diferenças dos contadores; resultados
+sem atribuição verificável aparecem em **Sem adversário registado**. Não inventa
+uma divisão para misturas antigas sem contadores por adversário.
+
+A aba **Ritmo e duração** conserva os gráficos. A app acompanha o objetivo
+registado no treino, em vez de mostrar sempre «sobrevivência».
+
 Executável: `dist/tonkinho-tracker-build/Tonkinho do Mato - Treino/Tonkinho do Mato - Treino.exe`.
 `tracker-config.json`, ao lado do executável, indica a pasta do projeto.
 O botão Escolher pasta permite apontar a outro projeto durante a sessão.

@@ -7,6 +7,92 @@ from pathlib import Path
 import time
 
 
+RESULTS = ('wins', 'draws', 'losses', 'truncated')
+
+
+def result_counts(row):
+    """Mixture logs use singular outcomes; resigned is an exclusive loss there."""
+    return dict(wins=int(row.get('wins', row.get('win', 0))),
+                draws=int(row.get('draws', row.get('draw', 0))),
+                losses=int(row['losses'] if 'losses' in row else row.get('loss', 0) + row.get('resigned', 0)),
+                truncated=int(row.get('truncated', row.get('unfinished', 0))))
+
+
+def opponent_identity(kind, launch, config):
+    info = launch.get('opponent_catalog', {}).get(kind, {})
+    if kind == 'external':
+        info = info or launch.get('opponent', {})
+        name = info.get('engine_name', 'Adversário externo')
+    elif kind == 'fairy':
+        name = info.get('engine_name', 'Fairy-Stockfish')
+        info = {**info, 'elo': info.get('elo', config.get('fairy_elo')),
+                'move_time': info.get('move_time', config.get('opponent_move_time'))}
+    else:
+        name = {'self': 'Tonkinho (self-play)', 'tiny': 'TinyOpponent · profundidade 2',
+                'unknown': 'Sem adversário registado'}.get(kind, kind)
+    identity = json.dumps([kind, name, info.get('elo'), info.get('move_time'), info.get('sha256')])
+    return dict(id=identity, kind=kind, name=name, elo=info.get('elo'), move_time=info.get('move_time'))
+
+
+def add_opponent(table, identity, counts, resigned=0):
+    row = table.setdefault(identity['id'], {**identity, **dict.fromkeys(RESULTS, 0), 'resigned': 0})
+    for key in RESULTS:
+        row[key] += counts.get(key, 0)
+    row['resigned'] += resigned
+
+
+def opponent_totals(base, raw, count, counts, launch, config, exact_base):
+    """Merge session-only mixture counters into the checkpoint's campaign prefix.
+
+    Old single-engine sessions can be attributed from their counter deltas.
+    Missing history or old mixed sessions remain explicitly unattributed.
+    """
+    table = {key: dict(value) for key, value in base.get('opponents', {}).items()}
+    if isinstance(raw.get('opponents'), dict):
+        for kind, results in raw['opponents'].items():
+            add_opponent(table, opponent_identity(kind, launch, config), result_counts(results),
+                         int(results.get('resigned', 0)))
+    else:
+        mixture = launch.get('opponent_mixture', {})
+        mixed = any(value for key, value in mixture.items() if key != 'external') or any(
+            config.get(key, 0) for key in ('mix_self', 'mix_tiny', 'mix_fairy'))
+        if not mixed:
+            session = result_counts(raw)
+            if sum(session.values()) != count:
+                session = ({key: counts[key] - base.get(key, 0) for key in RESULTS}
+                           if exact_base else {})
+            if session and all(value >= 0 for value in session.values()):
+                add_opponent(table, opponent_identity('external', launch, config), session)
+    # An incomplete historical prefix must not be assigned to the current engine.
+    campaign = launch.get('campaign_start_games', launch.get('resume_games', 0))
+    campaign_games = max(0, launch.get('resume_games', 0) - campaign) + count
+    # New mixture runs exclude self-play from the global W/D/L. Its separate
+    # table row is still useful, but must never be counted as an external result.
+    self_excluded = isinstance(raw.get('opponents'), dict) and sum(counts.values()) < campaign_games
+    included = [row for row in table.values() if not self_excluded or row['kind'] != 'self']
+    missing = {key: counts[key] - sum(row[key] for row in included) for key in RESULTS}
+    if any(value < 0 for value in missing.values()):
+        # Incompatible/restarted telemetry: preserve honest totals, not guessed attribution.
+        table = {key: row for key, row in table.items() if self_excluded and row['kind'] == 'self'}
+        missing = counts
+    if any(missing.values()):
+        add_opponent(table, opponent_identity('unknown', launch, config), missing)
+    return table
+
+
+def score_rows(table):
+    rows = []
+    for value in table.values():
+        row = dict(value)
+        finished = sum(row[key] for key in ('wins', 'draws', 'losses'))
+        points = row['wins'] + .5 * row['draws']
+        row.update(games=finished + row['truncated'], finished=finished, points=points,
+                   score=points / finished if finished else None,
+                   win_rate=row['wins'] / finished if finished else None)
+        rows.append(row)
+    return sorted(rows, key=lambda row: (row['kind'] == 'unknown', -row['games'], row['name']))
+
+
 def timestamp(value):
     return datetime.fromisoformat(value.replace('Z', '+00:00')).timestamp()
 
@@ -43,12 +129,13 @@ class JsonlTail:
         self.offset = 0
         self.pending = b''
         self.metrics = {}
+        self.config = {}
 
     def poll(self):
         if not self.path.exists():
             return
         if self.path.stat().st_size < self.offset:
-            self.offset, self.pending, self.metrics = 0, b'', {}
+            self.offset, self.pending, self.metrics, self.config = 0, b'', {}, {}
         with self.path.open('rb') as stream:
             stream.seek(self.offset)
             chunk = stream.read()
@@ -64,6 +151,8 @@ class JsonlTail:
                 continue
             if row.get('kind') == 'metrics':
                 self.metrics[int(row['games'])] = row
+            elif row.get('kind') == 'run':
+                self.config = row.get('config', {})
 
 
 class TrainingReader:
@@ -100,23 +189,30 @@ class TrainingReader:
         latest = None
         for run in related:
             offset = max(0, run.get('resume_games', 0) - campaign)
-            base = points.get(offset, {})
+            exact_base = offset in points
+            base = points[max(n for n in points if n <= offset)]
+            # A resume starts from its saved prefix; later unsaved games are discarded.
+            points = {n: point for n, point in points.items() if n <= offset}
             tail = self.tails.setdefault(run['history'], JsonlTail(run['history']))
             tail.poll()
             for n, row in sorted(tail.metrics.items()):
                 count = offset + n
                 counts = {key: int(row.get(key, 0)) for key in ('wins', 'draws', 'losses', 'truncated')}
-                if offset and sum(counts.values()) == n:  # Older session-only counters.
+                if offset and 'opponents' not in row and sum(counts.values()) == n:  # Older session-only counters.
                     counts = {key: value + base.get(key, 0) for key, value in counts.items()}
+                mean_plies = row.get('survival_plies_mean', 0)
+                if row.get('games_per_second', 0) > 0 and 'positions_per_second' in row:
+                    mean_plies = row['positions_per_second'] / row['games_per_second']
                 points[count] = dict(games=count, **counts, timestamp=timestamp(row['timestamp']),
-                    plies=base.get('plies', 0) + round(n * row.get('survival_plies_mean', 0)),
-                    session_mean_turns=row.get('survival_plies_mean', 0) / 2,
-                    metrics=row)
+                    plies=base.get('plies', 0) + round(n * mean_plies),
+                    session_mean_turns=mean_plies / 2,
+                    metrics=row, opponents=opponent_totals(base, row, n, counts, run, tail.config, exact_base))
                 if run['run_id'] == launch['run_id']:
                     latest = points[count]
         total = launch.get('campaign_cap', max(0, launch.get('resume_games', 0) - campaign) + launch['additional_games'])
         if latest is None:
-            return dict(state='starting', launch=launch, total=total, points=[], games=max(points), age=0)
+            return dict(state='starting', launch=launch, total=total, points=[], games=max(points), age=0,
+                        opponents=score_rows(base.get('opponents', {})))
         row = latest['metrics']
         alive = self.alive(launch.get('pid'))
         age = max(0, time.time() - latest['timestamp'])
@@ -148,4 +244,5 @@ class TrainingReader:
                     age=age, timestamp=latest['timestamp'], speed=speed, mean_speed=row.get('games_per_second', 0),
                     eta=(total-latest['games'])/speed if state == 'running' and speed > 0 else None,
                     turns=latest['session_mean_turns'], rates=rates, duration=duration,
-                    draw_reasons=row.get('draw_reasons', {}), metrics=row)
+                    draw_reasons=row.get('draw_reasons', {}), metrics=row,
+                    opponents=score_rows(latest['opponents']))
