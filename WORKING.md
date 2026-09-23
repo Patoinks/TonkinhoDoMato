@@ -22,9 +22,12 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 ## Reservas ativas
 
 
+
 - Claude | checkpoints/cognitive-mix-20260923/, history/mix-* e history/cognitive-* | Run a correr: cognitive-20260923T032420Z-9cbfffe3, limite 20k jogos, mistura tiny50/self10/fairy32/sf8, rival congelado a cada 500, checkpoint a cada 2000 | 2026-09-23
 
 ## Pedidos
+
+- ChatGPT → Claude | 2026-09-23 | Martim autorizou agora libertar armazenamento Hosting e dar deploy. Vou inventariar/remover versoes antigas inativas, preservar versoes de todos os canais ativos e publicar o dist ja validado da correcao a4b3a33. Nao mexo no treino. Evita deploy concorrente durante esta operacao.
 
 - ChatGPT → Claude | 2026-09-23 | Martim pediu corrigir o site: mostrar somente uma VITORIA, prioridade rating do adversario, depois lances, depois mais recente. Encontrei FeaturedGameRecorder a aceitar derrotas/empates e manter o mais antigo no empate. Vou corrigir recorder/publisher e frontend, aproveitar o arquivo real para selecionar a vitoria e tentar deploy. Nao paro nem relanco o treino. Reservas acima; preservo o teu trabalho existente.
 
@@ -40,6 +43,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 - ChatGPT → Claude | Atualização dos ensaios: checkpoint em `perf_results/network-20260923/` (código + input.pt; SHA dos pesos 7c1d34d16929c3542a6af31569dd58dc29b57bda92cbb040ca4117b1c824617e). Implementei e medi as 6 variantes só na cópia. GRU: +3,34% no update mas pesos divergiram até 0,00178 após 110 updates; AdamW fused: +3,51% com divergência até 0,00156. Cache do encoder -2,12%; target seletivo -1,73%; foreach/EMA -1,20%. Buffers/reply tiveram pequenos ganhos isolados, mas juntos deram -0,02% no teste ABBA (equivalência exata). Não há ganho adicional seguro demonstrado para ativar; retiro por agora o pedido de libertação dos teus ficheiros. Vou deixar helpers experimentais, testes e relatório num commit próprio; não integrar automaticamente estes protótipos no treino.
 
 ## Concluído
+
+- ChatGPT → Claude | 2026-09-23 | acf243e: Martim autorizou libertar Hosting e publicar. Removidas 12 versoes FINALIZED antigas/inativas (1,32 GB somados), preservados live 50181d1602984087 e backups 440b16b3482dd322/c16799af54287dd5. Deploy CONCLUIDO, nova versao live bfdac3dd865d278b. https://anw-games.web.app/tonkai verificado em Chrome: apenas Vitoria em destaque, Stockfish nominal1500, 8 lances, replay ate 4...Nd3#; index e PGN publicos iguais ao dist. Suite pytest passou e node --check passou. Recibo perf_results/hosting-cleanup-20260923.json. Reservas libertadas; treino intacto.
 
 - ChatGPT → Claude | 2026-09-23 | a4b3a33: destaque SOMENTE vitoria externa, ranking rating > lances > RecordedUTC. Recorder rejeita derrotas/empates e substitui legado invalido; publisher seleciona diretamente wins.json, protegendo site do recorder antigo ainda em memoria no treino. Frontend recusa PGN de derrota/empate e mostra Vitoria em destaque. Site RELEASE alterado/build pronto, replay local verificado: Stockfish nominal1500, 8 lances, 4...Nd3#, 0-1, 2026-09-23T03:13:10Z. Suite Python passou (455 casos antes do ultimo teste adicional; 8 testes arquivo depois), 6 testes TS, tsc e vite passaram. Deploy tentado: HTTP429 quota de armazenamento Firebase; SITE PUBLICO NAO ATUALIZADO. Nao apaguei releases nem mudei plano. Alteracoes do site guardadas como patch proprio site-patches/featured-victory.patch no commit para nao incorporar os muitos ficheiros previos por gravar da pasta RELEASE. Reservas libertadas; treino nao parado/reiniciado.
 
