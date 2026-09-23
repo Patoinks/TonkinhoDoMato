@@ -1,0 +1,140 @@
+diff --git a/tonkai/cognitive_agent.py b/tonkai/cognitive_agent.py
+index bd954fc..991f38c 100644
+--- a/tonkai/cognitive_agent.py
++++ b/tonkai/cognitive_agent.py
+@@ -9,8 +9,9 @@ from . import fast_rules
+ from .encoding import encode, encode_after_moves
+ from .survival_agent import SurvivalAgent, SurvivalChoice
+ from .cognitive_memory import structural_keys
+-from .piece_safety import (favorable_attack, legal_mobility, piece_senses, pawn_unit,
+-                           position_pressure, position_risk, protected_mobility_gain)
++from .piece_safety import (exchange_gain, favorable_attack, legal_mobility, piece_senses, pawn_unit,
++                           positive_exchange_signals, position_pressure, position_risk,
++                           protected_mobility_gain)
+ from .king_safety import king_senses, king_balance
+ from .objective import outcome_value, continuation_value, victory_weight
+ from .king_safety_model import load_cached as load_king_safety
+@@ -150,6 +151,36 @@ class CognitiveAgent(SurvivalAgent):
+         kd_weight = float(getattr(self.cfg, "kd_weight", 0.0))
+         kd = self.kd_values if kd_weight > 0 and self.kd_values else None
+ 
++        if getattr(self.cfg, "priority_policy", False):
++            # Average each type across both colours, then apply the side's sign.
++            samples = {kind: [] for kind in range(chess.PAWN, chess.QUEEN + 1)}
++            for (_, piece), learned in zip(items, normalized):
++                if piece.piece_type != chess.KING:
++                    samples[piece.piece_type].append(abs(float(learned)))
++            shared = {}
++            for kind, rows in samples.items():
++                if rows:
++                    average = sum(rows) / len(rows)
++                    shared[kind] = kd_weight * kd[kind] + (1 - kd_weight) * average if kd and kind in kd else average
++                elif kd and kind in kd:
++                    shared[kind] = float(kd[kind])
++
++            def symmetric_value(piece, square):
++                if piece.piece_type == chess.KING:
++                    return 10000.0
++                kind = piece.piece_type
++                if kind not in shared:  # A promoted type absent from the position.
++                    orientation = square if self_color else square ^ 56
++                    predicted = self.net.piece_values(
++                        context.expand(2, -1),
++                        torch.tensor([kind - 1, kind - 1], device=self.device),
++                        torch.tensor([orientation, orientation], device=self.device),
++                        torch.tensor([0, 1], device=self.device)).detach().cpu().numpy()
++                    shared[kind] = float(np.clip(np.abs(predicted) / unit, 0, 12).mean())
++                return shared[kind] * (1 if piece.color == self_color else -1)
++
++            return symmetric_value
++
+         def blend(piece, learned):
+             # Owner's rule: kd_weight of the pooled per-type K/D, the rest the
+             # network's contextual value. Same sign convention (enemy negative).
+@@ -393,7 +424,10 @@ class CognitiveAgent(SurvivalAgent):
+         safety, kings = [], []
+         king_bonuses = np.zeros(len(moves))
+         activity_bonuses = np.zeros(len(moves))
+-        if self.cfg.piece_safety_weight or self.cfg.piece_activity_weight:
++        priority = bool(getattr(self.cfg, "priority_policy", False))
++        capture_gains = np.zeros(len(moves))
++        golden = np.zeros(len(moves))
++        if self.cfg.piece_safety_weight or self.cfg.piece_activity_weight or priority:
+             branches, item_lists = [], []
+             for index, move in enumerate(moves):
+                 if fast is not None:
+@@ -408,9 +442,20 @@ class CognitiveAgent(SurvivalAgent):
+             row_contexts = [contexts[index:index + 1] for index in range(len(moves))]
+             raws = self._piece_raw(row_contexts, item_lists, self_color)
+             previous_mobility = legal_mobility(board, self_color) if self.cfg.piece_activity_weight else None
++            root_value = self.piece_valuer(board, self_color, self.context) if priority else None
+             for index, move in enumerate(moves):
+                 value = self._valuer(raws[index], item_lists[index], self_color, row_contexts[index])
+                 branch = branches[index] if fast is None else None
++                if priority:
++                    if board.is_capture(move):
++                        capture_gains[index] = max(0.0, exchange_gain(board, move, root_value,
++                                                       self.cfg.piece_exchange_depth))
++                    if branch is None:
++                        branch = board.copy(stack=False)
++                        branch.push(move)
++                    exchange_rows = self.sense_pieces(branch, self_color, value=value)
++                    threat, protection = positive_exchange_signals(exchange_rows, self_color)
++                    golden[index] = 0.5 * threat + 0.5 * protection
+                 if self.cfg.piece_safety_weight:
+                     if fast is not None:
+                         fast.push(codes[index])
+@@ -425,6 +470,10 @@ class CognitiveAgent(SurvivalAgent):
+                 else:
+                     own_risk = enemy_risk = 0.0
+                 row = {"own_risk": own_risk, "enemy_risk": enemy_risk}
++                if priority:
++                    row.update(capture_gain=float(capture_gains[index]),
++                               positive_threat=threat, protection=protection,
++                               golden_ratio=float(golden[index]))
+                 if self.cfg.piece_activity_weight:
+                     if branch is None:
+                         branch = board.copy(stack=False)
+diff --git a/tonkai/cognitive_config.py b/tonkai/cognitive_config.py
+index f398f56..a53a6d9 100644
+--- a/tonkai/cognitive_config.py
++++ b/tonkai/cognitive_config.py
+@@ -42,6 +42,10 @@ class CognitiveConfig(SurvivalConfig):
+     piece_exchange_tolerance: float = 0.5
+     piece_exchange_depth: int = 6
+     king_safety_weight: float = 0.06
++    # Opt-in policy: profitable capture, then equal-weight positive exchange
++    # threats/protection, then the two kings' safety. Older checkpoints keep
++    # their original policy until this is explicitly enabled.
++    priority_policy: bool = False
+     # Auxiliary target, opt-in: the piece head also predicts how many captures
+     # that piece goes on to make in the rest of the game. A prediction, never a
+     # reward; it does not touch move selection. Zero keeps the model unchanged.
+diff --git a/tonkai/piece_safety.py b/tonkai/piece_safety.py
+index bcf288d..f9e5e52 100644
+--- a/tonkai/piece_safety.py
++++ b/tonkai/piece_safety.py
+@@ -211,6 +211,23 @@ def position_risk(rows, colour):
+     return min(1.0, max(risks, default=0.0) + .05 * sum(risks))
+ 
+ 
++def positive_exchange_signals(rows, colour):
++    """Best profitable threat and protection against the best enemy exchange.
++
++    Both terms are in [0, 1] and use the same pawn-value scale. A nominal
++    attack that loses material contributes nothing to the threat term.
++    """
++    own = "w" if colour else "b"
++    enemy = "b" if colour else "w"
++    threat = max((max(0.0, -row["exchange_balance"])
++                  for row in rows if row["color"] == enemy and row["exchange_balance"] is not None),
++                 default=0.0)
++    exposed = max((max(0.0, -row["exchange_balance"])
++                   for row in rows if row["color"] == own and row["exchange_balance"] is not None),
++                  default=0.0)
++    return threat / (threat + 3.0), 3.0 / (exposed + 3.0)
++
++
+ def pawn_unit(raw_values, pieces, floor=.001):
+     """Robust local scale; not a calibrated classical pawn/centipawn estimate."""
+     values = sorted(abs(float(v)) for v, p in zip(raw_values, pieces) if p.piece_type == chess.PAWN and math.isfinite(v))

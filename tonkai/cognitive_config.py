@@ -37,8 +37,10 @@ class CognitiveConfig(SurvivalConfig):
     generalization_every: int = 20
     protected_replay_every: int = 10
     piece_safety_weight: float = 0.08
-    # New game-building signal: 50% attack/protection, 50% safe mobility.
-    piece_activity_weight: float = 0.08
+    # Hand-written attack/protection + mobility signal (v5 experiment). Off by
+    # default: a hand-set preference, not something TonkAI discovered. With 0,
+    # every checkpoint plays and learns as it was trained (organic).
+    piece_activity_weight: float = 0.0
     piece_exchange_tolerance: float = 0.5
     piece_exchange_depth: int = 6
     king_safety_weight: float = 0.06
