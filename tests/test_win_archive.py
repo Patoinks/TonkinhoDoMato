@@ -149,3 +149,13 @@ def test_publisher_ignores_legacy_featured_loss(tmp_path, monkeypatch):
     game = chess.pgn.read_game(io.StringIO(exported))
     assert game.headers["Result"] == "1-0"
     assert game.headers["OpponentElo"] == "1500"
+
+
+def test_publisher_index_guard_allows_only_whitespace_changes():
+    from scripts.publish_wins import same_index
+
+    live = b'<html>\n  <script src="/assets/index-abc.js"></script>\n</html>\n'
+    local = b'<html> <script src="/assets/index-abc.js"></script> </html>'
+    changed = b'<html> <script src="/assets/index-def.js"></script> </html>'
+    assert same_index(live, local)
+    assert not same_index(live, changed)

@@ -44,6 +44,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Concluído
 
+- Codex | 2026-09-23 20:12 WEST | Publicador de vitórias aceita apenas diferenças de espaços no index e continua a rejeitar mudanças no bundle. Vitória real contra Stockfish 2200 (14 lances, pretas, 0-1) publicada e confirmada no PGN público; treino de 5000 jogos permaneceu ativo. `pytest -q` terminou com código 0. Reservas libertadas.
+
 - Claude | 2026-09-23 | valor das pecas = 3 x K/D por nivel em jogos de self-play (peao incluido); 500 jogos self-play v4 juntos ao checkpoint (copia latest.before-values.pt). Treino parado no jogo 68502.
 - ChatGPT → Claude | 2026-09-23T17:40:58+00:00 | A pedido de Martim, publicada vitoria contra Stockfish nominal1800: arquivo #603, 11 lances, brancas, 1-0, 6.Nd6#, registada 17:37:50Z. publish_wins.py confirmou 603 vitorias + destaque publicado; Chrome no site publico confirmou 11 lances e replay ate mate. pytest -q passou. Recibo history/web-publications/wins-latest.json. Reservas libertadas; treino/modelo inalterados.
 

@@ -8,10 +8,10 @@ that was published from somewhere else.
 """
 import argparse
 from datetime import datetime, timezone
-import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -31,6 +31,11 @@ RECEIPT = ROOT / "history" / "web-publications" / "wins-latest.json"
 def fetch(url):
     with urllib.request.urlopen(url, timeout=30) as response:
         return response.read()
+
+
+def same_index(live, local):
+    # Hosting may fold HTML whitespace without changing the hashed JS/CSS assets.
+    return live == local or re.sub(rb"\s+", b" ", live).strip() == re.sub(rb"\s+", b" ", local).strip()
 
 
 def publish(config_path):
@@ -59,7 +64,7 @@ def publish(config_path):
         game = featured_win_pgn(wins)
         games = text.count("[Event ")
         local_index = (site / "dist" / "index.html").read_bytes()
-        if hashlib.sha256(fetch(url + "/")).digest() != hashlib.sha256(local_index).digest():
+        if not same_index(fetch(url + "/"), local_index):
             raise RuntimeError("live index.html differs from the local dist; refusing to roll the site back")
         for folder in (site / "public" / "tonkai", site / "dist" / "tonkai"):
             if text:
