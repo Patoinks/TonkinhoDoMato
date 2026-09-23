@@ -96,7 +96,7 @@ def _config(genes):
 
 
 def _game(genes_white, genes_black, seed):
-    """1, .5 or 0 for the white side."""
+    """Points of the white side: 1, .5 or 0; -1 when the game stalled (both lose)."""
     import chess
     from tonkai.cognitive_agent import CognitiveAgent
     from tonkai.opponents import CognitiveOpponent
@@ -107,7 +107,9 @@ def _game(genes_white, genes_black, seed):
     agent = CognitiveAgent(s["net"], white, s["knowledge"], kd_values=s["kd"])
     rival = CognitiveOpponent(CognitiveAgent(s["net"], black, s["knowledge"], kd_values=s["kd"]), black,
                               np.random.default_rng(sub(seed, 1)))
-    _, board, _, _ = play_episode(agent, rival, white, np.random.default_rng(sub(seed, 0)), self_color=chess.WHITE)
+    _, board, _, stats = play_episode(agent, rival, white, np.random.default_rng(sub(seed, 0)), self_color=chess.WHITE)
+    if stats.get("stalled"):
+        return -1.0
     outcome = board.outcome(claim_draw=True)
     if outcome is None or outcome.winner is None:
         return 0.5
@@ -115,10 +117,12 @@ def _game(genes_white, genes_black, seed):
 
 
 def _final_game(genes_current, genes_base, game, seed):
-    """Points of the current side in one final game; colours alternate."""
+    """Points of the current side in one final game (colours alternate); -1 if
+    the game stalled, where both sides lose."""
     if game % 2 == 0:
         return _game(genes_current, genes_base, sub(seed, game))
-    return 1 - _game(genes_base, genes_current, sub(seed, game))
+    score = _game(genes_base, genes_current, sub(seed, game))
+    return score if score < 0 else 1 - score
 
 
 def tournament(pool, population, rng, seed, series=3):
@@ -139,8 +143,9 @@ def tournament(pool, population, rng, seed, series=3):
     def collect(futures):
         for future, i, a_white in futures:
             score = future.result()
-            points[i][0 if a_white else 1] += score
-            points[i][1 if a_white else 0] += 1 - score
+            if score >= 0:                               # -1: stalled, nobody scores
+                points[i][0 if a_white else 1] += score
+                points[i][1 if a_white else 0] += 1 - score
             games[i] += 1
 
     if series == 3:
@@ -237,12 +242,14 @@ def main():
                    for game in range(args.final_games)]
         scores = [future.result() for future in futures]
 
+    stalled = scores.count(-1.0)                  # both lost by the anti-stalling rule
+    scores = [max(0.0, x) for x in scores]
     mean = sum(scores) / len(scores)
     se = math.sqrt(sum((x - mean) ** 2 for x in scores) / max(1, len(scores) - 1) / len(scores))
     log["tonkao_jr"] = {"id": champion["id"], "genes": champion["genes"],
                         "changed": {k: [base["genes"][k], v] for k, v in champion["genes"].items()
                                     if v != base["genes"][k]}}
-    log["final"] = {"games": len(scores), "wins": scores.count(1.0), "draws": scores.count(0.5),
+    log["final"] = {"games": len(scores), "stalled": stalled, "wins": scores.count(1.0), "draws": scores.count(0.5),
                     "losses": scores.count(0.0), "score": mean,
                     "score_95": [max(0, mean - 1.96 * se), min(1, mean + 1.96 * se)]}
     save()

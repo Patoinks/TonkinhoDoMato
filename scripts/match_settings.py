@@ -51,13 +51,15 @@ def main():
             scores.append(future.result())
             if len(scores) % 100 == 0:
                 print(f"{len(scores)}/{args.games} jogos", flush=True)
+    stalled = scores.count(-1.0)                  # both lost by the anti-stalling rule
+    scores = [max(0.0, x) for x in scores]
     mean = sum(scores) / len(scores)
     se = math.sqrt(sum((x - mean) ** 2 for x in scores) / max(1, len(scores) - 1) / len(scores))
     white = scores[0::2]
     black = scores[1::2]
     report = {"current": args.name, "rival": "Tonkinho do Mato v4 (base settings)", "base_file": str(args.base),
               "changed": {k: [base[k], new[k]] for k in new if new[k] != base[k]}, "games": len(scores),
-              "win": scores.count(1.0), "draw": scores.count(0.5), "loss": scores.count(0.0), "score": mean,
+              "win": scores.count(1.0), "draw": scores.count(0.5), "loss": scores.count(0.0), "stalled": stalled, "score": mean,
               "score_95": [max(0, mean - 1.96 * se), min(1, mean + 1.96 * se)],
               "elo_difference": None if mean in (0, 1) else -400 * math.log10(1 / mean - 1),
               "as_white": sum(white) / len(white), "as_black": sum(black) / len(black), "seed": args.seed,

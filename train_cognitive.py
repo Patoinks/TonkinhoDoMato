@@ -462,7 +462,7 @@ def main(argv=None):
                     print(message, flush=True)
                     record("resign", game=completed, message=message, **resign.summary())
             # A win over itself is no win: only external opponents enter the history.
-            if episode.terminated and not resigned and kind != "self":     # a resigned board has no outcome
+            if episode.terminated and not resigned and not stats.get("stalled") and kind != "self":
                 try:
                     termination = board.outcome(claim_draw=True).termination.name.lower()
                     recorder.consider(board, colour, stats["opponent"], stats["result"], termination)

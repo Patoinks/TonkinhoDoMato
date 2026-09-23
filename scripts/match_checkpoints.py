@@ -113,7 +113,9 @@ def _game(index, seed):
     episode, board, colour, stats = play_episode(agent, rival, s["cfg"], np.random.default_rng([seed, index]),
                                                  self_color=colour, opponent_name=s["rival_name"])
     outcome = board.outcome(claim_draw=True)
-    if not episode.terminated or outcome is None:
+    if stats.get("stalled"):
+        key = "loss"                                   # stalling: both sides lose
+    elif not episode.terminated or outcome is None:
         key = "unfinished"
     elif outcome.winner is None:
         key = "draw"

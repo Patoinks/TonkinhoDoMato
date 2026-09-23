@@ -120,6 +120,9 @@ class CognitiveConfig(SurvivalConfig):
     # value (so, with a low draw value, only when its position is worse). Off:
     # the old rule, where merely being able to claim ended the game.
     strict_repetition: bool = False
+    # Owner's anti-stalling rule: this many half-moves in a row without a
+    # capture end the game as a LOSS FOR BOTH sides (0 = off; 30 = 15 moves each).
+    stall_limit: int = 0
     exchange_node_limit: int = 200_000
     exchange_labels: bool = False
     trade_explore: float = 0.0
@@ -148,6 +151,8 @@ class CognitiveConfig(SurvivalConfig):
             raise ValueError("mix_fairy needs fairy_path and a positive fairy_elo")
         if not 0 < self.capture_target_clip < float("inf"):
             raise ValueError("capture_target_clip must be finite and positive")
+        if self.stall_limit < 0:
+            raise ValueError("stall_limit must be >= 0")
         if self.draw_value is not None and not 0 <= self.draw_value <= 1:
             raise ValueError("draw_value must be between 0 and 1")
         if self.exchange_depth < 0 or self.exchange_node_limit < 1 or not 0 <= self.trade_explore <= 1:

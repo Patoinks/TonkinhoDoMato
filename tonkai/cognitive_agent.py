@@ -34,6 +34,17 @@ def strict_ending(board):
     return ""
 
 
+def quiet_plies(board, cap):
+    """Half-moves since the last capture (counted up to `cap`)."""
+    count, work = 0, board.copy(stack=True)
+    while work.move_stack and count < cap:
+        move = work.pop()
+        if work.is_capture(move):
+            break
+        count += 1
+    return count
+
+
 def terminal_value(board, colour, objective="survival", weight=0.5, draw=None, strict=False):
     draw = terminal_draw_value(objective, weight, draw)
     if strict:
@@ -103,7 +114,14 @@ class CognitiveAgent(SurvivalAgent):
                                 + (sq if self_color else sq ^ 56) for sq, p in items], device=self.device)
         return self._piece_embedding_cache[1][indices]
 
+    def stalled(self, board):
+        """Owner's rule: stall_limit half-moves without a capture - both lose."""
+        limit = int(getattr(self.cfg, "stall_limit", 0) or 0)
+        return limit > 0 and quiet_plies(board, limit) >= limit
+
     def game_over(self, board):
+        if self.stalled(board):
+            return True
         if getattr(self.cfg, "strict_repetition", False):
             if self.use_fast_rules:
                 return fast_rules.board(board).terminal_strict() != fast_rules.NONE
@@ -211,6 +229,8 @@ class CognitiveAgent(SurvivalAgent):
         with piece values as used in decisions (K/D blend when enabled).
         A finished game overrides it: win 1, draw 0.5, loss 0.
         """
+        if self.stalled(board):
+            return 0.0                                        # stalling: both lose
         fast = fast_rules.board(board) if self.use_fast_rules else None
         if fast is not None:
             ending = fast_rules.terminal_value(fast, self_color, "victory", strict=self.cfg.strict_repetition)
@@ -280,12 +300,17 @@ class CognitiveAgent(SurvivalAgent):
         cfg = self.cfg
         pending = []
         budget, used, changes = cfg.planning_nodes, 0, {}
+        stall = int(getattr(cfg, "stall_limit", 0) or 0)
+        quiet = quiet_plies(board, stall) if stall else 0
         root_count = len(root_indices)
         for ordinal, index in enumerate(root_indices):
             if fast is not None:
                 fast.push(fast_rules.code(moves[index]))
                 ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value,
                                                 strict=cfg.strict_repetition)
+                after = 0 if board.is_capture(moves[index]) else quiet + 1
+                if ending is None and stall and after >= stall:
+                    ending = 0.0                              # stalling: both lose
                 if ending is not None:
                     fast.pop()
                     changes[index] = ending
@@ -332,11 +357,15 @@ class CognitiveAgent(SurvivalAgent):
                 contexts, _ = self.net.candidates(x, candidate_memory[index:index + 1])
                 reply_values = self.net.survival(contexts)[0].mean(-1).cpu().numpy()
                 reply_probabilities = self.net.predict_logits(contexts).softmax(0).cpu().numpy()
+            after_move = 0 if board.is_capture(moves[index]) else quiet + 1
             for j, reply in enumerate(replies):
+                stalled = bool(stall) and not candidate.is_capture(reply) and after_move + 1 >= stall
                 if fast is not None:
                     fast.push(fast_rules.code(reply))
                     ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value,
                                                 strict=cfg.strict_repetition)
+                    if ending is None and stalled:
+                        ending = 0.0
                     if ending is not None:
                         reply_values[j] = ending
                         if getattr(cfg, "batch_search", False): overrides[j] = ending
@@ -349,6 +378,8 @@ class CognitiveAgent(SurvivalAgent):
                 candidate.push(reply)
                 ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value,
                                                 strict=cfg.strict_repetition)
+                if ending is None and stalled:
+                    ending = 0.0
                 if ending is not None:
                     reply_values[j] = ending
                     if getattr(cfg, "batch_search", False): overrides[j] = ending
@@ -550,6 +581,8 @@ class CognitiveAgent(SurvivalAgent):
         if safety or kings or self.cfg.objective in ("victory", "shaped"):
             scores = np.minimum(scores, .999999)
         drawn = []   # moves whose ending is a draw (for the repetition rule)
+        stall = int(getattr(self.cfg, "stall_limit", 0) or 0)
+        quiet = quiet_plies(board, stall) if stall else 0
         draw_value = terminal_draw_value(self.cfg.objective, victory_weight(self.cfg), draw=self.cfg.draw_value)
         for index, move in enumerate(moves):
             if fast is not None:
@@ -562,6 +595,8 @@ class CognitiveAgent(SurvivalAgent):
                 branch.push(move)
                 ending = terminal_value(branch, self_color, self.cfg.objective, victory_weight(self.cfg), draw=self.cfg.draw_value,
                                                 strict=self.cfg.strict_repetition)
+            if ending is None and stall and not board.is_capture(move) and quiet + 1 >= stall:
+                ending = 0.0                                  # stalling: both lose
             if ending is not None:
                 scores[index] = ending
                 if ending == draw_value:

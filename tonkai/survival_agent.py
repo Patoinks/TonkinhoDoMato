@@ -199,7 +199,12 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
             king_safety.append([round(white, 4), round(black, 4)])
     resigned = resign is not None and resign.resigned
     outcome = board.outcome(claim_draw=True)
-    if resigned:
+    stalled = callable(getattr(agent, "stalled", None)) and agent.stalled(board)
+    if stalled and not resigned:                   # owner's anti-stalling rule: both sides lose
+        lost, terminated, result_value, result = True, True, 0.0, "0-0"
+        if measure:
+            proxies[-1] = 0.0
+    elif resigned:
         lost, terminated, result_value = True, True, 0.0
         result = "0-1" if self_color == chess.WHITE else "1-0"
         if measure:
@@ -215,7 +220,7 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
         result_value=result_value,
         proxies=np.asarray(proxies, dtype=np.float32) if measure else None)
     stats = {
-        "plies": len(board.move_stack), "lost": lost, "terminated": terminated,
+        "plies": len(board.move_stack), "lost": lost, "terminated": terminated, "stalled": bool(stalled),
         "result": result, "opponent": opponent_name,
         "epistemic_mean": float(np.mean(uncertainties)) if uncertainties else 0.0,
         "surprise_mean": float(np.mean(surprises)),
