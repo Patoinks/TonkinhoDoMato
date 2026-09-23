@@ -4,7 +4,7 @@ Example (after the current run):
  python train_cognitive.py --from-survival checkpoints/survival/latest.pt --opponent-elo 1600 --games 500 --game-cap 500
 """
 import argparse
-from collections import Counter
+from collections import Counter, defaultdict
 from copy import deepcopy
 from datetime import datetime, timezone
 import json
@@ -19,6 +19,7 @@ import numpy as np
 import torch
 
 from tonkai.captures import CaptureStats
+from tonkai import opponents
 from tonkai import fast_rules
 from tonkai.cognitive_config import CognitiveConfig
 from tonkai.cognitive_pool import CognitivePool
@@ -69,6 +70,11 @@ def main(argv=None):
                         help="shaped objective: share of the victory measure in the value target")
     parser.add_argument("--kd-weight", type=float,
                         help="share of the pooled per-type K/D in decision piece values (0 = off)")
+    parser.add_argument("--mix-self", type=float, help="share of games against TonkAI itself")
+    parser.add_argument("--mix-tiny", type=float, help="share of games against TinyOpponent")
+    parser.add_argument("--mix-fairy", type=float, help="share of games against Fairy-Stockfish")
+    parser.add_argument("--fairy-path", type=Path, help="Fairy-Stockfish executable")
+    parser.add_argument("--fairy-elo", type=int, help="Fairy-Stockfish nominal UCI_Elo")
     add_resign_args(parser)
     args = parser.parse_args(argv)
     if args.games < 1:
@@ -91,6 +97,8 @@ def main(argv=None):
     cfg.device = "cpu"
     cfg.opponent_elo = args.opponent_elo
     cfg.opponent_path = str((args.opponent_path or Path(cfg.opponent_path or ENGINE)).resolve(strict=True))
+    if args.fairy_path is not None:
+        cfg.fairy_path = str(args.fairy_path.resolve(strict=True))
     for argument, field in (("workers", "num_workers"), ("checkpoint_dir", "checkpoint_dir"),
                             ("opponent_move_time", "opponent_move_time"),
                             ("max_plies", "max_plies"), ("min_replay", "min_replay"),
@@ -98,7 +106,9 @@ def main(argv=None):
                             ("generalization_every", "generalization_every"), ("win_pgn_path", "win_pgn_path"),
                             ("log_every", "log_every"), ("capture_target_weight", "capture_target_weight"),
                             ("hot_piece_kills", "hot_piece_kills"), ("objective", "objective"),
-                            ("victory_weight", "victory_weight"), ("kd_weight", "kd_weight")):
+                            ("victory_weight", "victory_weight"), ("kd_weight", "kd_weight"),
+                            ("mix_self", "mix_self"), ("mix_tiny", "mix_tiny"), ("mix_fairy", "mix_fairy"),
+                            ("fairy_elo", "fairy_elo")):
         value = getattr(args, argument)
         if value is not None:
             setattr(cfg, field, str(value) if isinstance(value, Path) else value)
@@ -172,6 +182,9 @@ def main(argv=None):
     signal.signal(signal.SIGTERM, stop)
     status, completed, submitted, plies = "running", 0, 0, 0
     counts, reasons, diagnostics = Counter(initial_results), Counter(initial_reasons), Counter()
+    by_kind = defaultdict(Counter)   # opponent kind -> outcome counts, this run
+    external_games = 0               # games against real opponents, this run
+    all_plies = 0                    # every played ply, self-play included
     started = time.perf_counter()
     history = history_path.open("a", encoding="utf-8", buffering=1)
     loss = {}
@@ -198,11 +211,13 @@ def main(argv=None):
                       rules_backend=fast_rules.BACKEND, wins=counts["wins"],
                       losses=counts["losses"], draws=counts["draws"], truncated=counts["truncated"],
                       draw_reasons=dict(reasons), games_per_second=completed / max(.001, seconds),
-                      positions_per_second=plies / max(.001, seconds), survival_plies_mean=plies / max(1, completed),
+                      positions_per_second=all_plies / max(.001, seconds), survival_plies_mean=plies / max(1, external_games),
                       train_batches=trainer.steps, cognitive=dict(diagnostics), loss=loss,
                       archive=len(trainer.knowledge.memory.entries), skills=len(trainer.knowledge.skills.skills),
                       counterfactuals=trainer.experiments, generalizations=trainer.generalizations,
                       experiment_positions=trainer.experiment_positions, captures=capture_stats.summary())
+        if opponents.uses_mixture(cfg):
+            result["opponents"] = {kind: dict(row) for kind, row in by_kind.items()}
         if resign is not None:
             result["resigned"] = counts["resigned"]
             result["resign"] = resign.summary()
@@ -233,6 +248,9 @@ def main(argv=None):
         (run_dir / "launch.json").write_text(json.dumps(launch, indent=2), encoding="utf-8")
         record("run", config=cfg.to_dict(), launch=launch)
         print(f"V3 {run_id}: {args.games} games, {cfg.num_workers} actors, next opponent {external.description}", flush=True)
+        if opponents.uses_mixture(cfg):
+            print("Opponent mixture: " + ", ".join(f"{kind} {share:.0%}" for kind, share
+                                                    in opponents.mixture(cfg).items() if share > 0), flush=True)
         if resign is not None:
             print(resign.line(), flush=True)
         pool = CognitivePool(cfg, cfg.opponent_path)
@@ -246,6 +264,8 @@ def main(argv=None):
                 kd_values = capture_stats.piece_values() if cfg.kd_weight > 0 else None
                 if kd_values is not None:
                     extras["kd_values"] = kd_values
+                if opponents.uses_mixture(cfg):
+                    extras["kind"] = opponents.choose_kind(cfg, rng)
                 pool.submit(trainer.net, trainer.knowledge, seed, game_number, **extras)
                 submitted += 1
             if not pool.pending:
@@ -256,11 +276,16 @@ def main(argv=None):
             openings.add(stats["game_number"], board, colour, stats["opponent"])
             if stats["game_number"] <= 5:
                 record("opening", **{k:v for k,v in openings.rows[stats["game_number"]].items() if k != "pgn"})
-            plies += stats["plies"]
             diagnostics.update(stats["cognitive"])
+            all_plies += stats["plies"]
             resign_report = stats.get("resign")
             resigned = bool(resign_report and resign_report["resigned"])
-            if not episode.terminated:
+            kind = stats.get("opponent_kind", "external")
+            # Results and survival are against real opponents; self-play is
+            # reported per opponent kind only.
+            if kind == "self":
+                pass
+            elif not episode.terminated:
                 counts["truncated"] += 1
             elif episode.lost:
                 counts["losses"] += 1
@@ -271,6 +296,9 @@ def main(argv=None):
                 reasons[board.outcome(claim_draw=True).termination.name.lower()] += 1
             else:
                 counts["wins"] += 1
+            if kind != "self":
+                plies += stats["plies"]
+                external_games += 1
             if resigned:
                 outcome = "resigned"
             elif episode.terminated:
@@ -278,11 +306,13 @@ def main(argv=None):
             else:
                 outcome = "unfinished"
             capture_stats.add(board.move_stack, colour, outcome)
+            by_kind[kind][outcome] += 1
             if resign is not None:
                 for message in resign.update(resign_report, lost=episode.lost):
                     print(message, flush=True)
                     record("resign", game=completed, message=message, **resign.summary())
-            if episode.terminated and not resigned:     # a resigned board has no outcome
+            # A win over itself is no win: only external opponents enter the history.
+            if episode.terminated and not resigned and kind != "self":     # a resigned board has no outcome
                 try:
                     termination = board.outcome(claim_draw=True).termination.name.lower()
                     recorder.consider(board, colour, stats["opponent"], stats["result"], termination)

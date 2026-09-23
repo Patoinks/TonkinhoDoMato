@@ -13,6 +13,7 @@ from .survival_agent import play_episode
 from .temporal_model import SurvivalNet
 from .uci_opponent import UCIOpponent
 from .actor_snapshot import pack_snapshot, unpack_snapshot
+from .opponents import CognitiveOpponent, TinyOpponentAdapter
 
 
 _actor_state = {}
@@ -23,28 +24,47 @@ def _initialize(cfg, engine_path, closing_barrier):
     net = SurvivalNet(cfg).cpu().eval().requires_grad_(False)
     knowledge = CognitiveKnowledge(cfg, net.encoder)
     external = UCIOpponent(engine_path, cfg.opponent_elo, cfg.opponent_move_time)
-    _actor_state.update(cfg=cfg, net=net, knowledge=knowledge, external=external, closing_barrier=closing_barrier)
+    fairy = UCIOpponent(cfg.fairy_path, cfg.fairy_elo, cfg.opponent_move_time) if cfg.mix_fairy > 0 else None
+    _actor_state.update(cfg=cfg, net=net, knowledge=knowledge, external=external, fairy=fairy,
+                        closing_barrier=closing_barrier)
 
 
 def _shutdown_actor():
     # python-chess owns a non-daemon thread. Close it BEFORE interpreter shutdown,
     # not in an atexit/finalizer reached only after Python waits on that thread.
     _actor_state["external"].close()
+    if _actor_state.get("fairy") is not None:
+        _actor_state["fairy"].close()
     _actor_state["closing_barrier"].wait(timeout=30)
     return True
 
 
-def _play(payload, seed, game_number, resign_plan=None, kd_values=None):
+def _opponent(kind, state, seed, kd_values):
+    if kind == "self":
+        twin = CognitiveAgent(state["net"], state["cfg"], state["knowledge"], kd_values=kd_values)
+        return CognitiveOpponent(twin, state["cfg"], np.random.default_rng([seed, 1]))
+    if kind == "tiny":
+        return TinyOpponentAdapter(seed)
+    if kind == "fairy":
+        return state["fairy"]
+    if kind == "external":
+        return state["external"]
+    raise ValueError(f"unknown opponent kind {kind!r}")
+
+
+def _play(payload, seed, game_number, resign_plan=None, kd_values=None, kind="external"):
     weights, knowledge_state = unpack_snapshot(payload)
     state = _actor_state
     state["net"].load_state_dict(weights)
     state["knowledge"].load_state_dict(knowledge_state)
     agent = CognitiveAgent(state["net"], state["cfg"], state["knowledge"], kd_values=kd_values)
     started = time.perf_counter()
-    episode, board, colour, stats = play_episode(agent, state["external"], state["cfg"],
-        np.random.default_rng(seed), opponent_name=state["external"].description,
+    opponent = _opponent(kind, state, seed, kd_values)
+    episode, board, colour, stats = play_episode(agent, opponent, state["cfg"],
+        np.random.default_rng(seed), opponent_name=opponent.description,
         resign=ResignTracker.from_plan(resign_plan))
-    stats.update(actor_seconds=time.perf_counter() - started, cognitive=dict(agent.diagnostics), game_number=game_number)
+    stats.update(actor_seconds=time.perf_counter() - started, cognitive=dict(agent.diagnostics),
+                 game_number=game_number, opponent_kind=kind)
     return episode, board, colour, stats, agent.trace
 
 
@@ -58,11 +78,11 @@ class CognitivePool:
         self.capacity = cfg.num_workers
         self.closed = False
 
-    def submit(self, net, knowledge, seed, game_number=0, resign_plan=None, kd_values=None):
+    def submit(self, net, knowledge, seed, game_number=0, resign_plan=None, kd_values=None, kind="external"):
         if len(self.pending) >= self.capacity:
             raise RuntimeError("Actor pool is full")
         payload = pack_snapshot(net, knowledge)
-        future = self.executor.submit(_play, payload, int(seed), game_number, resign_plan, kd_values)
+        future = self.executor.submit(_play, payload, int(seed), game_number, resign_plan, kd_values, kind)
         self.pending.add(future)
 
     def receive(self, timeout=120):

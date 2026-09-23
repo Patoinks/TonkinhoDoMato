@@ -50,6 +50,14 @@ class CognitiveConfig(SurvivalConfig):
     # values used for exchange/protection decisions; the rest is the network's
     # contextual value. Zero keeps the network values alone.
     kd_weight: float = 0.0
+    # Opponent mixture (tonkai/opponents.py): share of games against TonkAI
+    # itself, TinyOpponent and Fairy-Stockfish. The main UCI opponent
+    # (opponent_path / opponent_elo) plays the rest. All zero = main only.
+    mix_self: float = 0.0
+    mix_tiny: float = 0.0
+    mix_fairy: float = 0.0
+    fairy_path: str = ""
+    fairy_elo: int = 1000
 
     def validate(self):
         super().validate()
@@ -62,10 +70,15 @@ class CognitiveConfig(SurvivalConfig):
                 raise ValueError(f"{name} must be positive")
         for name in ("memory_similarity", "memory_weight", "information_bonus", "planning_uncertainty",
                      "planning_gap", "robust_weight", "skill_bonus", "piece_safety_weight", "piece_exchange_tolerance",
-                     "king_safety_weight", "capture_target_weight", "victory_weight", "kd_weight"):
+                     "king_safety_weight", "capture_target_weight", "victory_weight", "kd_weight",
+                     "mix_self", "mix_tiny", "mix_fairy"):
             if not 0 <= getattr(self, name) <= 1:
                 raise ValueError(f"{name} must be between zero and one")
         if self.external_probability != 1 or self.historical_probability != 0:
-            raise ValueError("V3 next-opponent training preserves external-only play")
+            raise ValueError("V3 mixes opponents with mix_*, not the V2 population probabilities")
+        if self.mix_self + self.mix_tiny + self.mix_fairy > 1 + 1e-9:
+            raise ValueError("mix_self + mix_tiny + mix_fairy must be at most one")
+        if self.mix_fairy > 0 and (not self.fairy_path or self.fairy_elo < 1):
+            raise ValueError("mix_fairy needs fairy_path and a positive fairy_elo")
         if not 0 < self.capture_target_clip < float("inf"):
             raise ValueError("capture_target_clip must be finite and positive")
