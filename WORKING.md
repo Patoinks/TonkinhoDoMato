@@ -44,6 +44,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Concluído
 
+- Codex | 2026-09-23 | `d1df8df`: v5 com soma dos valores aprendidos dos atacantes/defensores, ameaças de peça inferior a alvo superior e sinal de mobilidade protegida dividido 50/50. Suite `python -m pytest -q` passou. Self-play 500/500 concluído em `checkpoints/cognitive-v5-self500-20260923/latest.pt` (jogos 74757 a 75257); checkpoint v4 de origem preservado. Matches de 20 em `history/matches/v5-self500-vs-*.json/.pgn`: Checkpoint 1 10/9/1, v3.1 11/6/3, v4 7/5/8 (vitoria/empate/derrota v5). Site sem deploy; auto-publicação do modelo desativada. Reservas libertadas.
+
 - Codex | 2026-09-23 | `4d72da3`: balanco das pecas da rede (proprias menos adversarias) usado nas desistencias a -5 no proximo arranque, apos 40 meios-lances e 3 leituras consecutivas. Suite `python -m pytest -q` passou. Treino permaneceu parado; publicacao automatica do modelo continua desligada.
 
 - Codex | 2026-09-23 | A pedido do Martim, publicacao automatica desativada em web_publish.local.json (local/ignorado). Publicador cancelado antes do deploy; ficheiros locais do site repostos. Treino Stockfish 2400 parado graciosamente aos 817/5000 jogos, checkpoint preservado. `python -m pytest -q` passou. A regra de desistir a -5 ainda requer uma escala: a rede Tonkinho devolve 0..1, enquanto o score -5 do Stockfish e uma avaliacao externa.
