@@ -1,4 +1,4 @@
-"""Resignation, decided by TonkAI's own network estimate and nothing else.
+"""Resignation, decided by TonkAI's own estimates and nothing else.
 
 The owner's rule: when TonkAI is hopeless it resigns, and the point is that it
 learns never to get there. "Hopeless" is read ONLY from the network:
@@ -9,10 +9,10 @@ learns never to get there. "Hopeless" is read ONLY from the network:
   * shaped objective: the survival part as above, with the victory measure
     near its floor (0.25): (1 - w) * (1 - gamma ** plies) + w * 0.25
 
-Never an engine score, never material, never TinyOpponent's evaluation, and in
-V3 never the heuristic-adjusted move scores (king/piece safety, search, memory,
-information bonus). A resignation driven by material would turn "down five
-pawns" into a lost game and teach classical piece values through the back door.
+The optional piece-balance rule sums TonkAI's learned, contextual values for
+its pieces minus the opponent's. It is measured in TonkAI pawn units, not
+Stockfish centipawns or classical material. Never use the opponent's engine
+score or the heuristic-adjusted move scores to decide resignation.
 
 Safeguards
   * Playout check (as in AlphaZero): some games that would resign are played
@@ -49,6 +49,7 @@ OFF, SHADOW, ACTIVE, VERIFY = "off", "shadow", "active", "verify"
 class ResignConfig:
     enabled: bool = False
     threshold: float | None = None   # overrides the objective's default
+    piece_balance_threshold: float | None = None  # signed sum of TonkAI's own piece values
     survival_plies: int = 10         # survival: death predicted within this
     victory_score: float = 0.05      # victory: expected score at or below this
     patience: int = 3                # consecutive hopeless decisions
@@ -74,10 +75,15 @@ class ResignConfig:
             raise ValueError("resign tighten must be between zero and one")
         if self.threshold is not None and not 0 < self.threshold < 1:
             raise ValueError("resign threshold must be between zero and one")
+        if self.piece_balance_threshold is not None:
+            if self.threshold is not None or not math.isfinite(self.piece_balance_threshold) or self.piece_balance_threshold >= 0:
+                raise ValueError("resign piece balance must be negative and cannot accompany a network threshold")
 
 
 def hope_threshold(rc: ResignConfig, objective: str, gamma: float, weight: float = 0.5) -> float:
-    """TonkAI resigns when its best option's value is at or below this."""
+    """Threshold for the configured TonkAI estimate."""
+    if rc.piece_balance_threshold is not None:
+        return rc.piece_balance_threshold
     if rc.threshold is not None:
         return rc.threshold
     if objective == "survival":
@@ -104,12 +110,16 @@ def choose_mode(state: str, playout: float, rng) -> str | None:
 
 
 class ResignTracker:
-    """One game. Consumes TonkAI's hope per decision; stops only when ACTIVE."""
+    """One game. Consumes the selected TonkAI estimate; stops only when ACTIVE."""
 
-    def __init__(self, mode: str, threshold: float, patience: int, min_ply: int):
+    def __init__(self, mode: str, threshold: float, patience: int, min_ply: int,
+                 metric: str = "hope"):
         if mode not in (SHADOW, ACTIVE, VERIFY):
             raise ValueError(f"invalid resign mode {mode!r}")
+        if metric not in ("hope", "piece_balance"):
+            raise ValueError(f"invalid resign metric {metric!r}")
         self.mode, self.threshold = mode, float(threshold)
+        self.metric = metric
         self.patience, self.min_ply = int(patience), int(min_ply)
         self.streak = 0
         self.decisions = 0
@@ -136,10 +146,12 @@ class ResignTracker:
         return self.resigned
 
     def report(self, plies: int) -> dict:
-        return {"mode": self.mode, "threshold": self.threshold,
+        return {"mode": self.mode, "metric": self.metric, "threshold": self.threshold,
                 "triggered": self.trigger_ply is not None, "trigger_ply": self.trigger_ply,
                 "resigned": self.resigned, "plies": int(plies),
-                "lowest_hope": None if math.isinf(self.lowest_hope) else self.lowest_hope}
+                "lowest_hope": None if self.metric != "hope" or math.isinf(self.lowest_hope) else self.lowest_hope,
+                "lowest_piece_balance": (self.lowest_hope if self.metric == "piece_balance" and
+                                         not math.isinf(self.lowest_hope) else None)}
 
 
 class ResignController:
@@ -163,12 +175,13 @@ class ResignController:
 
     def plan(self):
         """(mode, threshold, patience, min_ply) for the next game, or None."""
+        metric = ("piece_balance",) if self.rc.piece_balance_threshold is not None else ()
         if self.rc.enabled and self.rc.force:
-            return (ACTIVE, self.threshold, self.rc.patience, self.rc.min_ply)
+            return (ACTIVE, self.threshold, self.rc.patience, self.rc.min_ply, *metric)
         mode = choose_mode(self.state, self.rc.playout, self.rng)
         if mode is None:
             return None
-        return (mode, self.threshold, self.rc.patience, self.rc.min_ply)
+        return (mode, self.threshold, self.rc.patience, self.rc.min_ply, *metric)
 
     def update(self, report: dict | None, lost: bool) -> list[str]:
         """Feed one finished game. Returns human-readable state changes."""
@@ -200,7 +213,8 @@ class ResignController:
 
     def _tighten(self, messages):
         old = self.threshold
-        self.threshold = max(1e-6, self.threshold * self.rc.tighten)
+        self.threshold = (self.threshold / self.rc.tighten if self.rc.piece_balance_threshold is not None
+                          else max(1e-6, self.threshold * self.rc.tighten))
         self.verified.clear()
         self.counts["tightened"] += 1
         messages.append(f"[resign] false resignations above {self.rc.max_false_rate:.0%}: "
@@ -282,6 +296,8 @@ def add_resign_args(parser) -> None:
     group.add_argument("--resign", action="store_true",
                        help="let TonkAI resign hopeless games; starts in shadow mode")
     group.add_argument("--resign-threshold", type=float, default=None)
+    group.add_argument("--resign-piece-balance", type=float, default=None,
+                       help="resign at this negative sum of TonkAI's learned piece values")
     group.add_argument("--resign-survival-plies", type=int, default=10)
     group.add_argument("--resign-victory-score", type=float, default=0.05)
     group.add_argument("--resign-patience", type=int, default=3)
@@ -295,6 +311,7 @@ def add_resign_args(parser) -> None:
 
 def resign_config_from_args(args) -> ResignConfig:
     rc = ResignConfig(enabled=bool(args.resign), threshold=args.resign_threshold,
+                      piece_balance_threshold=getattr(args, "resign_piece_balance", None),
                       survival_plies=args.resign_survival_plies,
                       victory_score=args.resign_victory_score,
                       patience=args.resign_patience, min_ply=args.resign_min_ply,

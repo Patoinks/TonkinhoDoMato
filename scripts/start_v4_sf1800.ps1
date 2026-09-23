@@ -22,7 +22,7 @@ $arguments = @('train_cognitive.py', '--resume', $source,
     '--fairy-path', 'engines\fairy-stockfish\fairy-stockfish_x86-64-bmi2.exe', '--fairy-elo', '1000',
     '--games', "$Games", '--game-cap', '100000', '--workers', "$Workers",
     '--checkpoint-dir', $campaign, '--log-every', '25',
-    '--resign', '--resign-min-non-loss', '0', '--capture-target-weight', '0.05',
+    '--resign', '--resign-piece-balance', '-5', '--resign-force', '--resign-min-non-loss', '0', '--capture-target-weight', '0.05',
     '--objective', 'shaped', '--victory-weight', '0.5', '--kd-weight', '0.75',
     '--king-safety-model', 'checkpoints\king_safety\latest.pt',
     '--mate-search-moves', '3', '--mate-defense-moves', '2')

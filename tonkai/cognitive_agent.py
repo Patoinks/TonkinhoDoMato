@@ -121,6 +121,13 @@ class CognitiveAgent(SurvivalAgent):
             items = sorted(board.piece_map().items())
         return self._valuer(self._piece_raw([context], [items], self_color)[0], items, self_color, context)
 
+    @torch.inference_mode()
+    def piece_balance(self, board, self_color):
+        """Own minus enemy pieces in the agent's contextual pawn units; kings excluded."""
+        value = self.piece_valuer(board, self_color)
+        return sum(value(piece, square) for square, piece in board.piece_map().items()
+                   if piece.piece_type != chess.KING)
+
     def _piece_raw(self, contexts, item_lists, self_color):
         """Raw piece-head outputs for several positions in ONE forward pass.
 
@@ -553,9 +560,7 @@ class CognitiveAgent(SurvivalAgent):
                 repeated.append(index)
         if not repeated:
             return
-        value = self.piece_valuer(board, self_color)
-        balance = sum(value(piece, square) for square, piece in board.piece_map().items()
-                      if piece.piece_type != chess.KING)
+        balance = self.piece_balance(board, self_color)
         if balance >= margin:
             for index in repeated:
                 scores[index] = min(scores[index], 0.05)

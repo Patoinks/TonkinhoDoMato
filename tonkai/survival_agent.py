@@ -135,8 +135,8 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
                  opponent_name="external", resign=None):
     """Collect the complete ordered trajectory, including the initial state.
 
-    ``resign`` is an optional ``ResignTracker`` (V3 only). It reads the raw
-    network estimate ``choice.mean`` - never the heuristic-adjusted scores. A
+    ``resign`` is an optional ``ResignTracker`` (V3 only). It reads either the
+    raw network estimate or the sum of the agent's learned piece values. A
     resignation is a real loss: the game ends there, lost, as in chess (and in
     AlphaZero). It only happens once the tracker is ACTIVE, i.e. after the
     controller has verified that TonkAI's "hopeless" judgement is reliable.
@@ -166,7 +166,9 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
         if board.turn == self_color:
             choice = agent.choose(board, self_color, rng, temperature=temperature,
                                   explore=explore, head=head)
-            hope = float(np.max(choice.mean)) if resign is not None else 0.0
+            hope = (agent.piece_balance(board, self_color) if resign is not None and
+                    resign.metric == "piece_balance" else
+                    float(np.max(choice.mean)) if resign is not None else 0.0)
             # Rules, not heuristics: never resign with a win or a draw on the board
             # (a forced mate found by the rules is a win on the board).
             if resign is not None and hope <= resign.threshold and (

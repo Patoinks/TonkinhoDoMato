@@ -34,8 +34,8 @@ def controller(**overrides):
 class StubAgent:
     """Scores say 'great move', the network says 'hopeless'."""
 
-    def __init__(self, mean, scores=0.99):
-        self.mean, self.scores, self.trace = mean, scores, []
+    def __init__(self, mean, scores=0.99, balance=None):
+        self.mean, self.scores, self.balance, self.trace = mean, scores, balance, []
 
     def reset(self):
         self.trace = []
@@ -53,6 +53,9 @@ class StubAgent:
     def predict_reply(self, board, colour):
         moves = list(board.legal_moves)
         return moves, np.full(len(moves), 1 / len(moves))
+
+    def piece_balance(self, board, colour):
+        return self.balance
 
 
 class FirstMove:
@@ -80,6 +83,16 @@ def test_default_thresholds_follow_the_objective():
 
 def test_best_hope_is_the_most_hopeful_move():
     assert best_hope([0.01, 0.4, 0.02]) == pytest.approx(0.4)
+
+
+def test_piece_balance_threshold_is_signed_and_exclusive():
+    rc = ResignConfig(enabled=True, piece_balance_threshold=-5)
+    assert hope_threshold(rc, "shaped", .985) == -5
+    assert ResignController(ResignConfig(enabled=True, piece_balance_threshold=-5, force=True), -5).plan()[-1] == "piece_balance"
+    with pytest.raises(ValueError):
+        ResignConfig(piece_balance_threshold=5).validate()
+    with pytest.raises(ValueError):
+        ResignConfig(threshold=.1, piece_balance_threshold=-5).validate()
 
 
 # ---------------------------------------------------------------- tracker
@@ -154,6 +167,14 @@ def test_too_many_wrong_resignations_tighten_the_threshold():
     assert ctl.state == SHADOW
 
 
+def test_wrong_piece_balance_resignations_move_the_limit_further_negative():
+    ctl = controller(piece_balance_threshold=-5)
+    ctl.threshold = -5
+    for i in range(20):
+        ctl.update(report(triggered=True, threshold=-5), lost=(i % 5 != 0))
+    assert ctl.threshold == pytest.approx(-6.25)
+
+
 def test_only_current_threshold_verifications_count():
     ctl = controller()
     ctl.update(report(triggered=True, threshold=0.2), lost=False)
@@ -202,6 +223,23 @@ def test_resigns_on_the_network_estimate_not_on_the_heuristic_scores():
 def test_high_network_estimate_never_resigns():
     tracker = ResignTracker(ACTIVE, 0.05, patience=1, min_ply=0)
     _, _, _, stats = play_episode(StubAgent(mean=0.9, scores=0.0), FirstMove(), cfg(),
+                                  np.random.default_rng(1), self_color=chess.WHITE, resign=tracker)
+    assert not stats["resign"]["triggered"]
+
+
+def test_piece_balance_resigns_below_minus_five_even_if_survival_head_is_high():
+    agent = StubAgent(mean=.9, balance=-5.5)
+    tracker = ResignTracker(ACTIVE, -5, patience=3, min_ply=10, metric="piece_balance")
+    episode, _, _, stats = play_episode(agent, FirstMove(), cfg(), np.random.default_rng(1),
+                                        self_color=chess.WHITE, resign=tracker)
+    assert episode.lost and stats["resign"]["resigned"]
+    assert stats["resign"]["lowest_piece_balance"] == -5.5
+    assert stats["resign"]["lowest_hope"] is None
+
+
+def test_piece_balance_above_minus_five_does_not_use_low_survival_head():
+    tracker = ResignTracker(ACTIVE, -5, patience=1, min_ply=0, metric="piece_balance")
+    _, _, _, stats = play_episode(StubAgent(mean=0, balance=-4.9), FirstMove(), cfg(),
                                   np.random.default_rng(1), self_color=chess.WHITE, resign=tracker)
     assert not stats["resign"]["triggered"]
 

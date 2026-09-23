@@ -214,8 +214,10 @@ def main(argv=None):
             if math.isclose(state["resign"]["initial_threshold"], resign.initial_threshold):
                 resign.load_state_dict(state["resign"])
             else:
+                mode = ("active at owner's request" if resign_cfg.force
+                        else "verification restarts in shadow")
                 print(f"[resign] threshold changed {state['resign']['initial_threshold']:.4f} -> "
-                      f"{resign.initial_threshold:.4f}; verification restarts in shadow", flush=True)
+                      f"{resign.initial_threshold:.4f}; {mode}", flush=True)
         if state.get("capture_stats") and state["capture_stats"].get("hot_kills") == cfg.hot_piece_kills:
             capture_stats.load_state_dict(state["capture_stats"])
         if capture_stats.needs_seed() and state.get("replay"):
