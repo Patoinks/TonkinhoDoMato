@@ -44,6 +44,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Concluído
 
+- Codex | 2026-09-23 | `4d72da3`: balanco das pecas da rede (proprias menos adversarias) usado nas desistencias a -5 no proximo arranque, apos 40 meios-lances e 3 leituras consecutivas. Suite `python -m pytest -q` passou. Treino permaneceu parado; publicacao automatica do modelo continua desligada.
+
 - Codex | 2026-09-23 | A pedido do Martim, publicacao automatica desativada em web_publish.local.json (local/ignorado). Publicador cancelado antes do deploy; ficheiros locais do site repostos. Treino Stockfish 2400 parado graciosamente aos 817/5000 jogos, checkpoint preservado. `python -m pytest -q` passou. A regra de desistir a -5 ainda requer uma escala: a rede Tonkinho devolve 0..1, enquanto o score -5 do Stockfish e uma avaliacao externa.
 
 - Codex | 2026-09-23 20:12 WEST | Publicador de vitórias aceita apenas diferenças de espaços no index e continua a rejeitar mudanças no bundle. Vitória real contra Stockfish 2200 (14 lances, pretas, 0-1) publicada e confirmada no PGN público; treino de 5000 jogos permaneceu ativo. `pytest -q` terminou com código 0. Reservas libertadas.
