@@ -68,6 +68,9 @@ class CognitiveConfig(SurvivalConfig):
     # learns; only the learning side's games are recorded. 0 = play the current
     # weights, as before.
     self_snapshot_every: int = 0
+    # With snapshots: this many games right after each new snapshot are played
+    # against it, as one series; the rest follow the mix_* shares. 0 = none.
+    self_games_per_snapshot: int = 0
 
     def validate(self):
         super().validate()

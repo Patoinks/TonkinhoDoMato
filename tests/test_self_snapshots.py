@@ -89,3 +89,15 @@ def test_actor_rival_uses_exactly_the_frozen_weights():
     # Cached per version: the same objects are reused for the next game.
     again = cognitive_pool._opponent("self", state, 8, None, rival=(123, payload))
     assert again.agent.net is twin
+
+
+def test_each_snapshot_gets_one_series_of_games_then_the_normal_mix(tmp_path, environment, monkeypatch):  # noqa: F811
+    monkeypatch.setattr(cli, "CognitivePool", RivalPool)
+    RivalPool.rivals = []
+    _, args = environment
+    assert cli.main(args + ["--game-cap", "14", "--games", "14", "--mix-self", "0", "--mix-tiny", "1",
+                            "--self-snapshot-every", "6", "--self-games-per-snapshot", "2"]) == 0
+    # One actor: snapshots at 0, 6 and 12, each followed by exactly 2 games against it.
+    assert RivalPool.rivals == [0, 0, 6, 6, 12, 12]
+    state = torch.load(tmp_path / "out/latest.pt", weights_only=False)
+    assert state["self_play_rival"]["version"] == 12 and state["self_play_rival"]["remaining"] == 0

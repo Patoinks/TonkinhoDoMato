@@ -77,6 +77,8 @@ def main(argv=None):
     parser.add_argument("--fairy-elo", type=int, help="Fairy-Stockfish nominal UCI_Elo")
     parser.add_argument("--self-snapshot-every", type=int,
                         help="self-play against a frozen TonkAI saved every N games (0 = current weights)")
+    parser.add_argument("--self-games-per-snapshot", type=int,
+                        help="play this many games against each new frozen TonkAI, right after it is saved")
     parser.add_argument("--checkpoint-every", type=int, help="save latest.pt every N games")
     parser.add_argument("--compile-learner", action="store_true",
                         help="torch.compile the learner's recurrent unroll (~25%% faster update after a "
@@ -127,6 +129,7 @@ def main(argv=None):
                             ("victory_weight", "victory_weight"), ("kd_weight", "kd_weight"),
                             ("mix_self", "mix_self"), ("mix_tiny", "mix_tiny"), ("mix_fairy", "mix_fairy"),
                             ("self_snapshot_every", "self_snapshot_every"), ("checkpoint_every", "checkpoint_every"),
+                            ("self_games_per_snapshot", "self_games_per_snapshot"),
                             ("fairy_elo", "fairy_elo")):
         value = getattr(args, argument)
         if value is not None:
@@ -269,7 +272,7 @@ def main(argv=None):
 
     # Frozen self-play rival: (version = TonkAI's game count, snapshot bytes).
     snapshot_dir = output.parent / "snapshots"
-    rival = {"version": None, "payload": None, "path": None}
+    rival = {"version": None, "payload": None, "path": None, "remaining": 0}
 
     def snapshot_rival():
         from tonkai.actor_snapshot import pack_snapshot
@@ -277,15 +280,18 @@ def main(argv=None):
         snapshot_dir.mkdir(parents=True, exist_ok=True)
         path = snapshot_dir / f"tonkinho-jogo-{trainer.games}.pt"
         torch.save({"format": "tonkinho-snapshot-v1", "version": trainer.games, "payload": payload}, path)
-        rival.update(version=trainer.games, payload=payload, path=str(path))
+        rival.update(version=trainer.games, payload=payload, path=str(path),
+                     remaining=cfg.self_games_per_snapshot)
         record("self_snapshot", version=trainer.games, file=path.name, bytes=len(payload))
 
     def load_rival(saved):
         path = Path(saved["path"])
-        if not path.is_file():
+        # A rival saved without its series counter predates series play: start fresh.
+        if not path.is_file() or (cfg.self_games_per_snapshot and "remaining" not in saved):
             return False
         snapshot = torch.load(path, map_location="cpu", weights_only=False)
-        rival.update(version=snapshot["version"], payload=snapshot["payload"], path=str(path))
+        rival.update(version=snapshot["version"], payload=snapshot["payload"], path=str(path),
+                     remaining=int(saved.get("remaining", 0)))
         return True
 
     def save():
@@ -295,7 +301,8 @@ def main(argv=None):
                      campaign_results=dict(counts), campaign_draw_reasons=dict(reasons),
                      capture_stats=capture_stats.state_dict(),
                      resign=resign.state_dict() if resign is not None else None,
-                     self_play_rival=({"version": rival["version"], "path": rival["path"]}
+                     self_play_rival=({"version": rival["version"], "path": rival["path"],
+                                       "remaining": rival["remaining"]}
                                       if rival["version"] is not None else None))
 
     try:
@@ -341,8 +348,12 @@ def main(argv=None):
                 kd_values = capture_stats.piece_values() if cfg.kd_weight > 0 else None
                 if kd_values is not None:
                     extras["kd_values"] = kd_values
-                if opponents.uses_mixture(cfg):
+                if rival["remaining"] > 0 and rival["payload"] is not None:
+                    extras["kind"] = "self"          # the series against the newest frozen TonkAI
+                    rival["remaining"] -= 1
+                elif opponents.uses_mixture(cfg):
                     extras["kind"] = opponents.choose_kind(cfg, rng)
+                if "kind" in extras:
                     if extras["kind"] == "self" and rival["payload"] is not None:
                         extras["rival"] = (rival["version"], rival["payload"])
                 pool.submit(trainer.net, trainer.knowledge, seed, game_number, **extras)
