@@ -752,6 +752,62 @@ struct MateSearch {
     }
 };
 
+// Capture-only negamax. In check, every legal evasion is searched; at the
+// horizon only checkmate has a non-zero value. A window is translated through
+// the immediate material gain before searching the opponent's position.
+struct ExchangeSearch {
+    static constexpr double MATE = 1000.0;
+    const std::vector<double>& values;
+    long long nodes = 0, limit;
+    bool aborted = false;
+
+    ExchangeSearch(const std::vector<double>& values_, long long limit_) : values(values_), limit(limit_) {}
+
+    double move_gain(const Pos& p, int m) const {
+        int victim = p.type_at(p.captured_square(m));
+        double gain = victim >= PAWN && victim <= QUEEN ? values[victim] : 0.0;
+        if (int promotion = mpromo(m)) gain += values[promotion] - values[PAWN];
+        return gain;
+    }
+
+    double search(const Pos& p, int depth, double alpha, double beta) {
+        if (++nodes > limit) { aborted = true; return 0.0; }
+        bool check = p.is_check();
+        std::vector<int> moves;
+        if (check || depth > 0) p.legal_moves(moves);
+        if (check && moves.empty()) return -MATE;
+        if (depth == 0) return 0.0;
+
+        if (!check) {
+            moves.erase(std::remove_if(moves.begin(), moves.end(), [&](int m) {
+                return !(p.occ[p.turn ^ 1] & bit(p.captured_square(m)));
+            }), moves.end());
+        }
+        // MVV-LVA, with stable move order for equal scores.
+        std::stable_sort(moves.begin(), moves.end(), [&](int a, int b) {
+            double va = move_gain(p, a), vb = move_gain(p, b);
+            if (va != vb) return va > vb;
+            return values[std::min(p.type_at(mfrom(a)), int(QUEEN))] <
+                   values[std::min(p.type_at(mfrom(b)), int(QUEEN))];
+        });
+
+        double best = check ? -std::numeric_limits<double>::infinity() : 0.0;
+        if (best > alpha) alpha = best;
+        if (alpha >= beta) return best;
+        for (int m : moves) {
+            double gain = move_gain(p, m);
+            Pos next = p;
+            next.make(m);
+            double score = gain - search(next, depth - 1, gain - beta, gain - alpha);
+            if (aborted) return best;
+            if (score > best) best = score;
+            if (best > alpha) alpha = best;
+            if (alpha >= beta) break;
+        }
+        return best;
+    }
+};
+
 // ------------------------------------------------------------------ board
 
 class Board {
@@ -1026,6 +1082,36 @@ public:
         }
         return {found, proven, used};
     }
+    std::tuple<double, bool, long long> exchange_gain(const std::vector<double>& values, int max_depth,
+                                                        long long node_limit) const {
+        if (values.size() != 6 || max_depth < 0 || node_limit < 0)
+            throw std::invalid_argument("exchange_gain requires six values and non-negative limits");
+        ExchangeSearch search(values, node_limit);
+        double gain = search.search(pos, max_depth, -std::numeric_limits<double>::infinity(),
+                                    std::numeric_limits<double>::infinity());
+        return {search.aborted ? 0.0 : gain, !search.aborted, search.nodes};
+    }
+    std::vector<double> exchange_after_moves(const std::vector<int>& codes, const std::vector<double>& values,
+                                              int max_depth, long long node_limit) const {
+        if (values.size() != 6 || max_depth < 0 || node_limit < 0)
+            throw std::invalid_argument("exchange_after_moves requires six values and non-negative limits");
+        std::vector<int> legal;
+        pos.legal_moves(legal);
+        std::vector<double> out;
+        out.reserve(codes.size());
+        for (int m : codes) {
+            if (std::find(legal.begin(), legal.end(), m) == legal.end())
+                throw std::invalid_argument("illegal move in exchange_after_moves");
+            Pos next = pos;
+            next.make(m);
+            ExchangeSearch search(values, node_limit);
+            double gain = search.search(next, max_depth, -std::numeric_limits<double>::infinity(),
+                                        std::numeric_limits<double>::infinity());
+            if (search.aborted) throw std::runtime_error("exchange_after_moves exceeded node_limit");
+            out.push_back(gain);
+        }
+        return out;
+    }
     int ks_status_py(bool defender_white) const { return ks_status(pos, defender_white ? WHITE : BLACK); }
 
     // King safety (v4) exploration: for every legal move of the side to move
@@ -1258,6 +1344,10 @@ PYBIND11_MODULE(tonkai_fast, m) {
         .def("encode_here", &Board::encode_here, py::arg("self_color"))
         .def("forced_mate", &Board::forced_mate, py::arg("attacker_white"), py::arg("max_moves"),
              py::arg("node_limit"))
+        .def("exchange_gain", &Board::exchange_gain, py::arg("values"), py::arg("max_depth"),
+             py::arg("node_limit"))
+        .def("exchange_after_moves", &Board::exchange_after_moves, py::arg("codes"), py::arg("values"),
+             py::arg("max_depth"), py::arg("node_limit"))
         .def("ks_status", &Board::ks_status_py, py::arg("defender_white"))
         .def("threats", &Board::threats, py::arg("max_moves"), py::arg("node_limit"))
         .def("expand2", &Board::expand2, py::arg("defender_white"))
