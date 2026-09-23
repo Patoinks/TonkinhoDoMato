@@ -105,11 +105,11 @@ class SurvivalTrainer:
         if learner_window_only and not gradients:
             raise ValueError("Window-only outputs are for the learner, not the target network")
         memory = net.initial_memory(len(x))
-        contexts, before, after = [], [], []
+        before, after = [], []
         # Encode all positions together. GRU time dependency remains sequential.
         with torch.set_grad_enabled(gradients):
             latent = net.encode(x.flatten(0, 1)).reshape(len(x), x.shape[1], -1)
-        stop = min(x.shape[1], burn_in + learn_length) if learner_window_only else x.shape[1]
+        total, stop = x.shape[1], min(x.shape[1], burn_in + learn_length) if learner_window_only else x.shape[1]
         for t in range(stop):
             learning = gradients and burn_in <= t < burn_in + learn_length
             if t == burn_in or t == burn_in + learn_length:
@@ -119,17 +119,30 @@ class SurvivalTrainer:
                 before.append(memory)
                 candidate = net.memory_cell(features, memory)
                 memory = torch.where(valid[:, t, None], candidate, memory)
-                contexts.append(features.new_zeros(features.shape) if learner_window_only and t < burn_in
-                                else net.context_from_latent(features, memory))
                 after.append(memory)
-        if stop < x.shape[1]:
-            # Keep the original tensor layouts for every downstream operation.
-            # These placeholders are outside every learner loss/index window.
-            for _ in range(stop, x.shape[1]):
-                contexts.append(latent.new_zeros((len(x), latent.shape[-1])))
-                before.append(memory.new_zeros(memory.shape))
-                after.append(memory.new_zeros(memory.shape))
-        return torch.stack(contexts, 1), torch.stack(before, 1), torch.stack(after, 1)
+        # The fusion of step t reads only step t, so it runs once per span
+        # (burn-in, learning window, tail) instead of once per step, with the
+        # same gradient boundaries as the recurrence above.
+        b, d = len(x), latent.shape[-1]
+
+        def fuse(start, end, grad):
+            if end <= start:
+                return latent.new_zeros((b, 0, d))
+            with torch.set_grad_enabled(grad):
+                features = latent[:, start:end] if grad else latent[:, start:end].detach()
+                memories = torch.stack(after[start:end], 1)
+                fused = net.context_from_latent(features.reshape(-1, d), memories.reshape(-1, memories.shape[-1]))
+            return fused.reshape(b, end - start, -1)
+
+        low, high = min(burn_in, stop), min(burn_in + learn_length, stop)
+        # Window-only placeholders keep the original layouts; no loss reads them.
+        parts = [latent.new_zeros((b, low, d)) if learner_window_only else fuse(0, low, False)]
+        parts += [fuse(low, high, gradients), fuse(high, stop, False)]
+        if stop < total:
+            parts.append(latent.new_zeros((b, total - stop, d)))
+            before += [memory.new_zeros(memory.shape)] * (total - stop)
+            after += [memory.new_zeros(memory.shape)] * (total - stop)
+        return torch.cat(parts, 1), torch.stack(before, 1), torch.stack(after, 1)
 
     def _reply_loss(self, batch, x, memories, offset, length):
         """One legal reply distribution per sampled sequence, batched together."""

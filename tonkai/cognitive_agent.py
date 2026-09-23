@@ -107,15 +107,23 @@ class CognitiveAgent(SurvivalAgent):
             context = self.context
         if items is None:
             items = sorted(board.piece_map().items())
+        return self._valuer(self._piece_raw([context], [items], self_color)[0], items, self_color, context)
+
+    def _piece_raw(self, contexts, item_lists, self_color):
+        """Raw piece-head outputs for several positions in ONE forward pass.
+
+        One call per position gave identical values up to the last float bit;
+        the batch is several times cheaper and the difference is below any
+        decision's resolution.
+        """
+        sizes = [len(items) for items in item_lists]
+        features = torch.cat([torch.cat((context.expand(size, -1), self._piece_features(items, self_color)), dim=-1)
+                              for context, items, size in zip(contexts, item_lists, sizes)])
+        raw = self.net.piece_head(features).squeeze(-1).cpu().numpy()
+        return np.split(raw, np.cumsum(sizes)[:-1])
+
+    def _valuer(self, raw, items, self_color, context):
         pieces = [piece for _, piece in items]
-        if self.use_fast_rules:
-            features = torch.cat((context.expand(len(items), -1), self._piece_features(items, self_color)), dim=-1)
-            raw = self.net.piece_head(features).squeeze(-1).cpu().numpy()
-        else:
-            types = torch.tensor([p.piece_type - 1 for p in pieces], device=self.device)
-            squares = torch.tensor([sq if self_color else sq ^ 56 for sq, _ in items], device=self.device)
-            sides = torch.tensor([int(p.color != self_color) for p in pieces], device=self.device)
-            raw = self.net.piece_values(context.expand(len(items), -1), types, squares, sides).cpu().numpy()
         unit = pawn_unit(raw, pieces)
         signed = raw * np.array([1 if p.color == self_color else -1 for p in pieces])
         normalized = np.clip(signed / unit, -12, 12)
@@ -148,8 +156,9 @@ class CognitiveAgent(SurvivalAgent):
         return value
 
     @torch.inference_mode()
-    def sense_pieces(self, board, self_color, context=None):
-        return piece_senses(board, self.piece_valuer(board, self_color, context), tolerance=self.cfg.piece_exchange_tolerance,
+    def sense_pieces(self, board, self_color, context=None, value=None):
+        value = value or self.piece_valuer(board, self_color, context)
+        return piece_senses(board, value, tolerance=self.cfg.piece_exchange_tolerance,
                             depth=self.cfg.piece_exchange_depth)
 
     @torch.inference_mode()
@@ -182,10 +191,10 @@ class CognitiveAgent(SurvivalAgent):
             pieces = position_risk(senses, not self_color) - position_risk(senses, self_color)
         return float(np.clip(0.5 + 0.25 * king + 0.25 * pieces, 0.0, 1.0))
 
-    def _fast_piece_risks(self, fast, self_color, context):
+    def _fast_piece_risks(self, fast, self_color, context, pieces=None, value=None):
         """(own, enemy) position_risk of piece_senses, for the C++ board's position."""
-        pieces = fast_rules.items(fast)
-        value = self.piece_valuer(None, self_color, context, items=pieces)
+        pieces = fast_rules.items(fast) if pieces is None else pieces
+        value = value or self.piece_valuer(None, self_color, context, items=pieces)
         white, black = fast_rules.piece_risks(fast, value, pieces, tolerance=self.cfg.piece_exchange_tolerance,
                                               depth=self.cfg.piece_exchange_depth)
         return (white, black) if self_color else (black, white)
@@ -285,13 +294,19 @@ class CognitiveAgent(SurvivalAgent):
         encoded = (fast_rules.encode_after_moves(fast, codes, self_color) if fast is not None
                    else encode_after_moves(board, moves, self_color))
         x = torch.from_numpy(encoded).to(self.device)
-        contexts, memories = self.net.candidates(x, self.memory)
+        # candidates() and keys() both encode x with the same module; do it once.
+        latent = self.net.encode(x)
+        memories = self.net.memory_cell(latent, self.net._memory_for_batch(self.memory, len(x)))
+        contexts = self.net.context_from_latent(latent, memories)
         heads, logvars = self.net.survival(contexts)
         mean = heads.mean(-1).cpu().numpy()
         epistemic = heads.std(-1, unbiased=False).cpu().numpy()
         aleatoric = logvars.exp().mean(-1).sqrt().cpu().numpy()
         raw = heads[:, head].cpu().numpy() if explore and head is not None else mean.copy()
-        keys = self.keys(x)
+        if self.knowledge.encoder is self.net.encoder:
+            keys = structural_keys(x.detach().cpu().numpy(), latent.cpu().numpy())
+        else:
+            keys = self.keys(x)
         retrieved = self.knowledge.memory.query(keys, own_turn=False)
         strength = (self.cfg.memory_weight * retrieved["trust"] * retrieved["similarity"]
                     * retrieved["support"] / (retrieved["support"] + 2))
@@ -308,15 +323,28 @@ class CognitiveAgent(SurvivalAgent):
         safety, kings = [], []
         king_bonuses = np.zeros(len(moves))
         if self.cfg.piece_safety_weight:
+            branches, item_lists = [], []
             for index, move in enumerate(moves):
                 if fast is not None:
                     fast.push(codes[index])
-                    own_risk, enemy_risk = self._fast_piece_risks(fast, self_color, contexts[index:index + 1])
+                    item_lists.append(fast_rules.items(fast))
                     fast.pop()
                 else:
                     branch = board.copy(stack=False)
                     branch.push(move)
-                    senses = self.sense_pieces(branch, self_color, contexts[index:index + 1])
+                    branches.append(branch)
+                    item_lists.append(sorted(branch.piece_map().items()))
+            row_contexts = [contexts[index:index + 1] for index in range(len(moves))]
+            raws = self._piece_raw(row_contexts, item_lists, self_color)
+            for index, move in enumerate(moves):
+                value = self._valuer(raws[index], item_lists[index], self_color, row_contexts[index])
+                if fast is not None:
+                    fast.push(codes[index])
+                    own_risk, enemy_risk = self._fast_piece_risks(fast, self_color, row_contexts[index],
+                                                                  item_lists[index], value)
+                    fast.pop()
+                else:
+                    senses = self.sense_pieces(branches[index], self_color, value=value)
                     own_risk = position_risk(senses, self_color)
                     enemy_risk = position_risk(senses, not self_color)
                 scores[index] += self.cfg.piece_safety_weight * (enemy_risk - own_risk)
