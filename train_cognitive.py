@@ -25,6 +25,8 @@ from tonkai.captures import CaptureStats, parse_weights, replay_games
 MODEL_NAME, MODEL_VERSION = "Tonkinho do Mato v3.1", "3.1"
 # v4: the same, with the learned Emergent King Safety model deciding king safety.
 V4_NAME, V4_VERSION = "Tonkinho do Mato v4", "4"
+# v5: learned-value attack/protection and protected mobility, equally weighted.
+V5_NAME, V5_VERSION = "Tonkinho do Mato v5", "5"
 from tonkai import opponents
 from tonkai import fast_rules
 from tonkai.cognitive_config import CognitiveConfig
@@ -136,7 +138,9 @@ def main(argv=None):
     cfg.opponent_path = str((args.opponent_path or Path(cfg.opponent_path or ENGINE)).resolve(strict=True))
     if args.king_safety_model is not None:
         cfg.king_safety_model = str(args.king_safety_model.resolve(strict=True))
-    model_name, model_version = (V4_NAME, V4_VERSION) if cfg.king_safety_model else (MODEL_NAME, MODEL_VERSION)
+    model_name, model_version = ((V5_NAME, V5_VERSION) if cfg.piece_activity_weight else
+                                 (V4_NAME, V4_VERSION) if cfg.king_safety_model else
+                                 (MODEL_NAME, MODEL_VERSION))
     if args.fairy_path is not None:
         cfg.fairy_path = str(args.fairy_path.resolve(strict=True))
     for argument, field in (("workers", "num_workers"), ("checkpoint_dir", "checkpoint_dir"),

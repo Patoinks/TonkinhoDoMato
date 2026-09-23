@@ -37,6 +37,8 @@ class CognitiveConfig(SurvivalConfig):
     generalization_every: int = 20
     protected_replay_every: int = 10
     piece_safety_weight: float = 0.08
+    # New game-building signal: 50% attack/protection, 50% safe mobility.
+    piece_activity_weight: float = 0.08
     piece_exchange_tolerance: float = 0.5
     piece_exchange_depth: int = 6
     king_safety_weight: float = 0.06
@@ -102,7 +104,8 @@ class CognitiveConfig(SurvivalConfig):
                 raise ValueError(f"{name} must be positive")
         for name in ("memory_similarity", "memory_weight", "information_bonus", "planning_uncertainty",
                      "planning_gap", "robust_weight", "skill_bonus", "piece_safety_weight", "piece_exchange_tolerance",
-                     "king_safety_weight", "capture_target_weight", "victory_weight", "kd_weight",
+                     "piece_activity_weight", "king_safety_weight",
+                     "capture_target_weight", "victory_weight", "kd_weight",
                      "mix_self", "mix_tiny", "mix_fairy"):
             if not 0 <= getattr(self, name) <= 1:
                 raise ValueError(f"{name} must be between zero and one")

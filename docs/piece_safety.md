@@ -35,3 +35,27 @@ de um sacrifício que a avaliação de sobrevivência considere compensado. Cont
 a existir exploração durante o treino. O objetivo de sobrevivência não mudou.
 Os traços guardam riscos próprios/adversários sem duplicar o mapa inteiro em cada
 experiência. `agent.sense_pieces(board, colour)` expõe o detalhe por casa.
+
+## Ataque favorável e criação de jogo
+
+O sinal adicional `piece_activity_weight=0.08` divide-se exatamente em duas
+metades: 50% ataque/proteção e 50% mobilidade. Para cada peça ocupada sob ataque,
+somam-se os valores contextuais aprendidos dos atacantes legais distintos e dos
+defensores que podem recapturar legalmente. Os defensores são calculados depois
+de cada primeira captura; usa-se a resposta com menor proteção. O rei não tem
+valor de troca finito e fica fora destas somas. O cálculo olha para ambas as
+cores, procurando pressão sobre peças adversárias e reduzindo a exposição das
+próprias.
+
+Uma jogada também recebe sinal de ataque quando a peça que acabou de chegar
+ameaça capturar uma peça adversária de maior valor e a casa de chegada continua
+protegida pela mesma comparação de somas. A metade da mobilidade recompensa o
+aumento do número de jogadas legais disponíveis ao Tonkinho apenas nessa
+condição de proteção. Ambos os sinais são limitados e continuam subordinados
+à avaliação de trocas, às respostas do adversário e aos resultados reais.
+
+No objetivo `shaped`, a medida de cada posição inclui igualmente 50% de
+pressão/proteção e 50% de mobilidade relativa. Assim, as novas partidas podem
+ensinar esta preferência à rede; alterar o código não muda os pesos de um
+checkpoint já treinado. É um sinal de exploração, não uma prova de que uma
+ameaça dará captura: o adversário pode mover ou defender a peça antes.

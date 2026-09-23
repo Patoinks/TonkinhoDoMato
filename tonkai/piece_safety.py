@@ -16,6 +16,94 @@ def captures_to(board, square):
     return list(board.generate_legal_captures(to_mask=chess.BB_SQUARES[square]))
 
 
+def square_support(board, square, owner, value):
+    """Learned-value sums of legal attackers and possible recapturers.
+
+    The defender total is the smallest legal response after one attacker takes
+    the occupied square. This keeps defenders from incompatible capture lines
+    out of the same sum. Kings have no finite exchange value.
+    """
+    victim = board.piece_at(square)
+    if victim is None or victim.color != owner or victim.piece_type == chess.KING:
+        return 0.0, 0.0
+    work = board.copy(stack=False)
+    work.turn = not owner
+    if work.turn != board.turn:
+        work.ep_square = None
+    attacks = captures_to(work, square)
+    if not attacks:
+        return 0.0, 0.0
+    sources = {move.from_square for move in attacks}
+    attack_value = sum(abs(value(board.piece_at(source), source)) for source in sources)
+    defence_values = []
+    for move in attacks:
+        branch = work.copy(stack=False)
+        branch.push(move)
+        defenders = {reply.from_square for reply in captures_to(branch, move.to_square)}
+        defence_values.append(sum(abs(value(board.piece_at(source), source)) for source in defenders
+                                  if board.piece_at(source).piece_type != chess.KING))
+    return attack_value, min(defence_values)
+
+
+def position_pressure(board, value, self_color):
+    """Own and enemy exposure where attacking value exceeds defending value."""
+    risks = {chess.WHITE: [], chess.BLACK: []}
+    for square, piece in board.piece_map().items():
+        if piece.piece_type == chess.KING or not board.is_attacked_by(not piece.color, square):
+            continue
+        attackers, defenders = square_support(board, square, piece.color, value)
+        if attackers <= defenders:
+            continue
+        target_weight = min(1.0, abs(value(piece, square)) / 3.0)
+        risks[piece.color].append(target_weight * (attackers - defenders) / max(1.0, attackers + defenders))
+    def combined(rows):
+        return min(1.0, max(rows, default=0.0) + .05 * sum(rows))
+    return combined(risks[self_color]), combined(risks[not self_color])
+
+
+def favorable_attack(board, landing_square, self_color, value):
+    """A protected low-value mover threatens a more valuable enemy piece."""
+    mover = board.piece_at(landing_square)
+    if mover is None or mover.color != self_color or mover.piece_type == chess.KING:
+        return 0.0
+    attackers, defenders = square_support(board, landing_square, self_color, value)
+    if attackers > defenders:
+        return 0.0
+    work = board.copy(stack=False)
+    work.turn = self_color
+    if work.turn != board.turn:
+        work.ep_square = None
+    mover_value = abs(value(mover, landing_square))
+    best = 0.0
+    for move in work.generate_legal_captures(from_mask=chess.BB_SQUARES[landing_square]):
+        victim = work.piece_at(move.to_square)
+        if victim is None or victim.piece_type == chess.KING:
+            continue
+        target_value = abs(value(victim, move.to_square))
+        if target_value > mover_value:
+            best = max(best, (target_value - mover_value) / max(1.0, target_value))
+    return best
+
+
+def legal_mobility(board, colour):
+    """Number of legal moves for a side, without inventing an en-passant turn."""
+    work = board.copy(stack=False)
+    work.turn = colour
+    if work.turn != board.turn:
+        work.ep_square = None
+    return work.legal_moves.count()
+
+
+def protected_mobility_gain(before, after, landing_square, self_color, value, previous=None):
+    """Reward extra legal choices only if the mover's landing square is supported."""
+    attackers, defenders = square_support(after, landing_square, self_color, value)
+    if attackers > defenders:
+        return 0.0
+    prior = legal_mobility(before, self_color) if previous is None else previous
+    current = legal_mobility(after, self_color)
+    return min(1.0, max(0, current - prior) / max(1, prior))
+
+
 def exchange_gain(board, first, value, depth=6):
     """Gain for first mover, allowing either side to stop exchanging.
 

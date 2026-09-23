@@ -1,7 +1,8 @@
 import chess
 import pytest
 
-from tonkai.piece_safety import exchange_gain, pawn_unit, piece_senses, position_risk
+from tonkai.piece_safety import (exchange_gain, favorable_attack, pawn_unit, piece_senses,
+                                 position_pressure, position_risk, protected_mobility_gain, square_support)
 
 
 def values(piece, square):
@@ -74,6 +75,63 @@ def test_pawn_scale_uses_median_and_has_finite_fallback():
     assert pawn_unit([.002, -.004, .08], pawns) == .004
     assert pawn_unit([], []) == .001
     assert position_risk([], True) == 0
+
+
+def test_support_sums_learned_values_and_favorable_low_value_threat():
+    fen = '7k/8/5n2/3r4/8/8/4P3/4R2K w - - 0 1'
+    before = chess.Board(fen)
+    after = before.copy(stack=False)
+    after.push_uci('e2e4')
+    def learned(piece, square):
+        return {chess.PAWN: 1.2, chess.KNIGHT: 2.4, chess.ROOK: 4.8,
+                chess.KING: 10000.}[piece.piece_type]
+    assert square_support(after, chess.E4, chess.WHITE, learned) == pytest.approx((2.4, 4.8))
+    assert favorable_attack(after, chess.E4, chess.WHITE, learned) == pytest.approx(.75)
+    assert protected_mobility_gain(before, after, chess.E4, chess.WHITE, learned) > 0
+    assert before.fen() == fen
+
+
+def test_unsupported_attack_and_mobility_get_no_bonus():
+    before = chess.Board('7k/8/5n2/3r4/8/8/4P3/7K w - - 0 1')
+    after = before.copy(stack=False)
+    after.push_uci('e2e4')
+    assert square_support(after, chess.E4, chess.WHITE, values) == (3, 0)
+    assert favorable_attack(after, chess.E4, chess.WHITE, values) == 0
+    assert protected_mobility_gain(before, after, chess.E4, chess.WHITE, values) == 0
+    assert position_pressure(after, values, chess.WHITE)[0] > 0
+
+
+def test_activity_bonus_splits_protection_and_mobility_evenly(monkeypatch):
+    import numpy as np
+    import torch
+    import tonkai.cognitive_agent as actor
+    from tonkai.cognitive_config import CognitiveConfig
+    from tonkai.cognitive_trainer import CognitiveTrainer
+    from tonkai.cognitive_agent import CognitiveAgent
+    torch.set_num_threads(1)
+    cfg = CognitiveConfig(piece_safety_weight=0, king_safety_weight=0, piece_activity_weight=0)
+    trainer = CognitiveTrainer(cfg)
+    agent = CognitiveAgent(trainer.net, cfg, trainer.knowledge)
+    monkeypatch.setattr(agent, '_robust', lambda *a, **kw: {})
+    board = chess.Board()
+    baseline = agent.evaluate(board, chess.WHITE, explore=False)
+    target = baseline.moves.index(chess.Move.from_uci('e2e4'))
+    signals = {'protection': 0, 'mobility': 0}
+    monkeypatch.setattr(actor, 'position_pressure', lambda branch, *a: (
+        0, signals['protection'] if branch.peek().to_square == chess.E4 else 0))
+    monkeypatch.setattr(actor, 'favorable_attack', lambda *a: 0)
+    monkeypatch.setattr(actor, 'protected_mobility_gain', lambda *a: (
+        signals['mobility'] if a[2] == chess.E4 else 0))
+    cfg.piece_activity_weight = .08
+    signals['protection'] = 1
+    protection = agent.evaluate(board, chess.WHITE, explore=False)
+    signals['protection'] = 0
+    signals['mobility'] = 1
+    mobility = agent.evaluate(board, chess.WHITE, explore=False)
+    assert protection.scores[target] - baseline.scores[target] == pytest.approx(.04)
+    assert mobility.scores[target] - baseline.scores[target] == pytest.approx(.04)
+    np.testing.assert_allclose(np.delete(protection.scores - baseline.scores, target), 0, atol=1e-12)
+    np.testing.assert_allclose(np.delete(mobility.scores - baseline.scores, target), 0, atol=1e-12)
 
 
 @pytest.mark.parametrize('difference', [.49, .5, .51])

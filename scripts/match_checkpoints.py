@@ -13,6 +13,7 @@ seed, so a match is reproducible whatever the number of workers.
 """
 import argparse
 from concurrent.futures import ProcessPoolExecutor
+from copy import copy
 from datetime import datetime, timezone
 import json
 import math
@@ -26,19 +27,30 @@ sys.path.insert(0, str(ROOT))
 _state = {}
 
 
+def _historical_config(data, fallback=None):
+    from tonkai.cognitive_config import CognitiveConfig
+
+    saved = data.get("config")
+    cfg = CognitiveConfig.from_dict(saved) if saved is not None else copy(fallback or CognitiveConfig())
+    # Earlier frozen policies did not have the v5 activity signal. The default
+    # for new training must never silently upgrade an old benchmark opponent.
+    if saved is None or "piece_activity_weight" not in saved:
+        cfg.piece_activity_weight = 0.0
+    cfg.device = "cpu"
+    return cfg
+
+
 def _load(path, cfg=None):
     """(name, net, knowledge, cfg, kd_values) from a campaign checkpoint or a snapshot."""
     import torch
     from tonkai.actor_snapshot import unpack_snapshot
     from tonkai.captures import CaptureStats, parse_weights, replay_games
-    from tonkai.cognitive_config import CognitiveConfig
     from tonkai.cognitive_trainer import CognitiveKnowledge, CognitiveTrainer
     from tonkai.temporal_model import SurvivalNet
 
     data = torch.load(path, map_location="cpu", weights_only=False)
     if data.get("format") == "tonkinho-snapshot-v1":
-        cfg = cfg or CognitiveConfig.from_dict(data["config"])
-        cfg.device = "cpu"
+        cfg = _historical_config(data, cfg)
         weights, knowledge_state = unpack_snapshot(data["payload"])
         net = SurvivalNet(cfg).eval().requires_grad_(False)
         net.load_state_dict(weights)
@@ -46,8 +58,7 @@ def _load(path, cfg=None):
         knowledge.load_state_dict(knowledge_state)
         name = f"{data.get('model_name') or 'Tonkinho congelado'} (jogo {data['version']})"
         return name, net, knowledge, cfg, data.get("kd_values")
-    cfg = CognitiveConfig.from_dict(data["config"])
-    cfg.device = "cpu"
+    cfg = _historical_config(data)
     trainer = CognitiveTrainer(cfg)
     trainer.load_state_dict(data)
     stats = CaptureStats(cfg.hot_piece_kills, opponent_weights=parse_weights(cfg.value_opponents))
@@ -60,19 +71,21 @@ def _load(path, cfg=None):
     return name, trainer.net.eval(), trainer.knowledge, cfg, kd
 
 
-def _init(current, rival, rival_name, mates=None, piece_values=None):
-    import copy
+def _init(current, rival, rival_name, mates=None, piece_values=None, rival_run_config=None):
     import torch
+    from tonkai.cognitive_config import CognitiveConfig
     torch.set_num_threads(1)
     name, net, knowledge, cfg, kd = _load(current)
-    other, rnet, rknowledge, _, _ = _load(rival, cfg)
-    ccfg = copy.copy(cfg)                  # mate calculation for the current side only
+    fallback = CognitiveConfig.from_dict(rival_run_config) if rival_run_config else cfg
+    other, rnet, rknowledge, rcfg, rkd = _load(rival, fallback)
+    ccfg = copy(cfg)                       # mate calculation for the current side only
     for key, value in (mates or {}).items():
         setattr(ccfg, key, value)
-    if piece_values:                       # both sides play with these piece values
-        kd = piece_values
+    if piece_values:                       # explicitly shared values, if requested
+        kd = rkd = piece_values
     _state.update(name=name, net=net, knowledge=knowledge, cfg=cfg, ccfg=ccfg, kd=kd,
-                  rival_name=rival_name or other, rnet=rnet, rknowledge=rknowledge)
+                  rival_name=rival_name or other, rnet=rnet, rknowledge=rknowledge,
+                  rival_cfg=rcfg, rival_kd=rkd)
 
 
 def _game(index, seed):
@@ -86,7 +99,8 @@ def _game(index, seed):
     s = _state
     colour = chess.WHITE if index % 2 == 0 else chess.BLACK
     agent = CognitiveAgent(s["net"], s["ccfg"], s["knowledge"], kd_values=s["kd"])
-    rival = CognitiveOpponent(CognitiveAgent(s["rnet"], s["cfg"], s["rknowledge"], kd_values=s["kd"]), s["cfg"],
+    rival = CognitiveOpponent(CognitiveAgent(s["rnet"], s["rival_cfg"], s["rknowledge"],
+                                             kd_values=s["rival_kd"]), s["rival_cfg"],
                               np.random.default_rng([seed, index, 1]))
     rival.description = s["rival_name"]
     episode, board, colour, stats = play_episode(agent, rival, s["cfg"], np.random.default_rng([seed, index]),
@@ -137,6 +151,8 @@ def main():
     parser.add_argument("--current", type=Path, default=ROOT / "checkpoints/cognitive-mix-20260923/latest.pt")
     parser.add_argument("--rival", type=Path, required=True, help="a snapshot file (tonkinho-jogo-N.pt)")
     parser.add_argument("--name", help="the rival's display name")
+    parser.add_argument("--rival-run", type=Path,
+                        help="original JSONL run for a legacy snapshot without an embedded config")
     parser.add_argument("--games", type=int, default=50)
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--seed", type=int, default=2026)
@@ -149,6 +165,15 @@ def main():
     parser.add_argument("--mate-node-limit", type=int, default=20_000, help="nodes per mate search")
     parser.add_argument("--piece-values", help="both sides use these values, e.g. 1:1,2:1.03,3:1.22,4:1.70,5:4.02")
     args = parser.parse_args()
+    rival_run_config = None
+    if args.rival_run:
+        for line in args.rival_run.read_text(encoding="utf-8").splitlines():
+            row = json.loads(line)
+            if row.get("kind") == "run":
+                rival_run_config = row["config"]
+                break
+        if rival_run_config is None:
+            parser.error("--rival-run has no run config")
     values = ({int(k): float(v) for k, v in (part.split(":") for part in args.piece_values.split(","))}
               if args.piece_values else None)
     mates = {"mate_search_moves": args.mate_search_moves, "mate_defense_moves": args.mate_defense_moves,
@@ -156,14 +181,16 @@ def main():
 
     rows = []
     with ProcessPoolExecutor(max_workers=args.workers, mp_context=get_context("spawn"), initializer=_init,
-                             initargs=(str(args.current), str(args.rival), args.name, mates, values)) as pool:
+                             initargs=(str(args.current), str(args.rival), args.name, mates, values,
+                                       rival_run_config)) as pool:
         for row in pool.map(_game, range(args.games), [args.seed] * args.games):
             rows.append(row)
             if len(rows) % 50 == 0:
                 print(f"{len(rows)}/{args.games} jogos", flush=True)
     rows.sort()
     report = {"current": rows[0][5], "current_file": str(args.current), "rival": rows[0][6],
-              "rival_file": str(args.rival), "seed": args.seed, "mate_calculation": mates, "piece_values": values,
+              "rival_file": str(args.rival), "rival_run": str(args.rival_run) if args.rival_run else None,
+              "seed": args.seed, "mate_calculation": mates, "piece_values": values,
               "finished_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), **summarise(rows)}
     stem = args.label or f"match-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     args.out.mkdir(parents=True, exist_ok=True)

@@ -9,7 +9,8 @@ from . import fast_rules
 from .encoding import encode, encode_after_moves
 from .survival_agent import SurvivalAgent, SurvivalChoice
 from .cognitive_memory import structural_keys
-from .piece_safety import piece_senses, pawn_unit, position_risk
+from .piece_safety import (favorable_attack, legal_mobility, piece_senses, pawn_unit,
+                           position_pressure, position_risk, protected_mobility_gain)
 from .king_safety import king_senses, king_balance
 from .objective import outcome_value, continuation_value, victory_weight
 from .king_safety_model import load_cached as load_king_safety
@@ -200,17 +201,26 @@ class CognitiveAgent(SurvivalAgent):
                 return 0.5 if outcome.winner is None else float(outcome.winner == self_color)
         if self.context is None:
             self.observe(board, self_color)
+        value = self.piece_valuer(board, self_color, self.context)
         if self.use_fast_rules:
             king = (self.king_model.advantage(board, self_color) if self.king_model is not None
                     else fast_rules.king_balance(fast, self_color))
-            own, enemy = self._fast_piece_risks(fast, self_color, self.context)
+            own, enemy = self._fast_piece_risks(fast, self_color, self.context, value=value)
             pieces = enemy - own
         else:
             king = (self.king_model.advantage(board, self_color) if self.king_model is not None
                     else king_balance(king_senses(board), self_color))
-            senses = self.sense_pieces(board, self_color, self.context)
+            senses = self.sense_pieces(board, self_color, self.context, value=value)
             pieces = position_risk(senses, not self_color) - position_risk(senses, self_color)
-        return float(np.clip(0.5 + 0.25 * king + 0.25 * pieces, 0.0, 1.0))
+        activity = 0.0
+        if self.cfg.piece_activity_weight:
+            own_pressure, enemy_pressure = position_pressure(board, value, self_color)
+            own_moves = legal_mobility(board, self_color)
+            enemy_moves = legal_mobility(board, not self_color)
+            mobility = (own_moves - enemy_moves) / max(1, own_moves + enemy_moves)
+            activity = 0.5 * (enemy_pressure - own_pressure) + 0.5 * mobility * (1 - own_pressure)
+        return float(np.clip(0.5 + 0.25 * king + 0.25 * pieces +
+                             self.cfg.piece_activity_weight * activity, 0.0, 1.0))
 
     def _fast_piece_risks(self, fast, self_color, context, pieces=None, value=None):
         """(own, enemy) position_risk of piece_senses, for the C++ board's position."""
@@ -382,7 +392,8 @@ class CognitiveAgent(SurvivalAgent):
             scores += self.cfg.information_bonus * information
         safety, kings = [], []
         king_bonuses = np.zeros(len(moves))
-        if self.cfg.piece_safety_weight:
+        activity_bonuses = np.zeros(len(moves))
+        if self.cfg.piece_safety_weight or self.cfg.piece_activity_weight:
             branches, item_lists = [], []
             for index, move in enumerate(moves):
                 if fast is not None:
@@ -396,19 +407,38 @@ class CognitiveAgent(SurvivalAgent):
                     item_lists.append(sorted(branch.piece_map().items()))
             row_contexts = [contexts[index:index + 1] for index in range(len(moves))]
             raws = self._piece_raw(row_contexts, item_lists, self_color)
+            previous_mobility = legal_mobility(board, self_color) if self.cfg.piece_activity_weight else None
             for index, move in enumerate(moves):
                 value = self._valuer(raws[index], item_lists[index], self_color, row_contexts[index])
-                if fast is not None:
-                    fast.push(codes[index])
-                    own_risk, enemy_risk = self._fast_piece_risks(fast, self_color, row_contexts[index],
-                                                                  item_lists[index], value)
-                    fast.pop()
+                branch = branches[index] if fast is None else None
+                if self.cfg.piece_safety_weight:
+                    if fast is not None:
+                        fast.push(codes[index])
+                        own_risk, enemy_risk = self._fast_piece_risks(fast, self_color, row_contexts[index],
+                                                                      item_lists[index], value)
+                        fast.pop()
+                    else:
+                        senses = self.sense_pieces(branch, self_color, value=value)
+                        own_risk = position_risk(senses, self_color)
+                        enemy_risk = position_risk(senses, not self_color)
+                    scores[index] += self.cfg.piece_safety_weight * (enemy_risk - own_risk)
                 else:
-                    senses = self.sense_pieces(branches[index], self_color, value=value)
-                    own_risk = position_risk(senses, self_color)
-                    enemy_risk = position_risk(senses, not self_color)
-                scores[index] += self.cfg.piece_safety_weight * (enemy_risk - own_risk)
-                safety.append({"own_risk": own_risk, "enemy_risk": enemy_risk})
+                    own_risk = enemy_risk = 0.0
+                row = {"own_risk": own_risk, "enemy_risk": enemy_risk}
+                if self.cfg.piece_activity_weight:
+                    if branch is None:
+                        branch = board.copy(stack=False)
+                        branch.push(move)
+                    own_pressure, enemy_pressure = position_pressure(branch, value, self_color)
+                    threat = favorable_attack(branch, move.to_square, self_color, value)
+                    mobility = protected_mobility_gain(board, branch, move.to_square, self_color, value,
+                                                       previous_mobility)
+                    protection = float(np.clip(enemy_pressure - own_pressure + threat, -1, 1))
+                    activity_bonuses[index] = self.cfg.piece_activity_weight * (0.5 * protection + 0.5 * mobility)
+                    scores[index] += activity_bonuses[index]
+                    row.update(own_pressure=own_pressure, enemy_pressure=enemy_pressure,
+                               favorable_attack=threat, safe_mobility=mobility)
+                safety.append(row)
             self.diagnostics["piece_safety_positions"] += len(moves)
         if self.cfg.king_safety_weight and self.king_model is not None:
             enemy_rows = (fast_rules.encode_after_moves(fast, codes, not self_color) if fast is not None
@@ -455,7 +485,7 @@ class CognitiveAgent(SurvivalAgent):
             for index, value in revised.items():
                 # Replace immediate king pressure by pressure AFTER the reply;
                 # do not keep rewarding an attack the opponent has neutralized.
-                scores[index] += value - mean[index] - king_bonuses[index]
+                scores[index] += value - mean[index] - king_bonuses[index] - activity_bonuses[index]
             if revised:
                 # Compare searched choices on the same basis. Otherwise pessimistic
                 # search would merely make an untouched optimistic candidate win.
