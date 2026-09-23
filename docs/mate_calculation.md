@@ -29,5 +29,14 @@ On 309 real positions from the benchmark games:
 | Forced mates (≤ 3) found and played | 4 of 8 | 8 of 8 |
 | Moves allowing a forced mate (≤ 2) | 2 | 0 |
 
+Match against Checkpoint 1 (500 games, seed 2026, as the benchmark; only v3.1 calculates):
+
+| | Wins | Draws | Losses | Score |
+|---|---|---|---|---|
+| v3.1 without (benchmark) | 188 | 161 | 150 | 53.8% (95%: 50.2–57.4%) |
+| **v3.1 with mate calculation** | **252** | **160** | **88** | **66.4%** (95%: 63.1–69.7%) |
+
+About +90 Elo from calculation alone (+118 over Checkpoint 1). Result: `history/matches/v3.1-mates-vs-checkpoint1-500.json`.
+
 Inside a line the search ignores repetition and the 50-move rule; the move actually played is
 always checked against them.
