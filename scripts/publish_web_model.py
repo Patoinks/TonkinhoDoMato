@@ -77,6 +77,7 @@ def publish(checkpoint, config_path, allow_stopped=False):
         state = torch.load(snapshot, map_location="cpu", weights_only=False)
         kind = state.get("format")
         run_id = state.get("run_id")
+        status = state.get("status")
         # By hand only: a campaign that ended early (stopped, or failed after its final save).
         allowed = ("completed", "stopped", "failed") if allow_stopped else ("completed",)
         if kind in ("tonkai-cognitive-v3", "tonkai-survival-v2") and state.get("status") not in allowed:
@@ -103,7 +104,8 @@ def publish(checkpoint, config_path, allow_stopped=False):
         shutil.copytree(assets, directory / "previous-assets")
         installed = True
         shutil.copytree(candidate, assets, dirs_exist_ok=True)
-        if run_id and (ROOT / "history" / (run_id + ".jsonl")).exists():
+        # The final training status is written only for a campaign that completed.
+        if run_id and status == "completed" and (ROOT / "history" / (run_id + ".jsonl")).exists():
             step([node, "scripts/write-tonkai-final-status.mjs", str(ROOT / "history" / (run_id + ".jsonl")),
                   str(ROOT / "history" / run_id / "launch.json")])
         record["state"] = "building"; atomic(receipt, record)
