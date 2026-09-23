@@ -61,6 +61,8 @@ class KSConfig:
     episodes_per_iteration: int = 32
     episode_plies: int = 16
     explore: float = 0.1               # random moves in attack/defence episodes
+    threat_explore: float = 0.3        # attacker moves spent trying moves that CREATE a mate threat
+    threat_moves: int = 1              # threat = mate within this many moves if the defender passed
     explored_pool: int = 100_000       # positions reached by those episodes
     chunk: int = 32                    # roots per worker task
     seed: int = 7
@@ -162,12 +164,43 @@ def search_targets(items, model: KingSafetyModel, cfg: KSConfig):
 
 # ------------------------------------------------------------ episodes
 
-def attack_episode(fen, defender, model: KingSafetyModel, cfg: KSConfig, rng):
-    """Attacker plays what the model thinks hurts `defender`'s king most, the
-    defender what it thinks protects it most (with `explore` random moves).
+def mating_moves(fast, attacker, cfg):
+    """Attacker moves on a shortest forced mate (within mate_moves), or []."""
+    found, _, _ = fast.forced_mate(attacker, cfg.mate_moves, cfg.node_limit)
+    if not found:
+        return []
+    moves = []
+    for code in fast.legal_moves():
+        fast.push(code)
+        if fast.ks_status(not attacker) == 1:
+            moves.append(code)
+        elif found > 1:
+            after, _, _ = fast.forced_mate(attacker, found - 1, cfg.node_limit)
+            if after:
+                moves.append(code)
+        fast.pop()
+    return moves
+
+
+def threat_moves(fast, cfg):
+    """Moves that CREATE a mate threat: were the defender to pass, the attacker
+    would force mate within threat_moves (only asked when no forced mate is
+    already there, else every move would 'threaten'). Rules and mate only."""
+    codes, threat, check = fast.threats(cfg.threat_moves, cfg.node_limit)
+    return [code for code, depth in zip(codes, threat) if depth]
+
+
+def attack_episode(fen, defender, model: KingSafetyModel, cfg: KSConfig, rng, counts=None):
+    """Attack/defence exploration on `defender`'s king.
+
+    The attacker plays a forced mate when the rules show one; otherwise, part
+    of the time, a move that creates a new mate threat; otherwise what the
+    model thinks hurts the king most. The defender plays what the model thinks
+    protects it most. Both sometimes play at random (`explore`).
     Returns (visited fens, True if the defender was checkmated)."""
     board = chess.Board(fen)
     visited = [board.fen()]
+    counts = counts if counts is not None else {}
     for _ in range(cfg.episode_plies):
         fast = _fast(board.fen())
         status = fast.ks_status(defender)
@@ -182,11 +215,25 @@ def attack_episode(fen, defender, model: KingSafetyModel, cfg: KSConfig, rng):
             fast.pop()
             if status:
                 u[i] = 1.0 if status == 1 else 0.0
-        if rng.random() < cfg.explore:
+        attacking = board.turn != defender
+        choice = None
+        if attacking:
+            mating = mating_moves(fast, not defender, cfg)
+            if mating:                                        # the rules already show a mate
+                choice = codes.index(int(rng.choice(mating)))
+                counts["mating"] = counts.get("mating", 0) + 1
+            elif rng.random() < cfg.threat_explore:
+                threats = threat_moves(fast, cfg)
+                if threats:                                   # try creating a new mate threat
+                    choice = codes.index(int(rng.choice(threats)))
+                    counts["threat"] = counts.get("threat", 0) + 1
+        if choice is None and rng.random() < cfg.explore:
             choice = int(rng.integers(len(moves)))
-        else:
-            target = u.max() if board.turn != defender else u.min()
+        if choice is None:
+            target = u.max() if attacking else u.min()
             choice = int(rng.choice(np.flatnonzero(u == target)))
+        counts["attacker_moves" if attacking else "defender_moves"] = \
+            counts.get("attacker_moves" if attacking else "defender_moves", 0) + 1
         board.push(moves[choice])
         visited.append(board.fen())
     return visited, _fast(board.fen()).ks_status(defender) == 1
@@ -214,12 +261,12 @@ def _task_episodes(version, blob, cfg, starts, seed):
     torch.set_num_threads(1)
     model = _model_from(version, blob, cfg.hidden)
     rng = np.random.default_rng(seed)
-    fens, mates = [], 0
+    fens, mates, counts = [], 0, {}
     for fen, defender in starts:
-        visited, mated = attack_episode(fen, defender, model, cfg, rng)
+        visited, mated = attack_episode(fen, defender, model, cfg, rng, counts)
         fens.extend(visited)
         mates += int(mated)
-    return fens, mates, len(starts)
+    return fens, mates, len(starts), counts
 
 
 # ------------------------------------------------------------- trainer
@@ -268,9 +315,12 @@ class KingSafetyTrainer:
         jobs = [(self.version, blob, cfg, starts[i:i + per], int(self.rng.integers(2**31)))
                 for i in range(0, len(starts), per)]
         mates = episodes = 0
-        for fens, mated, count in self._run(_task_episodes, jobs):
+        moves = {}
+        for fens, mated, count, counts in self._run(_task_episodes, jobs):
             self.explored.extend(fens)
             mates, episodes = mates + mated, episodes + count
+            for key, value in counts.items():
+                moves[key] = moves.get(key, 0) + value
         # 2. Targets for both kings of fresh roots.
         roots = self._sample_roots(cfg.roots_per_iteration)
         items = [(fen, colour) for fen in roots for colour in (True, False)]
@@ -309,6 +359,8 @@ class KingSafetyTrainer:
                 "ks_on_forced_mates": float(predicted[mate].mean()) if mate.any() else None,
                 "ks_on_the_rest": float(predicted[~mate & (founds >= 0)].mean()) if (~mate).any() else None,
                 "episode_mate_rate": mates / max(1, episodes), "explored_pool": len(self.explored),
+                "attacker_threat_moves": moves.get("threat", 0) / max(1, moves.get("attacker_moves", 0)),
+                "attacker_mating_moves": moves.get("mating", 0) / max(1, moves.get("attacker_moves", 0)),
                 "buffer": len(self.labels)}
 
     def save(self, path, history):

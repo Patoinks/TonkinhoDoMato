@@ -1019,6 +1019,37 @@ public:
     }
     int ks_status_py(bool defender_white) const { return ks_status(pos, defender_white ? WHITE : BLACK); }
 
+    // King safety (v4) exploration: for every legal move of the side to move
+    // (the attacker), in legal_moves() order: (move, threat, check). threat = n
+    // when, were the defender allowed to pass, the attacker would force mate
+    // within n moves (0 = no such threat within max_moves); check = the move
+    // attacks the king now (a pass is then illegal, so no threat is computed).
+    // Only the rules and checkmate - no notion of where pieces "should" go.
+    std::tuple<std::vector<int>, std::vector<int>, std::vector<bool>> threats(int max_moves, long long node_limit) const {
+        std::vector<int> moves, threat;
+        std::vector<bool> check;
+        pos.legal_moves(moves);
+        for (int m : moves) {
+            Pos q = pos;
+            q.make(m);
+            bool checking = q.is_check();
+            check.push_back(checking);
+            int found = 0;
+            if (!checking) {
+                Pos passed = q;                    // the defender passes: the attacker moves again
+                passed.turn ^= 1;
+                passed.ep = -1;
+                for (int n = 1; n <= max_moves && !found; ++n) {
+                    MateSearch search(node_limit);
+                    if (search.attack(passed, n)) found = n;
+                    if (search.aborted) break;
+                }
+            }
+            threat.push_back(found);
+        }
+        return {moves, threat, check};
+    }
+
     // King safety (v4): every legal continuation two plies deep, for `defender`.
     // Returns (first_status[i], leaf_parent[j], leaf_status[j], leaf_row[j],
     // rows): statuses as in ks_status; leaf_row is the row of `rows` (the leaf
@@ -1219,6 +1250,7 @@ PYBIND11_MODULE(tonkai_fast, m) {
         .def("forced_mate", &Board::forced_mate, py::arg("attacker_white"), py::arg("max_moves"),
              py::arg("node_limit"))
         .def("ks_status", &Board::ks_status_py, py::arg("defender_white"))
+        .def("threats", &Board::threats, py::arg("max_moves"), py::arg("node_limit"))
         .def("expand2", &Board::expand2, py::arg("defender_white"))
         .def("capture_targets", &Board::capture_targets, py::arg("moves"), py::arg("self_color"))
         .def("activity", &Board::activity, py::arg("moves"))

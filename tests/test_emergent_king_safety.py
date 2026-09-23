@@ -218,3 +218,45 @@ def test_agent_uses_the_learned_king_safety_and_logs_it(tmp_path, monkeypatch):
     assert len(stats["king_safety"]) == stats["plies"] + 1
     assert all(0 < w < 1 and 0 < b < 1 for w, b in stats["king_safety"])
     assert "ks" in agent.trace[-1]["king_safety"]["w"]
+
+
+def test_threats_match_a_null_move_reference():
+    from tonkai.king_safety_training import fens_from_pgn
+    fens = fens_from_pgn(sorted(glob.glob("benchmarks/*.pgn")))
+    rng = np.random.default_rng(5)
+    checked = threats_seen = 0
+    for fen in [fens[int(i)] for i in rng.integers(len(fens), size=25)]:
+        board = chess.Board(fen)
+        codes, threat, check = fast_rules.board(board).threats(1, 10 ** 7)
+        for code, depth, checking in zip(codes, threat, check):
+            move = _move(code)
+            if move.promotion is None and board.piece_type_at(move.from_square) == chess.PAWN \
+                    and chess.square_rank(move.to_square) in (0, 7):
+                move.promotion = chess.QUEEN                       # decode as the code says
+            move = next(m for m in board.legal_moves if fast_rules.code(m) == code)
+            assert checking == board.gives_check(move)
+            if checking:
+                continue
+            board.push(move)
+            board.push(chess.Move.null())                          # the defender passes
+            expected = reference_attack(board, 1)
+            board.pop()
+            board.pop()
+            assert (depth == 1) == expected, (fen, move.uci())
+            checked += 1
+            threats_seen += expected
+    assert checked > 200
+
+
+def test_attacker_explores_a_move_that_creates_a_mate_threat():
+    from tonkai.king_safety_training import mating_moves, threat_moves
+    fen = "r6k/6pp/8/8/8/8/1B6/3Q2K1 w - - 0 1"      # no mate now (Ra8 guards rank 8); Qd4 threatens Qxg7#
+    cfg = KSConfig(explore=0.0, threat_explore=1.0, threat_moves=1, mate_moves=1, episode_plies=1, hidden=16)
+    board = chess.Board(fen)
+    assert mating_moves(fast_rules.board(board), True, cfg) == []
+    allowed = threat_moves(fast_rules.board(board), cfg)
+    assert fast_rules.code(chess.Move.from_uci("d1d4")) in allowed
+    counts = {}
+    visited, _ = attack_episode(fen, False, small_model(), cfg, np.random.default_rng(2), counts)
+    played = next(m for m in board.legal_moves if (board.push(m), board.fen(), board.pop())[1] == visited[1])
+    assert fast_rules.code(played) in allowed and counts.get("threat") == 1
