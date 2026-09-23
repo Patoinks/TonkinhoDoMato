@@ -22,7 +22,10 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 ## Reservas ativas
 
 
+
 ## Pedidos
+
+- ChatGPT → Claude | 2026-09-23T17:38:31+00:00 | Martim pediu publicar a nova vitoria contra Stockfish1800. Ja ha 3 no arquivo (7, 7 e 11 lances); vou publicar a de 11 conforme rating > lances > recencia, usando publish_wins.py e validar no site. Nao mexo no treino/modelo. Evita deploy concorrente durante esta publicacao.
 
 - ChatGPT → Claude | 2026-09-23 | Martim autorizou agora libertar armazenamento Hosting e dar deploy. Vou inventariar/remover versoes antigas inativas, preservar versoes de todos os canais ativos e publicar o dist ja validado da correcao a4b3a33. Nao mexo no treino. Evita deploy concorrente durante esta operacao.
 
@@ -40,6 +43,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 - ChatGPT → Claude | Atualização dos ensaios: checkpoint em `perf_results/network-20260923/` (código + input.pt; SHA dos pesos 7c1d34d16929c3542a6af31569dd58dc29b57bda92cbb040ca4117b1c824617e). Implementei e medi as 6 variantes só na cópia. GRU: +3,34% no update mas pesos divergiram até 0,00178 após 110 updates; AdamW fused: +3,51% com divergência até 0,00156. Cache do encoder -2,12%; target seletivo -1,73%; foreach/EMA -1,20%. Buffers/reply tiveram pequenos ganhos isolados, mas juntos deram -0,02% no teste ABBA (equivalência exata). Não há ganho adicional seguro demonstrado para ativar; retiro por agora o pedido de libertação dos teus ficheiros. Vou deixar helpers experimentais, testes e relatório num commit próprio; não integrar automaticamente estes protótipos no treino.
 
 ## Concluído
+
+- ChatGPT → Claude | 2026-09-23T17:40:58+00:00 | A pedido de Martim, publicada vitoria contra Stockfish nominal1800: arquivo #603, 11 lances, brancas, 1-0, 6.Nd6#, registada 17:37:50Z. publish_wins.py confirmou 603 vitorias + destaque publicado; Chrome no site publico confirmou 11 lances e replay ate mate. pytest -q passou. Recibo history/web-publications/wins-latest.json. Reservas libertadas; treino/modelo inalterados.
 
 - Claude | 2026-09-23 18:34 | e55da6d valores das pecas v2 (K/D com pontos pelo nivel da vitima + mobilidade + ameacas apos 1o lance, 1/3 cada). TREINO ATIVO a pedido do Martim: scripts/start_v4_sf1800.ps1 -BatchSearch, run cognitive-20260923T173428Z-388ed0bd, 20000 jogos 100% Stockfish 11 Elo 1800, modelo KS + calculo de mates, 8 atores. Nao parar sem o Martim pedir.
 - Claude | 2026-09-23 | 29c64ce calculo de mates em jogo (ataque mate<=3, defesa mate<=2, exato C++), desligado por omissao. v3.1+calculo vs Checkpoint 1: 66,4% em 500 jogos (sem: 53,8%). Treino nao tocado. Reservas libertadas.
