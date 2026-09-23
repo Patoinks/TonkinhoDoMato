@@ -669,6 +669,89 @@ std::pair<double, double> piece_risks(const Pos& p, const std::vector<double>& r
     return {position(WHITE), position(BLACK)};
 }
 
+// ------------------------------------------------------------------ encoding
+
+// encoding.encode_into for one position, from `self`'s side, into a zeroed row.
+void encode_row(const Pos& b, int self, float* row) {
+    int plane = 0;
+    for (int colour : {self, self ^ 1})
+        for (int type = PAWN; type <= KING; ++type, ++plane)
+            for (U64 m = b.bb[type] & b.occ[colour]; m; m &= m - 1) {
+                int sq = lsb(m);
+                row[plane * 64 + (self == WHITE ? sq : sq ^ 56)] = 1.0f;
+            }
+    row[768] = b.turn == self ? 1.0f : 0.0f;
+    row[769] = b.castling_side(self, true) ? 1.0f : 0.0f;
+    row[770] = b.castling_side(self, false) ? 1.0f : 0.0f;
+    row[771] = b.castling_side(self ^ 1, true) ? 1.0f : 0.0f;
+    row[772] = b.castling_side(self ^ 1, false) ? 1.0f : 0.0f;
+    if (b.ep >= 0) row[773 + file_of(b.ep)] = 1.0f;
+    row[781] = float(double(std::min(b.halfmove, 100)) / 100.0);
+}
+
+// ------------------------------------------------------------ king safety (v4)
+//
+// Only the rules of chess: legal moves and checkmate. Nothing here knows what
+// a "safe" king looks like; the learned model has to discover that.
+
+// Status of a position in the attack game on `defender`'s king:
+// 0 play on, 1 the defender is checkmated, 2 over without that (stalemate,
+// the attacker is checkmated, insufficient material, fifty-move rule).
+int ks_status(const Pos& p, int defender) {
+    if (!p.any_legal()) return (p.is_check() && p.turn == defender) ? 1 : 2;
+    if ((p.insufficient(WHITE) && p.insufficient(BLACK)) || p.halfmove >= 100) return 2;
+    return 0;
+}
+
+// Exact forced-mate search. attack(): the attacker is to move and must mate
+// within n of its own moves; defend(): every defender move must still lose.
+// Checking moves are tried first: that only orders the search - the answer is
+// the same - since a move that does not give check cannot be checkmate.
+struct MateSearch {
+    long long nodes = 0, limit;
+    bool aborted = false;
+    explicit MateSearch(long long limit_) : limit(limit_) {}
+
+    bool attack(const Pos& p, int n) {
+        if (++nodes > limit) { aborted = true; return false; }
+        std::vector<int> moves;
+        p.legal_moves(moves);
+        std::vector<Pos> kids;
+        kids.reserve(moves.size());
+        std::vector<int> checking, quiet;
+        for (size_t i = 0; i < moves.size(); ++i) {
+            Pos q = p;
+            q.make(moves[i]);
+            (q.is_check() ? checking : quiet).push_back(int(kids.size()));
+            kids.push_back(q);
+        }
+        for (int i : checking) {
+            if (!kids[i].any_legal()) return true;          // checkmate
+            if (n > 1 && defend(kids[i], n - 1)) return true;
+            if (aborted) return false;
+        }
+        if (n > 1)
+            for (int i : quiet) {
+                if (defend(kids[i], n - 1)) return true;
+                if (aborted) return false;
+            }
+        return false;
+    }
+
+    bool defend(const Pos& q, int n) {
+        if (++nodes > limit) { aborted = true; return false; }
+        std::vector<int> moves;
+        q.legal_moves(moves);
+        if (moves.empty()) return false;                   // stalemate: the king survives
+        for (int d : moves) {
+            Pos r = q;
+            r.make(d);
+            if (!attack(r, n) || aborted) return false;
+        }
+        return true;
+    }
+};
+
 // ------------------------------------------------------------------ board
 
 class Board {
@@ -913,6 +996,77 @@ public:
         return out;
     }
 
+    // King safety (v4): (found, proven, nodes). found = n if the attacker forces
+    // mate within n of its moves (smallest n), else 0. proven = the largest n
+    // searched completely without finding mate (an exact upper bound on
+    // vulnerability). A node limit stops the search early (then proven < max).
+    std::tuple<int, int, long long> forced_mate(bool attacker_white, int max_moves, long long node_limit) const {
+        int attacker = attacker_white ? WHITE : BLACK;
+        long long used = 0;
+        int found = 0, proven = 0;
+        for (int n = 1; n <= max_moves; ++n) {
+            MateSearch search(node_limit - used);
+            bool mate = pos.turn == attacker ? search.attack(pos, n) : search.defend(pos, n);
+            used += search.nodes;
+            if (search.aborted) break;
+            if (mate) {
+                found = n;
+                break;
+            }
+            proven = n;
+        }
+        return {found, proven, used};
+    }
+    int ks_status_py(bool defender_white) const { return ks_status(pos, defender_white ? WHITE : BLACK); }
+
+    // King safety (v4): every legal continuation two plies deep, for `defender`.
+    // Returns (first_status[i], leaf_parent[j], leaf_status[j], leaf_row[j],
+    // rows): statuses as in ks_status; leaf_row is the row of `rows` (the leaf
+    // encoded from the defender's side) or -1 for a finished leaf.
+    py::tuple expand2(bool defender_white) const {
+        int defender = defender_white ? WHITE : BLACK;
+        std::vector<int> first;
+        first.reserve(64);
+        pos.legal_moves(first);
+        std::vector<int8_t> first_status;
+        std::vector<int32_t> leaf_parent, leaf_row;
+        std::vector<int8_t> leaf_status;
+        std::vector<Pos> open;
+        for (size_t i = 0; i < first.size(); ++i) {
+            Pos q = pos;
+            q.make(first[i]);
+            int status = ks_status(q, defender);
+            first_status.push_back(int8_t(status));
+            if (status) continue;
+            std::vector<int> replies;
+            q.legal_moves(replies);
+            for (int r : replies) {
+                Pos leaf = q;
+                leaf.make(r);
+                int ls = ks_status(leaf, defender);
+                leaf_parent.push_back(int32_t(i));
+                leaf_status.push_back(int8_t(ls));
+                leaf_row.push_back(ls ? -1 : int32_t(open.size()));
+                if (!ls) open.push_back(leaf);
+            }
+        }
+        py::array_t<float> rows({std::max<py::ssize_t>(1, py::ssize_t(open.size())), py::ssize_t(782)});
+        auto r = rows.mutable_unchecked<2>();
+        std::fill(r.mutable_data(0, 0), r.mutable_data(0, 0) + rows.size(), 0.0f);
+        for (size_t k = 0; k < open.size(); ++k) encode_row(open[k], defender, r.mutable_data(py::ssize_t(k), 0));
+        auto as_array = [](auto& v) { return py::array(py::cast(v)); };
+        return py::make_tuple(as_array(first_status), as_array(leaf_parent), as_array(leaf_status),
+                              as_array(leaf_row), rows, int(open.size()));
+    }
+    // The current position encoded from one side (encoding.encode).
+    py::array_t<float> encode_here(bool self_colour) const {
+        py::array_t<float> out({py::ssize_t(782)});
+        auto r = out.mutable_unchecked<1>();
+        std::fill(r.mutable_data(0), r.mutable_data(0) + 782, 0.0f);
+        encode_row(pos, self_colour ? WHITE : BLACK, r.mutable_data(0));
+        return out;
+    }
+
     // encoding.encode_after_moves: the position after each move, from self_color's side.
     py::array_t<float> encode_after(const std::vector<int>& ms, bool self_colour) const {
         int self = self_colour ? WHITE : BLACK, n = int(ms.size());
@@ -1061,6 +1215,11 @@ PYBIND11_MODULE(tonkai_fast, m) {
         .def("piece_risks", &Board::piece_risks_py, py::arg("values"), py::arg("promotion"), py::arg("tolerance"),
              py::arg("depth"))
         .def("encode_after", &Board::encode_after, py::arg("moves"), py::arg("self_color"))
+        .def("encode_here", &Board::encode_here, py::arg("self_color"))
+        .def("forced_mate", &Board::forced_mate, py::arg("attacker_white"), py::arg("max_moves"),
+             py::arg("node_limit"))
+        .def("ks_status", &Board::ks_status_py, py::arg("defender_white"))
+        .def("expand2", &Board::expand2, py::arg("defender_white"))
         .def("capture_targets", &Board::capture_targets, py::arg("moves"), py::arg("self_color"))
         .def("activity", &Board::activity, py::arg("moves"))
         .def("pieces", &Board::pieces)

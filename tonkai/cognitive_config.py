@@ -78,6 +78,11 @@ class CognitiveConfig(SurvivalConfig):
     # piece values), moves that draw by repetition are nearly worthless (0.05),
     # so it only repeats when everything else is terrible. 0 = off.
     avoid_repetition_margin: float = 0.0
+    # v4 Emergent King Safety: a learned KS(position, king) file
+    # (train_king_safety.py). Set, it replaces the hand-written king safety in
+    # every decision with KS_self - KS_enemy. Empty = v3 behaviour.
+    king_safety_model: str = ""
+    king_safety_log_every: int = 10     # games between logged KS trajectories
 
     def validate(self):
         super().validate()

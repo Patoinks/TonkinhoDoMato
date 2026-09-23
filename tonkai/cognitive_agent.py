@@ -12,6 +12,7 @@ from .cognitive_memory import structural_keys
 from .piece_safety import piece_senses, pawn_unit, position_risk
 from .king_safety import king_senses, king_balance
 from .objective import outcome_value, continuation_value, victory_weight
+from .king_safety_model import load_cached as load_king_safety
 
 
 def terminal_draw_value(objective="survival", weight=0.5):
@@ -55,6 +56,9 @@ class CognitiveAgent(SurvivalAgent):
         # {piece_type: pooled K/D relative to a pawn}, from the learner's
         # measurements; blended into piece values with cfg.kd_weight.
         self.kd_values = kd_values
+        # v4: the learned King Safety model, when configured (see king_safety_model.py).
+        path = getattr(cfg, "king_safety_model", "")
+        self.king_model = load_king_safety(path) if path else None
         super().__init__(net, cfg, device)
 
     def reset(self):
@@ -85,6 +89,10 @@ class CognitiveAgent(SurvivalAgent):
         if self.use_fast_rules:
             return fast_rules.board(board).terminal() != fast_rules.NONE
         return board.is_game_over(claim_draw=True)
+
+    def king_safety_values(self, board):
+        """(KS of the white king, KS of the black king) at a real position; None without a model."""
+        return None if self.king_model is None else self.king_model.ks_both(board)
 
     @torch.inference_mode()
     def keys(self, x):
@@ -186,11 +194,13 @@ class CognitiveAgent(SurvivalAgent):
         if self.context is None:
             self.observe(board, self_color)
         if self.use_fast_rules:
-            king = fast_rules.king_balance(fast, self_color)
+            king = (self.king_model.advantage(board, self_color) if self.king_model is not None
+                    else fast_rules.king_balance(fast, self_color))
             own, enemy = self._fast_piece_risks(fast, self_color, self.context)
             pieces = enemy - own
         else:
-            king = king_balance(king_senses(board), self_color)
+            king = (self.king_model.advantage(board, self_color) if self.king_model is not None
+                    else king_balance(king_senses(board), self_color))
             senses = self.sense_pieces(board, self_color, self.context)
             pieces = position_risk(senses, not self_color) - position_risk(senses, self_color)
         return float(np.clip(0.5 + 0.25 * king + 0.25 * pieces, 0.0, 1.0))
@@ -252,6 +262,11 @@ class CognitiveAgent(SurvivalAgent):
             else:
                 encoded = encode_after_moves(candidate, replies, colour)
             x = torch.from_numpy(encoded).to(self.device)
+            learned = None
+            if self.king_model is not None and cfg.king_safety_weight:
+                enemy_rows = (fast_rules.encode_after_moves(fast, [fast_rules.code(r) for r in replies], not colour)
+                              if fast is not None else encode_after_moves(candidate, replies, not colour))
+                learned = self.king_model.ks_rows(encoded) - self.king_model.ks_rows(enemy_rows)
             if getattr(cfg, "batch_search", False):
                 reply_values = np.zeros(len(replies), dtype=np.float32)
                 overrides, adjustments = {}, {}
@@ -267,7 +282,8 @@ class CognitiveAgent(SurvivalAgent):
                         reply_values[j] = ending
                         if getattr(cfg, "batch_search", False): overrides[j] = ending
                     elif cfg.king_safety_weight:
-                        reply_values[j] += cfg.king_safety_weight * fast_rules.king_balance(fast, colour)
+                        reply_values[j] += cfg.king_safety_weight * (float(learned[j]) if learned is not None
+                                                                     else fast_rules.king_balance(fast, colour))
                         if getattr(cfg, "batch_search", False): adjustments[j] = float(reply_values[j])
                     fast.pop()
                     continue
@@ -277,7 +293,8 @@ class CognitiveAgent(SurvivalAgent):
                     reply_values[j] = ending
                     if getattr(cfg, "batch_search", False): overrides[j] = ending
                 elif cfg.king_safety_weight:
-                    reply_values[j] += cfg.king_safety_weight * king_balance(king_senses(candidate), colour)
+                    reply_values[j] += cfg.king_safety_weight * (float(learned[j]) if learned is not None
+                                                                 else king_balance(king_senses(candidate), colour))
                     if getattr(cfg, "batch_search", False): adjustments[j] = float(reply_values[j])
                 candidate.pop()
             if fast is not None:
@@ -386,7 +403,18 @@ class CognitiveAgent(SurvivalAgent):
                 scores[index] += self.cfg.piece_safety_weight * (enemy_risk - own_risk)
                 safety.append({"own_risk": own_risk, "enemy_risk": enemy_risk})
             self.diagnostics["piece_safety_positions"] += len(moves)
-        if self.cfg.king_safety_weight:
+        if self.cfg.king_safety_weight and self.king_model is not None:
+            enemy_rows = (fast_rules.encode_after_moves(fast, codes, not self_color) if fast is not None
+                          else encode_after_moves(board, moves, not self_color))
+            ks_self, ks_enemy = self.king_model.ks_rows(encoded), self.king_model.ks_rows(enemy_rows)
+            king_bonuses = self.cfg.king_safety_weight * (ks_self - ks_enemy)
+            for own, enemy in zip(ks_self, ks_enemy):
+                white, black = (own, enemy) if self_color else (enemy, own)
+                kings.append({"w": {"risk": 1.0 - float(white), "ks": float(white)},
+                              "b": {"risk": 1.0 - float(black), "ks": float(black)}})
+            scores += king_bonuses
+            self.diagnostics["king_safety_positions"] += len(moves)
+        elif self.cfg.king_safety_weight:
             for index, move in enumerate(moves):
                 if fast is not None:
                     # Risks only; the chosen move's full senses are rebuilt for its trace.
@@ -527,7 +555,7 @@ class CognitiveAgent(SurvivalAgent):
             self.trace[-1]["piece_safety"] = self._evaluation["piece_safety"][choice.index]
         if self._evaluation.get("king_safety"):
             senses = self._evaluation["king_safety"][choice.index]
-            if self._evaluation["fast"] is not None:
+            if self._evaluation["fast"] is not None and self.king_model is None:
                 branch = board.copy(stack=False)
                 branch.push(choice.move)
                 senses = king_senses(branch)

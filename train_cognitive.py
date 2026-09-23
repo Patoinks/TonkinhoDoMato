@@ -23,6 +23,8 @@ from tonkai.captures import CaptureStats, parse_weights
 # v3.1: opponent mixture, frozen self-play series, weighted opponent piece
 # values, forced resignation and no repetition draw when ahead.
 MODEL_NAME, MODEL_VERSION = "Tonkinho do Mato v3.1", "3.1"
+# v4: the same, with the learned Emergent King Safety model deciding king safety.
+V4_NAME, V4_VERSION = "Tonkinho do Mato v4", "4"
 from tonkai import opponents
 from tonkai import fast_rules
 from tonkai.cognitive_config import CognitiveConfig
@@ -81,6 +83,9 @@ def main(argv=None):
     parser.add_argument("--fairy-elo", type=int, help="Fairy-Stockfish nominal UCI_Elo")
     parser.add_argument("--self-snapshot-every", type=int,
                         help="self-play against a frozen TonkAI saved every N games (0 = current weights)")
+    parser.add_argument("--king-safety-model", type=Path,
+                        help="v4: a learned King Safety model (train_king_safety.py) replaces the hand-written one")
+    parser.add_argument("--king-safety-log-every", type=int, help="games between logged KS trajectories")
     parser.add_argument("--avoid-repetition-margin", type=float,
                         help="when ahead by this many pawns (own piece values), avoid drawing by repetition")
     parser.add_argument("--value-opponents",
@@ -125,6 +130,9 @@ def main(argv=None):
         setattr(cfg, flag, bool(getattr(args, flag)))
     cfg.opponent_elo = args.opponent_elo
     cfg.opponent_path = str((args.opponent_path or Path(cfg.opponent_path or ENGINE)).resolve(strict=True))
+    if args.king_safety_model is not None:
+        cfg.king_safety_model = str(args.king_safety_model.resolve(strict=True))
+    model_name, model_version = (V4_NAME, V4_VERSION) if cfg.king_safety_model else (MODEL_NAME, MODEL_VERSION)
     if args.fairy_path is not None:
         cfg.fairy_path = str(args.fairy_path.resolve(strict=True))
     for argument, field in (("workers", "num_workers"), ("checkpoint_dir", "checkpoint_dir"),
@@ -140,6 +148,7 @@ def main(argv=None):
                             ("self_games_per_snapshot", "self_games_per_snapshot"),
                             ("value_opponents", "value_opponents"),
                             ("avoid_repetition_margin", "avoid_repetition_margin"),
+                            ("king_safety_log_every", "king_safety_log_every"),
                             ("fairy_elo", "fairy_elo")):
         value = getattr(args, argument)
         if value is not None:
@@ -252,7 +261,7 @@ def main(argv=None):
 
     def metrics(final=False):
         seconds = time.perf_counter() - started
-        result = dict(games=completed, final=final, state=status, objective=cfg.objective, model=MODEL_NAME,
+        result = dict(games=completed, final=final, state=status, objective=cfg.objective, model=model_name,
                       rules_backend=fast_rules.BACKEND, wins=counts["wins"],
                       losses=counts["losses"], draws=counts["draws"], truncated=counts["truncated"],
                       draw_reasons=dict(reasons), games_per_second=completed / max(.001, seconds),
@@ -311,7 +320,7 @@ def main(argv=None):
                      campaign_results=dict(counts), campaign_draw_reasons=dict(reasons),
                      capture_stats=capture_stats.state_dict(),
                      resign=resign.state_dict() if resign is not None else None,
-                     model_name=MODEL_NAME, model_version=MODEL_VERSION,
+                     model_name=model_name, model_version=model_version,
                      self_play_rival=({"version": rival["version"], "path": rival["path"],
                                        "remaining": rival["remaining"]}
                                       if rival["version"] is not None else None))
@@ -321,7 +330,8 @@ def main(argv=None):
         launch = dict(pid=os.getpid(), run_id=run_id, resume_games=initial_games, additional_games=args.games,
                       rules_backend=fast_rules.BACKEND,
                       pretrained_games=pretrained_games, objective=cfg.objective, version="cognitive-v3",
-                      model_name=MODEL_NAME, model_version=MODEL_VERSION,
+                      model_name=model_name, model_version=model_version,
+                      king_safety_model=cfg.king_safety_model or None,
                       history=str(history_path.resolve()), checkpoint=str(output), source_checkpoint=str(source_path),
                       stop_file=str(stop_file.resolve()), opponent=external.info,
                       campaign_start_games=campaign_start, campaign_cap=campaign_cap,
@@ -412,6 +422,12 @@ def main(argv=None):
             by_kind[kind][outcome] += 1
             if kind == "self" and "opponent_version" in stats:
                 by_version[stats["opponent_version"]][outcome] += 1
+            # v4: how the learned KS of both kings moved through the game.
+            if "king_safety" in stats and (completed % max(1, cfg.king_safety_log_every) == 0
+                                           or (outcome == "win" and kind != "self")):
+                record("king_safety", game=completed, total_games=trainer.games, opponent=stats["opponent"],
+                       opponent_kind=kind, tonkai="white" if colour else "black", result=stats["result"],
+                       outcome=outcome, series=stats["king_safety"])
             if resign is not None:
                 for message in resign.update(resign_report, lost=episode.lost):
                     print(message, flush=True)

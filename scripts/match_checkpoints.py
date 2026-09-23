@@ -81,8 +81,8 @@ def _game(index, seed):
     rival = CognitiveOpponent(CognitiveAgent(s["rnet"], s["cfg"], s["rknowledge"], kd_values=s["kd"]), s["cfg"],
                               np.random.default_rng([seed, index, 1]))
     rival.description = s["rival_name"]
-    episode, board, colour, _ = play_episode(agent, rival, s["cfg"], np.random.default_rng([seed, index]),
-                                             self_color=colour, opponent_name=s["rival_name"])
+    episode, board, colour, stats = play_episode(agent, rival, s["cfg"], np.random.default_rng([seed, index]),
+                                                 self_color=colour, opponent_name=s["rival_name"])
     outcome = board.outcome(claim_draw=True)
     if not episode.terminated or outcome is None:
         key = "unfinished"
@@ -91,6 +91,13 @@ def _game(index, seed):
     else:
         key = "win" if outcome.winner == colour else "loss"
     pgn = chess.pgn.Game.from_board(board)
+    series = stats.get("king_safety")          # v4: KS of both kings after every ply
+    if series:
+        node = pgn
+        pgn.comment = f"[%ks w={series[0][0]:.3f} b={series[0][1]:.3f}]"
+        for white, black in series[1:]:
+            node = node.variations[0]
+            node.comment = f"[%ks w={white:.3f} b={black:.3f}]"
     pgn.headers.update(Event="TonkAI evaluation match", Round=str(index + 1),
                        White=s["name"] if colour else s["rival_name"], Black=s["rival_name"] if colour else s["name"],
                        Result=outcome.result() if outcome else "*",

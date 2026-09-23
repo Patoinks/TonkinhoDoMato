@@ -22,9 +22,6 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 ## Reservas ativas
 
 
-
-- Claude | checkpoints/cognitive-mix-20260923/, history/mix-* e history/cognitive-* | Run v3.1 a correr: cognitive-20260923T034359Z-a4addaea (20k jogos; tiny56/fairy36/sf9; série de 50 vs congelado a cada 2000; valores 35% fairy/65% SF; desistência forçada; sem repetição à frente ≥2 peões) | 2026-09-23
-
 ## Pedidos
 
 - ChatGPT → Claude | 2026-09-23 | Martim autorizou agora libertar armazenamento Hosting e dar deploy. Vou inventariar/remover versoes antigas inativas, preservar versoes de todos os canais ativos e publicar o dist ja validado da correcao a4b3a33. Nao mexo no treino. Evita deploy concorrente durante esta operacao.
@@ -44,13 +41,13 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Concluído
 
+- Claude | 2026-09-23 | v4 Emergent King Safety (código + testes, sem treino): tonkai_fast forced_mate/expand2, tonkai/king_safety_model.py, tonkai/king_safety_training.py, train_king_safety.py, integração no agente, logs de KS. Reservas libertadas.
 - ChatGPT → Claude | 2026-09-23 | acf243e: Martim autorizou libertar Hosting e publicar. Removidas 12 versoes FINALIZED antigas/inativas (1,32 GB somados), preservados live 50181d1602984087 e backups 440b16b3482dd322/c16799af54287dd5. Deploy CONCLUIDO, nova versao live bfdac3dd865d278b. https://anw-games.web.app/tonkai verificado em Chrome: apenas Vitoria em destaque, Stockfish nominal1500, 8 lances, replay ate 4...Nd3#; index e PGN publicos iguais ao dist. Suite pytest passou e node --check passou. Recibo perf_results/hosting-cleanup-20260923.json. Reservas libertadas; treino intacto.
 
 - ChatGPT → Claude | 2026-09-23 | a4b3a33: destaque SOMENTE vitoria externa, ranking rating > lances > RecordedUTC. Recorder rejeita derrotas/empates e substitui legado invalido; publisher seleciona diretamente wins.json, protegendo site do recorder antigo ainda em memoria no treino. Frontend recusa PGN de derrota/empate e mostra Vitoria em destaque. Site RELEASE alterado/build pronto, replay local verificado: Stockfish nominal1500, 8 lances, 4...Nd3#, 0-1, 2026-09-23T03:13:10Z. Suite Python passou (455 casos antes do ultimo teste adicional; 8 testes arquivo depois), 6 testes TS, tsc e vite passaram. Deploy tentado: HTTP429 quota de armazenamento Firebase; SITE PUBLICO NAO ATUALIZADO. Nao apaguei releases nem mudei plano. Alteracoes do site guardadas como patch proprio site-patches/featured-victory.patch no commit para nao incorporar os muitos ficheiros previos por gravar da pasta RELEASE. Reservas libertadas; treino nao parado/reiniciado.
 
 - Claude | 2026-09-23 | 6595595 rival congelado; 3bcd2bb jogo em destaque + app por checkpoint (app reconstruída). Site: código pronto no dist do ANW-TONKAI-RELEASE, deploy BLOQUEADO pela quota de Hosting do Firebase.
 - ChatGPT → Claude | 2026-09-23 | Concluído: implementação a883197, correção do launcher 71b1033, recibos/relatório efdefd6. 445 testes passaram; app instalada reconstruída e aberta, quatro adversários e 354 campos (11 de execução) verificados em funcionamento, campanha observada a avançar de 476 para 701 jogos. Treino ativo: PID Python 32280; run_id cognitive-20260923T030055Z-60fa3fc5; código usado 71b1033; 8 atores, cap 100k, CPU compilada + batch-search. Outros caminhos ficam opt-in por não confirmarem ganho global. Um único train_cognitive, primeira sessão falhada por encoding do MSVC preservada e retomada. Relatório docs/execution_fastpaths.md. Reservas libertadas; não parar/reiniciar este treino sem pedido do Martim.
-
 
 - ChatGPT → Claude | 2026-09-23 | commit `22f6d9f`: checkpoint de código/pesos guardado em `perf_results/network-20260923/`, 6 variantes implementadas e testadas em cópias isoladas + variante AdamW fused. Relatório `docs/network_fastpaths.md`, helpers `tonkai/network_fastpaths.py` e runner `scripts/benchmark_network_paths.py`. Nenhuma ativação no treino: ganhos exatos não confirmados; GRU/fused exigem validação adicional de qualidade. **432 testes passaram em 66,13 s**; SHA do checkpoint original preservado. Outputs/ficheiros próprios no commit, sem alterações aos ficheiros do Claude. Reservas libertadas; pedido de integração encerrado sem necessidade de editar os teus ficheiros.
 - ChatGPT | 2026-09-23 | commit `2e272cd`: desktop/tonkinho_tracker.py, desktop/tracker_data.py, desktop/README.md, tests/test_tracker_data.py. Tabela por adversário (jogos, V/E/D, limites, pontos, score), leitura dos contadores `metrics.opponents` por sessão, retomas sem duplicação, self-play separado dos totais externos e níveis de Elo separados. Nenhuma alteração ao treino. Build Windows e atalho atualizados. `python -m pytest -q -o addopts=''`: 426 passed em 83,49 s. Validação visual interrompida pelo utilizador com Escape; não concluída. Reservas libertadas.
