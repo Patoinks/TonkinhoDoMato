@@ -110,6 +110,7 @@ class SequenceReplay:
         self.size = 0
         self.total_added = 0
         self._sampling_cache = None
+        self._layout_cache = None
 
     def __len__(self):
         return self.size
@@ -138,15 +139,20 @@ class SequenceReplay:
         self.size += n
         self.total_added += n
         self._sampling_cache = None
+        self._layout_cache = None
         return episode_id
 
     def _distribution(self):
         if self._sampling_cache is None:
-            ids = np.fromiter(self._episodes, dtype=np.int64)
-            lengths = np.array([len(episode.packed) for episode in self._episodes.values()], dtype=np.int64)
-            ends = np.cumsum(lengths)
-            offsets = ends - lengths
-            priorities = np.concatenate(list(self._priorities.values()))
+            if self._layout_cache is None:
+                ids = np.fromiter(self._episodes, dtype=np.int64)
+                lengths = np.array([len(episode.packed) for episode in self._episodes.values()], dtype=np.int64)
+                ends = np.cumsum(lengths)
+                offsets = ends - lengths
+                priorities = np.concatenate(list(self._priorities.values()))
+                positions = dict(zip(map(int, ids), map(int, offsets)))
+                self._layout_cache = ids, ends, offsets, priorities, positions
+            ids, ends, offsets, priorities, _ = self._layout_cache
             probabilities = self.uniform_floor / self.size + (1.0 - self.uniform_floor) * priorities / priorities.sum()
             self._sampling_cache = probabilities, ids, ends, offsets
         return self._sampling_cache
@@ -230,6 +236,9 @@ class SequenceReplay:
             updates[(episode_id, start)] = max(updates.get((episode_id, start), 1.0), weight)
         for (episode_id, start), weight in updates.items():
             self._priorities[episode_id][start] = weight
+            if self._layout_cache is not None:
+                _, _, _, flat, positions = self._layout_cache
+                flat[positions[episode_id] + start] = weight
         if updates:
             self._sampling_cache = None
 

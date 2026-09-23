@@ -1,7 +1,6 @@
 """Spawn-only V3 actors. This pool is never used by an existing V2 process."""
 from concurrent.futures import ProcessPoolExecutor, wait, FIRST_COMPLETED
 from multiprocessing import get_context
-import pickle
 import time
 
 import numpy as np
@@ -13,6 +12,7 @@ from .resign import ResignTracker
 from .survival_agent import play_episode
 from .temporal_model import SurvivalNet
 from .uci_opponent import UCIOpponent
+from .actor_snapshot import pack_snapshot, unpack_snapshot
 
 
 _actor_state = {}
@@ -35,7 +35,7 @@ def _shutdown_actor():
 
 
 def _play(payload, seed, game_number, resign_plan=None, kd_values=None):
-    weights, knowledge_state = pickle.loads(payload)
+    weights, knowledge_state = unpack_snapshot(payload)
     state = _actor_state
     state["net"].load_state_dict(weights)
     state["knowledge"].load_state_dict(knowledge_state)
@@ -61,13 +61,9 @@ class CognitivePool:
     def submit(self, net, knowledge, seed, game_number=0, resign_plan=None, kd_values=None):
         if len(self.pending) >= self.capacity:
             raise RuntimeError("Actor pool is full")
-        # Serialize synchronously before the learner can update again. The bytes
-        # are the independent snapshot; cloning/deepcopying first duplicates work.
-        weights = {key: tensor.detach().cpu() for key, tensor in net.state_dict().items()}
-        state = knowledge.state_dict(include_episodes=False, copy=False)
-        payload = pickle.dumps((weights, state), protocol=pickle.HIGHEST_PROTOCOL)
-        self.pending.add(self.executor.submit(_play, payload, int(seed), game_number,
-                                              resign_plan, kd_values))
+        payload = pack_snapshot(net, knowledge)
+        future = self.executor.submit(_play, payload, int(seed), game_number, resign_plan, kd_values)
+        self.pending.add(future)
 
     def receive(self, timeout=120):
         if not self.pending:

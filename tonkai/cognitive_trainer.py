@@ -64,6 +64,10 @@ class CognitiveTrainer(SurvivalTrainer):
         predictions = [row["prediction"] for row in sample]
         self.knowledge.calibration.observe(predictions, targets)
         added = 0
+        # Keep one chronological replay for the sampled successor positions.
+        # The samples are normally ordered; restart only for an out-of-order trace.
+        following = None
+        following_ply = 0
         for row, target in zip(sample, targets):
             actions = episode.actions[row["ply"]:row["ply"] + self.cfg.skill_horizon]
             identifier = self.knowledge.memory.add(row["key"], target, row["prediction"], self.games,
@@ -71,7 +75,13 @@ class CognitiveTrainer(SurvivalTrainer):
             added += identifier is not None
             if "next_key" in row:
                 next_target = observed_target(episode, row["ply"] + 1, self.cfg)
-                following = at_ply(episode, row["ply"] + 1)
+                wanted_ply = row["ply"] + 1
+                if following is None or wanted_ply < following_ply:
+                    following = chess.Board(episode.initial_fen or chess.STARTING_FEN)
+                    following_ply = 0
+                for action in episode.actions[following_ply:wanted_ply]:
+                    following.push_uci(action)
+                following_ply = wanted_ply
                 next_id = self.knowledge.memory.add(row["next_key"], next_target, row["next_prediction"],
                                                     self.games, following.fen(), colour=colour, own_turn=False)
                 added += next_id is not None

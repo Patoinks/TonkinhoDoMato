@@ -96,7 +96,7 @@ def test_actor_snapshot_omits_only_protected_replay():
 
 
 def test_actor_payload_is_frozen_before_next_learner_update():
-    import pickle
+    from tonkai.actor_snapshot import unpack_snapshot
     from concurrent.futures import Future
     from tonkai.cognitive_pool import CognitivePool
     cfg = CognitiveConfig()
@@ -117,7 +117,7 @@ def test_actor_payload_is_frozen_before_next_learner_update():
         for parameter in net.parameters():
             parameter.add_(1)
     knowledge.memory.entries[0]['key'][0] = 99
-    weights, state = pickle.loads(sent[0])
+    weights, state = unpack_snapshot(sent[0])
     for key in weights:
         assert torch.equal(weights[key], expected_weights[key])
     assert state['memory']['entries'][0]['key'][0] == 0

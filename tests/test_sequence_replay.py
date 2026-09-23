@@ -61,6 +61,26 @@ def test_burnin_left_padding_end_padding_and_terminal_future_target():
     assert not batch["memory_is_truncated"].any()
 
 
+def test_reused_layout_preserves_sampling_through_priority_updates_eviction_and_restore():
+    quick, reference = SequenceReplay(70, seed=834), SequenceReplay(70, seed=834)
+    rng = np.random.default_rng(272)
+    for step in range(50):
+        if step % 3 == 0:
+            item = episode(int(rng.integers(6, 24)), step + 1)
+            assert quick.add(item) == reference.add(item)
+        reference._layout_cache = reference._sampling_cache = None
+        a, b = quick.sample(8, 4, 12, 4), reference.sample(8, 4, 12, 4)
+        for key in a:
+            if isinstance(a[key], np.ndarray):
+                np.testing.assert_array_equal(a[key], b[key])
+        assert a['sample_keys'] == b['sample_keys']
+        errors = rng.random(8) * 20
+        quick.update_priorities(a['sample_keys'], errors)
+        reference.update_priorities(b['sample_keys'], errors)
+        if step == 25:
+            quick.load_state_dict(reference.state_dict())
+
+
 def test_finite_burnin_explicitly_marks_approximate_recurrent_history():
     replay = SequenceReplay(30, seed=42)
     replay.add(episode(20))
