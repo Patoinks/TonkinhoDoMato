@@ -112,6 +112,9 @@ class CognitiveConfig(SurvivalConfig):
     # trade_explore - share of exploring decisions that try a capture the
     # exact search does not lose, so the results teach which trades pay.
     exchange_depth: int = 0
+    # The owner's value of a drawn ending in decisions (None: the objective's own,
+    # e.g. 0.75 for shaped with victory_weight 0.5). Lower = draws are avoided.
+    draw_value: float | None = None
     exchange_node_limit: int = 200_000
     exchange_labels: bool = False
     trade_explore: float = 0.0
@@ -140,6 +143,8 @@ class CognitiveConfig(SurvivalConfig):
             raise ValueError("mix_fairy needs fairy_path and a positive fairy_elo")
         if not 0 < self.capture_target_clip < float("inf"):
             raise ValueError("capture_target_clip must be finite and positive")
+        if self.draw_value is not None and not 0 <= self.draw_value <= 1:
+            raise ValueError("draw_value must be between 0 and 1")
         if self.exchange_depth < 0 or self.exchange_node_limit < 1 or not 0 <= self.trade_explore <= 1:
             raise ValueError("exchange_depth >= 0, exchange_node_limit positive, trade_explore in [0, 1]")
         if not 0 <= self.threat_explore <= 1 or self.threat_moves < 1 or self.mate_labels < 0:

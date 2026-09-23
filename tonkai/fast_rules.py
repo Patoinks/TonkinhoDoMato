@@ -44,12 +44,14 @@ def board(position: chess.Board):
     return fast
 
 
-def terminal_value(fast, colour, objective="survival", weight=0.5):
+def terminal_value(fast, colour, objective="survival", weight=0.5, draw=None):
     """cognitive_agent.terminal_value on a C++ board."""
     result = fast.terminal()
     if result == NONE:
         return None
     if result == DRAW:
+        if draw is not None:
+            return float(draw)
         return .5 if objective == "victory" else 1.0 - weight / 2 if objective == "shaped" else 1.0
     return float((result == WHITE_WINS) == colour)
 

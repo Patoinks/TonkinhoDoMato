@@ -16,12 +16,14 @@ from .objective import outcome_value, continuation_value, victory_weight
 from .king_safety_model import load_cached as load_king_safety
 
 
-def terminal_draw_value(objective="survival", weight=0.5):
+def terminal_draw_value(objective="survival", weight=0.5, draw=None):
+    if draw is not None:                     # the owner's explicit value of a draw
+        return float(draw)
     return .5 if objective == "victory" else 1.0 - weight / 2 if objective == "shaped" else 1.0
 
 
-def terminal_value(board, colour, objective="survival", weight=0.5):
-    draw = .5 if objective == "victory" else 1.0 - weight / 2 if objective == "shaped" else 1.0
+def terminal_value(board, colour, objective="survival", weight=0.5, draw=None):
+    draw = terminal_draw_value(objective, weight, draw)
     result = board.outcome(claim_draw=False)
     if result is None and board.can_claim_fifty_moves():
         return draw
@@ -258,7 +260,7 @@ class CognitiveAgent(SurvivalAgent):
         for ordinal, index in enumerate(root_indices):
             if fast is not None:
                 fast.push(fast_rules.code(moves[index]))
-                ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg))
+                ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value)
                 if ending is not None:
                     fast.pop()
                     changes[index] = ending
@@ -267,7 +269,7 @@ class CognitiveAgent(SurvivalAgent):
             candidate = board.copy(stack=fast is None)
             candidate.push(moves[index])
             if fast is None:
-                ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg))
+                ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value)
                 if ending is not None:
                     changes[index] = ending
                     continue
@@ -307,7 +309,7 @@ class CognitiveAgent(SurvivalAgent):
             for j, reply in enumerate(replies):
                 if fast is not None:
                     fast.push(fast_rules.code(reply))
-                    ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg))
+                    ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value)
                     if ending is not None:
                         reply_values[j] = ending
                         if getattr(cfg, "batch_search", False): overrides[j] = ending
@@ -318,7 +320,7 @@ class CognitiveAgent(SurvivalAgent):
                     fast.pop()
                     continue
                 candidate.push(reply)
-                ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg))
+                ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value)
                 if ending is not None:
                     reply_values[j] = ending
                     if getattr(cfg, "batch_search", False): overrides[j] = ending
@@ -520,16 +522,16 @@ class CognitiveAgent(SurvivalAgent):
         if safety or kings or self.cfg.objective in ("victory", "shaped"):
             scores = np.minimum(scores, .999999)
         drawn = []   # moves whose ending is a draw (for the repetition rule)
-        draw_value = terminal_draw_value(self.cfg.objective, victory_weight(self.cfg))
+        draw_value = terminal_draw_value(self.cfg.objective, victory_weight(self.cfg), draw=self.cfg.draw_value)
         for index, move in enumerate(moves):
             if fast is not None:
                 fast.push(codes[index])
-                ending = fast_rules.terminal_value(fast, self_color, self.cfg.objective, victory_weight(self.cfg))
+                ending = fast_rules.terminal_value(fast, self_color, self.cfg.objective, victory_weight(self.cfg), draw=self.cfg.draw_value)
                 fast.pop()
             else:
                 branch = board.copy(stack=True)
                 branch.push(move)
-                ending = terminal_value(branch, self_color, self.cfg.objective, victory_weight(self.cfg))
+                ending = terminal_value(branch, self_color, self.cfg.objective, victory_weight(self.cfg), draw=self.cfg.draw_value)
             if ending is not None:
                 scores[index] = ending
                 if ending == draw_value:
