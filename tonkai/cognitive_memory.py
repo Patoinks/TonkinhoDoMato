@@ -78,6 +78,10 @@ class ExperienceMemory:
     def _matrix(self):
         if self._keys is None and self.entries:
             self._keys = np.stack([entry["key"] for entry in self.entries])
+            # Rebuilt together with the keys: entries are replaced, never edited in
+            # place, except trust (audits), which is read live below.
+            self._turns = np.array([entry.get("own_turn") is not None for entry in self.entries]), \
+                np.array([bool(entry.get("own_turn")) for entry in self.entries])
         return self._keys
 
     def query(self, keys, own_turn=None):
@@ -90,10 +94,12 @@ class ExperienceMemory:
             return result
         similarities = keys @ self._matrix().T
         if own_turn is not None:
-            incompatible = [entry.get("own_turn") is not None and entry["own_turn"] != own_turn for entry in self.entries]
-            similarities[:, incompatible] = -1
+            known, turns = self._turns
+            similarities[:, known & (turns != bool(own_turn))] = -1
+        # One call for every row; row-wise it is the same sort as np.argsort(values).
+        orders = np.argsort(similarities, axis=1)[:, -self.cfg.memory_neighbors:][:, ::-1]
         for row, values in enumerate(similarities):
-            best = np.argsort(values)[-self.cfg.memory_neighbors:][::-1]
+            best = orders[row]
             best = best[values[best] >= self.cfg.memory_similarity]
             if not len(best):
                 result["information"][row] = 1

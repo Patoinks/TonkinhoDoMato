@@ -112,3 +112,27 @@ def test_training_runs_the_mixture_and_reports_each_opponent(tmp_path, environme
     final = [row for row in rows if row["kind"] == "metrics" and row["final"]][0]
     assert sum(sum(row.values()) for row in final["opponents"].values()) == 12
     assert set(final["opponents"]) <= {"self", "tiny", "external"}
+
+
+def test_vectorised_memory_query_matches_the_row_by_row_original():
+    from tonkai.cognitive_memory import ExperienceMemory
+    cfg = small(archive_capacity=64)
+    memory = ExperienceMemory(cfg)
+    rng = np.random.default_rng(12)
+    keys = rng.normal(size=(40, 8)).astype(np.float32)
+    keys /= np.linalg.norm(keys, axis=1, keepdims=True)
+    for i, key in enumerate(keys):
+        memory.add(key, float(rng.random()), float(rng.random()), i % 7, "", own_turn=[None, True, False][i % 3])
+    queries = keys[:12] + rng.normal(scale=.05, size=(12, 8)).astype(np.float32)
+
+    def original(own_turn):   # the previous implementation's selection
+        similarities = queries @ memory._matrix().T
+        if own_turn is not None:
+            bad = [e.get("own_turn") is not None and e["own_turn"] != own_turn for e in memory.entries]
+            similarities[:, bad] = -1
+        return [list(np.argsort(v)[-cfg.memory_neighbors:][::-1][v[np.argsort(v)[-cfg.memory_neighbors:][::-1]]
+                                                                 >= cfg.memory_similarity]) for v in similarities]
+    for own_turn in (None, True, False):
+        result = memory.query(queries, own_turn=own_turn)
+        expected = original(own_turn)
+        assert [[memory.entries[i]["id"] for i in row] for row in expected] == result["ids"]

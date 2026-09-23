@@ -18,9 +18,38 @@ from .opponents import CognitiveOpponent, TinyOpponentAdapter
 
 _actor_state = {}
 
+# Windows only: the learner is the serial bottleneck, so it can own physical
+# core 0 (logical CPUs 0 and 1) while actors and their engines use the rest.
+LEARNER_MASK = 0b11
+ABOVE_NORMAL_PRIORITY_CLASS = 0x8000
 
-def _initialize(cfg, engine_path, closing_barrier):
+
+def pin_process(mask=None, above_normal=False):
+    """Restrict this process to ``mask`` CPUs and/or raise its priority; False if unsupported."""
+    import os
+    if os.name != "nt":
+        return False
+    import ctypes
+    kernel32 = ctypes.windll.kernel32
+    kernel32.GetCurrentProcess.restype = ctypes.c_void_p
+    handle = ctypes.c_void_p(kernel32.GetCurrentProcess())
+    ok = True
+    if mask is not None:
+        ok &= bool(kernel32.SetProcessAffinityMask(handle, ctypes.c_size_t(mask)))
+    if above_normal:
+        ok &= bool(kernel32.SetPriorityClass(handle, ABOVE_NORMAL_PRIORITY_CLASS))
+    return ok
+
+
+def actor_mask():
+    import os
+    return ((1 << (os.cpu_count() or 1)) - 1) & ~LEARNER_MASK
+
+
+def _initialize(cfg, engine_path, closing_barrier, dedicated=False):
     torch.set_num_threads(1)
+    if dedicated:   # before any engine starts: child processes inherit the mask
+        pin_process(actor_mask())
     net = SurvivalNet(cfg).cpu().eval().requires_grad_(False)
     knowledge = CognitiveKnowledge(cfg, net.encoder)
     external = UCIOpponent(engine_path, cfg.opponent_elo, cfg.opponent_move_time)
@@ -69,11 +98,11 @@ def _play(payload, seed, game_number, resign_plan=None, kd_values=None, kind="ex
 
 
 class CognitivePool:
-    def __init__(self, cfg, engine_path):
+    def __init__(self, cfg, engine_path, dedicated=False):
         context = get_context("spawn")
         self.barrier = context.Barrier(cfg.num_workers)
         self.executor = ProcessPoolExecutor(max_workers=cfg.num_workers, mp_context=context,
-                                            initializer=_initialize, initargs=(cfg, str(engine_path), self.barrier))
+                                            initializer=_initialize, initargs=(cfg, str(engine_path), self.barrier, dedicated))
         self.pending = set()
         self.capacity = cfg.num_workers
         self.closed = False

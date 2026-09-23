@@ -75,6 +75,11 @@ def main(argv=None):
     parser.add_argument("--mix-fairy", type=float, help="share of games against Fairy-Stockfish")
     parser.add_argument("--fairy-path", type=Path, help="Fairy-Stockfish executable")
     parser.add_argument("--fairy-elo", type=int, help="Fairy-Stockfish nominal UCI_Elo")
+    parser.add_argument("--compile-learner", action="store_true",
+                        help="torch.compile the learner's recurrent unroll (~25%% faster update after a "
+                             "~5 min compile; needs MSVC on PATH, see scripts/start_v3_mix.ps1)")
+    parser.add_argument("--dedicate-learner-core", action="store_true",
+                        help="Windows: learner owns physical core 0 at above-normal priority; actors use the rest")
     add_resign_args(parser)
     args = parser.parse_args(argv)
     if args.games < 1:
@@ -125,6 +130,10 @@ def main(argv=None):
     torch.set_num_threads(1)
     trainer = CognitiveTrainer(cfg)
     trainer.load_state_dict(state)
+    if args.compile_learner:
+        # Same maths, fused kernels: only last-bit float differences. Fixed batch
+        # shapes, so it compiles once per process (learner and target unrolls).
+        trainer._unroll = torch.compile(trainer._unroll, dynamic=False)
     rng = np.random.default_rng(cfg.seed + 4)
     if "actor_rng" in state:
         rng.bit_generator.state = state["actor_rng"]
@@ -253,7 +262,13 @@ def main(argv=None):
                                                     in opponents.mixture(cfg).items() if share > 0), flush=True)
         if resign is not None:
             print(resign.line(), flush=True)
-        pool = CognitivePool(cfg, cfg.opponent_path)
+        if args.dedicate_learner_core:
+            from tonkai.cognitive_pool import LEARNER_MASK, pin_process
+            # The main-process engine (experiments) was started above and keeps
+            # the default mask; pin the learner only now, before the actors spawn.
+            print(f"[cpu] learner pinned to core 0: {pin_process(LEARNER_MASK, above_normal=True)}", flush=True)
+        pool = (CognitivePool(cfg, cfg.opponent_path, dedicated=True) if args.dedicate_learner_core
+                else CognitivePool(cfg, cfg.opponent_path))
         while completed < args.games:
             stopping = stopping or stop_file.exists()
             while len(pool.pending) < pool.capacity and submitted < args.games and not stopping:

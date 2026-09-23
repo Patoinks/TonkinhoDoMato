@@ -119,7 +119,15 @@ class SurvivalNet(nn.Module):
 
     def survival(self, context: torch.Tensor):
         """Independent means and aleatoric log variances, each shaped (B, H)."""
-        raw = torch.stack([head(context) for head in self.survival_heads], dim=1)
+        # Same parameters and maths as stacking each head(context); two batched
+        # matmuls instead of 2 x ensemble_size small ones (last-bit float
+        # differences only). Gradients reach every head's own weights.
+        heads = self.survival_heads
+        first = torch.cat([head[0].weight for head in heads])            # (E*H, D)
+        hidden = F.silu(F.linear(context, first, torch.cat([head[0].bias for head in heads])))
+        hidden = hidden.view(len(context), len(heads), -1)                # (B, E, H)
+        second = torch.stack([head[2].weight for head in heads])          # (E, 2, H)
+        raw = torch.einsum("beh,eoh->beo", hidden, second) + torch.stack([head[2].bias for head in heads])
         return torch.sigmoid(raw[..., 0]), raw[..., 1].clamp(-8.0, 2.0)
 
     def future(self, context: torch.Tensor) -> torch.Tensor:
