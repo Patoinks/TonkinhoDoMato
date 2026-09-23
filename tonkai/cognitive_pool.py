@@ -77,10 +77,32 @@ def _shutdown_actor():
     return True
 
 
-def _opponent(kind, state, seed, kd_values):
+def _rival(state, version, payload):
+    """The frozen self-play rival, unpacked once per snapshot version per actor."""
+    cached = state.get("rival")
+    if cached is None or cached[0] != version:
+        cfg = state["cfg"]
+        weights, knowledge_state = unpack_snapshot(payload)
+        net = SurvivalNet(cfg).cpu().eval().requires_grad_(False)
+        net.load_state_dict(weights)
+        knowledge = CognitiveKnowledge(cfg, net.encoder)
+        knowledge.load_state_dict(knowledge_state)
+        state["rival"] = cached = (version, net, knowledge)
+    return cached
+
+
+def _opponent(kind, state, seed, kd_values, rival=None):
     if kind == "self":
-        twin = CognitiveAgent(state["net"], state["cfg"], state["knowledge"], kd_values=kd_values)
-        return CognitiveOpponent(twin, state["cfg"], np.random.default_rng([seed, 1]))
+        if rival is None:        # no snapshots: the current weights
+            net, knowledge, name = state["net"], state["knowledge"], None
+        else:
+            version, net, knowledge = _rival(state, *rival)
+            name = f"Tonkinho congelado (jogo {version})"
+        twin = CognitiveAgent(net, state["cfg"], knowledge, kd_values=kd_values)
+        opponent = CognitiveOpponent(twin, state["cfg"], np.random.default_rng([seed, 1]))
+        if name:
+            opponent.description = name
+        return opponent
     if kind == "tiny":
         return TinyOpponentAdapter(seed)
     if kind == "fairy":
@@ -90,7 +112,8 @@ def _opponent(kind, state, seed, kd_values):
     raise ValueError(f"unknown opponent kind {kind!r}")
 
 
-def _play(payload, seed, game_number, resign_plan=None, kd_values=None, kind="external", version=None):
+def _play(payload, seed, game_number, resign_plan=None, kd_values=None, kind="external", version=None,
+          rival=None):
     weights, knowledge_state = unpack_snapshot(payload)
     state = _actor_state
     if "encoder_client" in state: state["encoder_client"].version = version
@@ -98,12 +121,14 @@ def _play(payload, seed, game_number, resign_plan=None, kd_values=None, kind="ex
     state["knowledge"].load_state_dict(knowledge_state)
     agent = CognitiveAgent(state["net"], state["cfg"], state["knowledge"], kd_values=kd_values)
     started = time.perf_counter()
-    opponent = _opponent(kind, state, seed, kd_values)
+    opponent = _opponent(kind, state, seed, kd_values, rival)
     episode, board, colour, stats = play_episode(agent, opponent, state["cfg"],
         np.random.default_rng(seed), opponent_name=opponent.description,
         resign=ResignTracker.from_plan(resign_plan))
     stats.update(actor_seconds=time.perf_counter() - started, cognitive=dict(agent.diagnostics),
                  game_number=game_number, opponent_kind=kind)
+    if rival is not None:
+        stats["opponent_version"] = rival[0]
     return episode, board, colour, stats, agent.trace
 
 
@@ -125,13 +150,15 @@ class CognitivePool:
         self.capacity = cfg.num_workers
         self.closed = False
 
-    def submit(self, net, knowledge, seed, game_number=0, resign_plan=None, kd_values=None, kind="external"):
+    def submit(self, net, knowledge, seed, game_number=0, resign_plan=None, kd_values=None, kind="external",
+               rival=None):
         if len(self.pending) >= self.capacity:
             raise RuntimeError("Actor pool is full")
         payload = pack_snapshot(net, knowledge)
         version = self.broker.register(net.encoder) if self.broker else None
         try:
-            future = self.executor.submit(_play, payload, int(seed), game_number, resign_plan, kd_values, kind, version)
+            future = self.executor.submit(_play, payload, int(seed), game_number, resign_plan, kd_values, kind, version,
+                                          rival)
         except BaseException:
             if self.broker: self.broker.release(version)
             raise

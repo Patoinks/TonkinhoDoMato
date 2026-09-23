@@ -63,6 +63,11 @@ class CognitiveConfig(SurvivalConfig):
     mix_fairy: float = 0.0
     fairy_path: str = ""
     fairy_elo: int = 1000
+    # Self-play rival: every this many games a frozen copy of TonkAI becomes the
+    # self-play opponent (snapshots/ in the checkpoint directory). It never
+    # learns; only the learning side's games are recorded. 0 = play the current
+    # weights, as before.
+    self_snapshot_every: int = 0
 
     def validate(self):
         super().validate()

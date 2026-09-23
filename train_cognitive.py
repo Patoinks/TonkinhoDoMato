@@ -75,6 +75,9 @@ def main(argv=None):
     parser.add_argument("--mix-fairy", type=float, help="share of games against Fairy-Stockfish")
     parser.add_argument("--fairy-path", type=Path, help="Fairy-Stockfish executable")
     parser.add_argument("--fairy-elo", type=int, help="Fairy-Stockfish nominal UCI_Elo")
+    parser.add_argument("--self-snapshot-every", type=int,
+                        help="self-play against a frozen TonkAI saved every N games (0 = current weights)")
+    parser.add_argument("--checkpoint-every", type=int, help="save latest.pt every N games")
     parser.add_argument("--compile-learner", action="store_true",
                         help="torch.compile the learner's recurrent unroll (~25%% faster update after a "
                              "~5 min compile; needs MSVC on PATH, see scripts/start_v3_mix.ps1)")
@@ -123,6 +126,7 @@ def main(argv=None):
                             ("hot_piece_kills", "hot_piece_kills"), ("objective", "objective"),
                             ("victory_weight", "victory_weight"), ("kd_weight", "kd_weight"),
                             ("mix_self", "mix_self"), ("mix_tiny", "mix_tiny"), ("mix_fairy", "mix_fairy"),
+                            ("self_snapshot_every", "self_snapshot_every"), ("checkpoint_every", "checkpoint_every"),
                             ("fairy_elo", "fairy_elo")):
         value = getattr(args, argument)
         if value is not None:
@@ -186,6 +190,7 @@ def main(argv=None):
                       f"{resign.initial_threshold:.4f}; verification restarts in shadow", flush=True)
         if state.get("capture_stats") and state["capture_stats"].get("hot_kills") == cfg.hot_piece_kills:
             capture_stats.load_state_dict(state["capture_stats"])
+    saved_rival = None if args.new_campaign else state.get("self_play_rival")
     del state
     initial_games = trainer.games
     run_id = datetime.now(timezone.utc).strftime("cognitive-%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:8]
@@ -205,6 +210,7 @@ def main(argv=None):
     status, completed, submitted, plies = "running", 0, 0, 0
     counts, reasons, diagnostics = Counter(initial_results), Counter(initial_reasons), Counter()
     by_kind = defaultdict(Counter)   # opponent kind -> outcome counts, this run
+    by_version = defaultdict(Counter)  # frozen rival version -> outcome counts, this run
     external_games = 0               # games against real opponents, this run
     all_plies = 0                    # every played ply, self-play included
     started = time.perf_counter()
@@ -248,11 +254,36 @@ def main(argv=None):
             result['execution']['broker'] = dict(pool.broker.stats)
         if opponents.uses_mixture(cfg):
             result["opponents"] = {kind: dict(row) for kind, row in by_kind.items()}
+        if rival["version"] is not None:
+            result["self_play_rival"] = {"version": rival["version"], "file": Path(rival["path"]).name,
+                                         "name": f"Tonkinho congelado (jogo {rival['version']})"}
+            result["self_versions"] = {str(version): dict(row) for version, row in sorted(by_version.items())}
         if resign is not None:
             result["resigned"] = counts["resigned"]
             result["resign"] = resign.summary()
         record("metrics", **result)
         print(json.dumps(result), flush=True)
+
+    # Frozen self-play rival: (version = TonkAI's game count, snapshot bytes).
+    snapshot_dir = output.parent / "snapshots"
+    rival = {"version": None, "payload": None, "path": None}
+
+    def snapshot_rival():
+        from tonkai.actor_snapshot import pack_snapshot
+        payload = pack_snapshot(trainer.net, trainer.knowledge)
+        snapshot_dir.mkdir(parents=True, exist_ok=True)
+        path = snapshot_dir / f"tonkinho-jogo-{trainer.games}.pt"
+        torch.save({"format": "tonkinho-snapshot-v1", "version": trainer.games, "payload": payload}, path)
+        rival.update(version=trainer.games, payload=payload, path=str(path))
+        record("self_snapshot", version=trainer.games, file=path.name, bytes=len(payload))
+
+    def load_rival(saved):
+        path = Path(saved["path"])
+        if not path.is_file():
+            return False
+        snapshot = torch.load(path, map_location="cpu", weights_only=False)
+        rival.update(version=snapshot["version"], payload=snapshot["payload"], path=str(path))
+        return True
 
     def save():
         trainer.save(output, actor_rng=deepcopy(rng.bit_generator.state), pretrained_games=pretrained_games,
@@ -260,7 +291,9 @@ def main(argv=None):
                      campaign_start_games=campaign_start, campaign_cap=campaign_cap, opening_history=openings.state(),
                      campaign_results=dict(counts), campaign_draw_reasons=dict(reasons),
                      capture_stats=capture_stats.state_dict(),
-                     resign=resign.state_dict() if resign is not None else None)
+                     resign=resign.state_dict() if resign is not None else None,
+                     self_play_rival=({"version": rival["version"], "path": rival["path"]}
+                                      if rival["version"] is not None else None))
 
     try:
         external = UCIOpponent(cfg.opponent_path, cfg.opponent_elo, cfg.opponent_move_time)
@@ -288,6 +321,11 @@ def main(argv=None):
             # The main-process engine (experiments) was started above and keeps
             # the default mask; pin the learner only now, before the actors spawn.
             print(f"[cpu] learner pinned to core 0: {pin_process(LEARNER_MASK, above_normal=True)}", flush=True)
+        if cfg.self_snapshot_every and not (saved_rival and load_rival(saved_rival)):
+            snapshot_rival()
+        if rival['version'] is not None:
+            print(f"Self-play rival: Tonkinho congelado (jogo {rival['version']}), novo a cada "
+                  f"{cfg.self_snapshot_every} jogos", flush=True)
         pool = (CognitivePool(cfg, cfg.opponent_path, dedicated=True) if args.dedicate_learner_core
                 else CognitivePool(cfg, cfg.opponent_path))
         while completed < args.games:
@@ -302,6 +340,8 @@ def main(argv=None):
                     extras["kd_values"] = kd_values
                 if opponents.uses_mixture(cfg):
                     extras["kind"] = opponents.choose_kind(cfg, rng)
+                    if extras["kind"] == "self" and rival["payload"] is not None:
+                        extras["rival"] = (rival["version"], rival["payload"])
                 pool.submit(trainer.net, trainer.knowledge, seed, game_number, **extras)
                 submitted += 1
             if not pool.pending:
@@ -344,6 +384,8 @@ def main(argv=None):
                 outcome = "unfinished"
             capture_stats.add(board.move_stack, colour, outcome)
             by_kind[kind][outcome] += 1
+            if kind == "self" and "opponent_version" in stats:
+                by_version[stats["opponent_version"]][outcome] += 1
             if resign is not None:
                 for message in resign.update(resign_report, lost=episode.lost):
                     print(message, flush=True)
@@ -373,6 +415,8 @@ def main(argv=None):
                     loss = update
                     execution['learner_updates'] += 1
                     execution['learned_positions'] += update['learned_positions']
+            if cfg.self_snapshot_every and trainer.games - rival["version"] >= cfg.self_snapshot_every:
+                snapshot_rival()        # games already in flight keep the rival they were given
             if completed % cfg.log_every == 0:
                 metrics()
             if completed % cfg.checkpoint_every == 0:
