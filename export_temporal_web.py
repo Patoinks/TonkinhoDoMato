@@ -30,7 +30,7 @@ def plain(value):
     return value
 
 
-def export(checkpoint, out):
+def export(checkpoint, out, overrides=None):
     torch.set_num_threads(1)
     checkpoint, out = Path(checkpoint), Path(out)
     state = torch.load(checkpoint, map_location="cpu", weights_only=False)
@@ -39,6 +39,10 @@ def export(checkpoint, out):
         raise ValueError(f"Unsupported temporal checkpoint: {kind}")
     cfg = CognitiveConfig.from_dict(state["config"])
     cfg.device = "cpu"
+    for key, value in (overrides or {}).items():     # e.g. a tournament champion's settings
+        setattr(cfg, key, value)
+    cfg.threat_explore = cfg.trade_explore = 0.0      # training-only exploration never ships
+    cfg.validate()
     net = SurvivalNet(cfg).eval()
     net.load_state_dict(state["model"])
     knowledge = None
@@ -80,7 +84,7 @@ def export(checkpoint, out):
                     "skill_min_support", "skill_bonus", "piece_safety_weight", "piece_exchange_tolerance",
                     "piece_exchange_depth", "king_safety_weight", "kd_weight", "mate_search_moves",
                     "mate_defense_moves", "mate_node_limit", "objective", "victory_weight",
-                    "avoid_repetition_margin")},
+                    "avoid_repetition_margin", "exchange_depth", "exchange_node_limit", "temperature")},
                 inference="deterministic; exploration disabled",
                 model_name=state.get("model_name"),
                 kd_values=({str(k): v for k, v in agent.kd_values.items()} if getattr(agent, "kd_values", None) else None),
@@ -113,6 +117,11 @@ def export(checkpoint, out):
         # v4 mate calculation: a forced mate in two, and a back-rank mate to avoid.
         ("forced_mate_in_two", "3r2k1/5ppp/8/8/8/8/4RPPP/4R1K1 w - - 0 1", [], True),
         ("back_rank_defence", "4r1k1/R4ppp/8/8/8/8/5PPP/6K1 w - - 0 1", [], True),
+        # exact exchanges: a free queen, a defended pawn, en passant, promotion with capture
+        ("exchange_free_queen", "4k3/8/8/3q4/8/8/8/3QK3 w - - 0 1", [], True),
+        ("exchange_defended", "4k3/3p4/4p3/8/8/5N2/8/4K3 w - - 0 1", [], True),
+        ("exchange_en_passant", "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 2", [], True),
+        ("exchange_promotion", "1r2k3/P7/8/8/8/8/8/4K3 w - - 0 1", [], True),
     ]
     for label, fen, moves, colour in fixtures:
         board = chess.Board(fen)
@@ -138,6 +147,9 @@ def export(checkpoint, out):
             entry["forced_mate"] = int(getattr(choice, "forced_mate", 0))
             entry["allows_mate"] = {choice.moves[i].uci(): n
                                     for i, n in (agent._evaluation.get("allows_mate") or {}).items()}
+            nets = agent._evaluation.get("exchange_nets")
+            if nets is not None:                             # exact exchange result of every move
+                entry["exchange_nets"] = {move.uci(): float(net) for move, net in zip(choice.moves, nets)}
         else:
             replies, probabilities = agent.predict_reply(board, colour)
             entry["predict"] = [{"uci": m.uci(), "p": float(p)} for m, p in zip(replies, probabilities)]
@@ -151,6 +163,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--set", action="append", default=[], help="decision setting name=value (repeatable)")
     args = parser.parse_args()
-    result = export(args.checkpoint, args.out)
+    defaults = CognitiveConfig()
+    overrides = {}
+    for item in args.set:
+        key, _, raw = item.partition("=")
+        kind = type(getattr(defaults, key))
+        overrides[key] = (raw.lower() in ("1", "true")) if kind is bool else kind(raw)
+    result = export(args.checkpoint, args.out, overrides)
     print(json.dumps({k:result[k] for k in ("model_kind", "sha256", "games_trained", "bytes")}))
