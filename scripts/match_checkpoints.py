@@ -173,6 +173,8 @@ def main():
     parser.add_argument("--mate-node-limit", type=int, default=20_000, help="nodes per mate search")
     parser.add_argument("--piece-values", help="both sides use these values, e.g. 1:1,2:1.03,3:1.22,4:1.70,5:4.02")
     for side in ("current", "rival"):
+        parser.add_argument(f"--{side}-set", action="append", default=[],
+                            help="any decision setting for this side, name=value (repeatable)")
         parser.add_argument(f"--{side}-piece-safety-weight", type=float, default=None)
         parser.add_argument(f"--{side}-piece-activity-weight", type=float, default=None)
     args = parser.parse_args()
@@ -190,8 +192,16 @@ def main():
     mates = {"mate_search_moves": args.mate_search_moves, "mate_defense_moves": args.mate_defense_moves,
              "mate_node_limit": args.mate_node_limit}
     policies = {}
+    from tonkai.cognitive_config import CognitiveConfig
+    defaults = CognitiveConfig()
     for side in ("current", "rival"):
         policy = {}
+        for item in getattr(args, f"{side}_set"):
+            key, _, raw = item.partition("=")
+            if not hasattr(defaults, key):
+                parser.error(f"unknown setting {key}")
+            kind = type(getattr(defaults, key))
+            policy[key] = (raw.lower() in ("1", "true")) if kind is bool else kind(raw)
         for key in ("piece_safety_weight", "piece_activity_weight"):
             value = getattr(args, f"{side}_{key}")
             if value is not None:
