@@ -32,6 +32,7 @@ class SurvivalChoice:
     aleatoric: np.ndarray
     novelty: np.ndarray
     index: int = 0
+    forced_mate: int = 0          # own forced mate being played, in moves (0 = none)
 
     @property
     def move(self):
@@ -166,8 +167,10 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
             choice = agent.choose(board, self_color, rng, temperature=temperature,
                                   explore=explore, head=head)
             hope = float(np.max(choice.mean)) if resign is not None else 0.0
-            # Rules, not heuristics: never resign with a win or a draw on the board.
-            if resign is not None and hope <= resign.threshold and _has_safe_ending(board, self_color):
+            # Rules, not heuristics: never resign with a win or a draw on the board
+            # (a forced mate found by the rules is a win on the board).
+            if resign is not None and hope <= resign.threshold and (
+                    getattr(choice, "forced_mate", 0) or _has_safe_ending(board, self_color)):
                 hope = 1.0
             if resign is not None and resign.observe(hope, len(board.move_stack)):
                 trace = getattr(agent, "trace", None)

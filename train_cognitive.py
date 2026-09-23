@@ -86,6 +86,10 @@ def main(argv=None):
     parser.add_argument("--king-safety-model", type=Path,
                         help="v4: a learned King Safety model (train_king_safety.py) replaces the hand-written one")
     parser.add_argument("--king-safety-log-every", type=int, help="games between logged KS trajectories")
+    parser.add_argument("--mate-search-moves", type=int, help="play a forced mate found within N own moves")
+    parser.add_argument("--mate-defense-moves", type=int,
+                        help="avoid moves after which the opponent forces mate within N moves")
+    parser.add_argument("--mate-node-limit", type=int, help="nodes per mate search")
     parser.add_argument("--avoid-repetition-margin", type=float,
                         help="when ahead by this many pawns (own piece values), avoid drawing by repetition")
     parser.add_argument("--value-opponents",
@@ -149,6 +153,8 @@ def main(argv=None):
                             ("value_opponents", "value_opponents"),
                             ("avoid_repetition_margin", "avoid_repetition_margin"),
                             ("king_safety_log_every", "king_safety_log_every"),
+                            ("mate_search_moves", "mate_search_moves"), ("mate_defense_moves", "mate_defense_moves"),
+                            ("mate_node_limit", "mate_node_limit"),
                             ("fairy_elo", "fairy_elo")):
         value = getattr(args, argument)
         if value is not None:

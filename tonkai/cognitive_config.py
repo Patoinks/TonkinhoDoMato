@@ -83,6 +83,13 @@ class CognitiveConfig(SurvivalConfig):
     # every decision with KS_self - KS_enemy. Empty = v3 behaviour.
     king_safety_model: str = ""
     king_safety_log_every: int = 10     # games between logged KS trajectories
+    # Mate calculation (exact, rules-only search in tonkai_fast):
+    # attack - play a shortest forced mate found within this many own moves;
+    # defence - a move after which the opponent forces mate within this many
+    # moves is worth almost nothing. 0 = off.
+    mate_search_moves: int = 0
+    mate_defense_moves: int = 0
+    mate_node_limit: int = 20_000
 
     def validate(self):
         super().validate()
@@ -107,3 +114,5 @@ class CognitiveConfig(SurvivalConfig):
             raise ValueError("mix_fairy needs fairy_path and a positive fairy_elo")
         if not 0 < self.capture_target_clip < float("inf"):
             raise ValueError("capture_target_clip must be finite and positive")
+        if self.mate_search_moves < 0 or self.mate_defense_moves < 0 or self.mate_node_limit < 1:
+            raise ValueError("mate_search_moves/mate_defense_moves must be >= 0 and mate_node_limit positive")

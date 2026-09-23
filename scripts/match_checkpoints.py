@@ -58,12 +58,16 @@ def _load(path, cfg=None):
     return name, trainer.net.eval(), trainer.knowledge, cfg, kd
 
 
-def _init(current, rival, rival_name):
+def _init(current, rival, rival_name, mates=None):
+    import copy
     import torch
     torch.set_num_threads(1)
     name, net, knowledge, cfg, kd = _load(current)
     other, rnet, rknowledge, _, _ = _load(rival, cfg)
-    _state.update(name=name, net=net, knowledge=knowledge, cfg=cfg, kd=kd,
+    ccfg = copy.copy(cfg)                  # mate calculation for the current side only
+    for key, value in (mates or {}).items():
+        setattr(ccfg, key, value)
+    _state.update(name=name, net=net, knowledge=knowledge, cfg=cfg, ccfg=ccfg, kd=kd,
                   rival_name=rival_name or other, rnet=rnet, rknowledge=rknowledge)
 
 
@@ -77,7 +81,7 @@ def _game(index, seed):
 
     s = _state
     colour = chess.WHITE if index % 2 == 0 else chess.BLACK
-    agent = CognitiveAgent(s["net"], s["cfg"], s["knowledge"], kd_values=s["kd"])
+    agent = CognitiveAgent(s["net"], s["ccfg"], s["knowledge"], kd_values=s["kd"])
     rival = CognitiveOpponent(CognitiveAgent(s["rnet"], s["cfg"], s["rknowledge"], kd_values=s["kd"]), s["cfg"],
                               np.random.default_rng([seed, index, 1]))
     rival.description = s["rival_name"]
@@ -134,18 +138,25 @@ def main():
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument("--out", type=Path, default=ROOT / "history/matches")
     parser.add_argument("--label", default=None, help="file name stem for the result")
+    parser.add_argument("--mate-search-moves", type=int, default=0,
+                        help="current side plays a forced mate found within N own moves")
+    parser.add_argument("--mate-defense-moves", type=int, default=0,
+                        help="current side avoids moves after which the rival forces mate within N moves")
+    parser.add_argument("--mate-node-limit", type=int, default=20_000, help="nodes per mate search")
     args = parser.parse_args()
+    mates = {"mate_search_moves": args.mate_search_moves, "mate_defense_moves": args.mate_defense_moves,
+             "mate_node_limit": args.mate_node_limit}
 
     rows = []
     with ProcessPoolExecutor(max_workers=args.workers, mp_context=get_context("spawn"), initializer=_init,
-                             initargs=(str(args.current), str(args.rival), args.name)) as pool:
+                             initargs=(str(args.current), str(args.rival), args.name, mates)) as pool:
         for row in pool.map(_game, range(args.games), [args.seed] * args.games):
             rows.append(row)
             if len(rows) % 50 == 0:
                 print(f"{len(rows)}/{args.games} jogos", flush=True)
     rows.sort()
     report = {"current": rows[0][5], "current_file": str(args.current), "rival": rows[0][6],
-              "rival_file": str(args.rival), "seed": args.seed,
+              "rival_file": str(args.rival), "seed": args.seed, "mate_calculation": mates,
               "finished_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), **summarise(rows)}
     stem = args.label or f"match-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     args.out.mkdir(parents=True, exist_ok=True)

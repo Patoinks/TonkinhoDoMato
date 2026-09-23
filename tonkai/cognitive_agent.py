@@ -432,6 +432,11 @@ class CognitiveAgent(SurvivalAgent):
                 kings.append(senses)
             scores += king_bonuses
             self.diagnostics["king_safety_positions"] += len(moves)
+        allows_mate = {}
+        defence = int(getattr(self.cfg, "mate_defense_moves", 0) or 0)
+        if defence > 0 and fast_rules.AVAILABLE:
+            allows_mate = self._moves_allowing_mate(board, self_color, moves, codes, fast, defence)
+            self._rank_last(scores, allows_mate)
         order = np.argsort(scores)[::-1]
         gap = float(scores[order[0]] - scores[order[1]]) if len(order) > 1 else 1.0
         danger = mean[order[0]] < .35 or board.is_check()
@@ -473,10 +478,70 @@ class CognitiveAgent(SurvivalAgent):
         margin = float(getattr(self.cfg, "avoid_repetition_margin", 0.0) or 0.0)
         if margin > 0 and drawn:
             self._avoid_repetition_when_ahead(board, self_color, moves, scores, drawn, margin)
+        if allows_mate:
+            self._rank_last(scores, allows_mate)
         self._evaluation = {"keys": keys, "retrieved": retrieved, "uncertainty": uncertainty,
                             "information": information, "gap": gap, "piece_safety": safety, "king_safety": kings,
-                            "fast": fast, "codes": codes}
+                            "fast": fast, "codes": codes, "allows_mate": allows_mate}
         return SurvivalChoice(moves, scores, mean, epistemic, aleatoric, information)
+
+    def _moves_allowing_mate(self, board, self_color, moves, codes, fast, depth):
+        """Mate calculation, rules only: {index: n} for the moves after which the
+        opponent forces checkmate in n <= depth moves. Moves that end the game
+        keep their known value."""
+        fast = fast_rules.board(board) if fast is None else fast
+        codes = [fast_rules.code(move) for move in moves] if codes is None else codes
+        limit = int(getattr(self.cfg, "mate_node_limit", 20_000))
+        allows = {}
+        for index, code in enumerate(codes):
+            fast.push(code)
+            if fast.terminal() == fast_rules.NONE:
+                found = fast.forced_mate(not self_color, depth, limit)[0]
+                if found:
+                    allows[index] = found
+            fast.pop()
+        self.diagnostics["mate_defence_searches"] += len(codes)
+        if len(allows) < len(codes):                      # a safe move exists: these are avoided
+            self.diagnostics["mate_moves_avoided"] += len(allows)
+        return allows
+
+    @staticmethod
+    def _rank_last(scores, allows_mate):
+        """A forced loss ranks under every move the planner compared (-1e9 marks
+        the ones it left out); among forced losses a later mate ranks higher, so
+        such a move is played only when every move allows mate."""
+        others = np.ones(len(scores), dtype=bool)
+        others[list(allows_mate)] = False
+        others &= scores > -1e8
+        floor = float(scores[others].min()) - 1.0 if others.any() else 0.0
+        for index, found in allows_mate.items():
+            if scores[index] > -1e8:
+                scores[index] = floor + 1e-3 * found
+
+    def _mating_line(self, board, self_color, moves, depth):
+        """Mate calculation, rules only: (indices of the moves on a shortest
+        forced mate within `depth` own moves, its length), ([], 0) if none."""
+        fast = self._evaluation.get("fast")
+        fast = fast_rules.board(board) if fast is None else fast
+        codes = self._evaluation.get("codes")
+        codes = [fast_rules.code(move) for move in moves] if codes is None else codes
+        limit = int(getattr(self.cfg, "mate_node_limit", 20_000))
+        found = fast.forced_mate(self_color, depth, limit)[0]
+        self.diagnostics["mate_attack_searches"] += 1
+        line = []
+        if found:
+            mated = fast_rules.WHITE_WINS if self_color else fast_rules.BLACK_WINS
+            for index, code in enumerate(codes):
+                fast.push(code)
+                ending = fast.terminal()                  # a draw (e.g. a repetition) ends the line
+                if ending == mated or (ending == fast_rules.NONE and found > 1
+                                       and fast.forced_mate(self_color, found - 1, limit)[0]):
+                    line.append(index)
+                fast.pop()
+        if not line:
+            return [], 0
+        self.diagnostics["forced_mate_moves"] += 1
+        return line, found
 
     def _avoid_repetition_when_ahead(self, board, self_color, moves, scores, drawn, margin):
         """Owner's rule: ahead by `margin` pawns (own piece values) -> a repetition draw is nearly worthless."""
@@ -537,6 +602,9 @@ class CognitiveAgent(SurvivalAgent):
                     wins = terminal_value(branch, self_color, "victory") == 1
                 if wins:
                     winning.append(index)
+        attack = int(getattr(self.cfg, "mate_search_moves", 0) or 0)
+        if not winning and attack > 0 and fast_rules.AVAILABLE:
+            winning, choice.forced_mate = self._mating_line(board, self_color, choice.moves, attack)
         if winning:
             choice.index = winning[0]
         elif explore and temperature > 0:
@@ -551,6 +619,8 @@ class CognitiveAgent(SurvivalAgent):
                            "next_prediction": float(choice.mean[choice.index]),
                            "uncertainty": float(self._evaluation["uncertainty"][choice.index]),
                            "gap": self._evaluation["gap"]})
+        if choice.forced_mate:
+            self.trace[-1]["forced_mate"] = choice.forced_mate
         if self._evaluation.get("piece_safety"):
             self.trace[-1]["piece_safety"] = self._evaluation["piece_safety"][choice.index]
         if self._evaluation.get("king_safety"):
