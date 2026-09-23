@@ -21,7 +21,7 @@ import urllib.request
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from tonkai.win_history import _atomic_write, _file_lock  # noqa: E402
+from tonkai.win_history import _atomic_write, _file_lock, featured_win_pgn  # noqa: E402
 
 WINS = ROOT / "history" / "wins"
 LONGEST = ROOT / "history" / "longest_external_win.pgn"
@@ -40,8 +40,8 @@ def publish(config_path):
     site = Path(config["site_directory"]).resolve(strict=True)
     url = config["public_url"].rstrip("/")
     source = WINS / "wins.pgn"
-    featured = WINS / "featured_game.pgn"
-    if not featured.is_file() and not source.is_file():
+    archive = WINS / "wins.json"
+    if not archive.is_file() and not source.is_file():
         return "nothing to publish"
     RECEIPT.parent.mkdir(parents=True, exist_ok=True)
     # The model publisher also deploys this site and holds publish.lock while it
@@ -54,7 +54,9 @@ def publish(config_path):
     with _file_lock(RECEIPT.parent / ".wins-site.lock"):
         with _file_lock(WINS / ".wins.lock"):
             text = source.read_text(encoding="utf-8") if source.is_file() else ""
-        game = featured.read_text(encoding="utf-8") if featured.is_file() else ""
+            wins = json.loads(archive.read_text(encoding="utf-8"))["wins"] if archive.is_file() else []
+        # Select from the actual win archive, never a running older trainer's featured loss.
+        game = featured_win_pgn(wins)
         games = text.count("[Event ")
         local_index = (site / "dist" / "index.html").read_bytes()
         if hashlib.sha256(fetch(url + "/")).digest() != hashlib.sha256(local_index).digest():
@@ -62,8 +64,7 @@ def publish(config_path):
         for folder in (site / "public" / "tonkai", site / "dist" / "tonkai"):
             if text:
                 _atomic_write(folder / "wins.pgn", text)
-            if game:            # the site's one history game
-                _atomic_write(folder / "featured-game.pgn", game)
+            _atomic_write(folder / "featured-game.pgn", game)
             if LONGEST.is_file():
                 _atomic_write(folder / "longest-win.pgn", LONGEST.read_text(encoding="utf-8"))
         deploy = ([os.environ.get("COMSPEC", "cmd.exe"), "/d", "/c",
@@ -78,7 +79,7 @@ def publish(config_path):
                 raise RuntimeError("firebase deploy failed")
             time.sleep(2 ** (attempt + 1))
         for name, expected in (("wins.pgn", text), ("featured-game.pgn", game)):
-            if not expected:
+            if not expected and name != "featured-game.pgn":
                 continue
             live = fetch(url + f"/tonkai/{name}?v=" + str(time.time_ns())).decode("utf-8")
             if live.replace("\r\n", "\n") != expected.replace("\r\n", "\n"):

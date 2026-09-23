@@ -1,0 +1,90 @@
+--- a/src/tonkai/winHistory.ts
++++ b/src/tonkai/winHistory.ts
+@@ -216,12 +216,18 @@
+   };
+ }
+ 
+-/** The site's one history game: the longest against the strongest opponent. */
++/** One external victory, selected on publication by rating, plies, then recency. */
+ export async function fetchFeaturedGame(): Promise<FeaturedGame | null> {
+   const response = await fetch('/tonkai/featured-game.pgn', { cache: 'no-store' });
+   if (response.status === 404) return null;
+   if (!response.ok) throw new Error('Could not load the featured game.');
+   const text = await response.text();
+   if (/^\s*(?:<!doctype\s+html\b|<html\b)/i.test(text)) return null;
+-  return parseGame(text);
+-}
++  if (!text.trim()) return null;
++  try {
++    parseLongestWin(text); // Reject legacy featured losses, draws and unfinished games.
++    return parseGame(text);
++  } catch {
++    return null;
++  }
++}
+--- a/src/pages/TonkaiPage.tsx
++++ b/src/pages/TonkaiPage.tsx
+@@ -289,20 +289,20 @@
+           </> : <p className="tk-empty">Ainda não há treino publicado.</p>}
+         </section>
+         <section className="tk-record">
+-          <div className="tk-record-heading"><span className="tk-record-icon" aria-hidden="true">♜</span><h2>Jogo em destaque</h2></div>
++          <div className="tk-record-heading"><span className="tk-record-icon" aria-hidden="true">♜</span><h2>Vitória em destaque</h2></div>
+           {featured ? <>
+-            <p className="tk-record-source">O jogo mais longo contra o adversário mais forte</p>
++            <p className="tk-record-source">Maior rating do adversário · mais lances · mais recente</p>
+             <p className="tk-record-length"><strong>{Math.ceil(featured.plies / 2)}</strong> turnos <span>· {featured.plies} lances</span></p>
+             <p className="tk-opponent">{BOT_NAME} <span>vs</span> {featured.opponent}</p>
+             <div className="tk-record-meta">
+-              <span>{featured.outcome === 'win' ? 'Vitória' : featured.outcome === 'draw' ? 'Empate' : 'Derrota'} · {featured.result}</span>
++              <span>Vitória · {featured.result}</span>
+               <span>{featured.date.replaceAll('.', '/')}</span>
+             </div>
+             <div className="tk-record-actions">
+               {!replay && <button onClick={() => { setReplayPly(0); setView('history'); window.scrollTo(0, 0); }}>Ver partida <span aria-hidden="true">↗</span></button>}
+               <a className="tk-download" href={`data:application/x-chess-pgn;charset=utf-8,${encodeURIComponent(featured.pgn)}`} download="tonkinho-do-mato-jogo-em-destaque.pgn">Descarregar PGN</a>
+             </div>
+-          </> : <p className="tk-empty">{historyLoading ? 'A carregar histórico…' : historyError || 'Ainda não há jogo em destaque.'}</p>}
++          </> : <p className="tk-empty">{historyLoading ? 'A carregar histórico…' : historyError || 'Ainda não há vitórias registadas.'}</p>}
+           {featured && historyError && <p className="tk-record-source" role="status">{historyError}</p>}
+         </section>
+         <section className="tk-history" aria-label="Lances da partida">
+--- a/tests/tonkai-wins.test.ts
++++ b/tests/tonkai-wins.test.ts
+@@ -67,3 +67,18 @@
+   const real = new URL('../public/tonkai/featured-game.pgn', import.meta.url);
+   if (existsSync(real)) assert.ok(parseGame(readFileSync(real, 'utf8')).plies > 0);
+ });
++
++
++test('featured history shows only a validated victory, never a legacy loss or draw', async () => {
++  const { fetchFeaturedGame } = await import('../src/tonkai/winHistory');
++  serve(scholar);
++  assert.equal((await fetchFeaturedGame())?.outcome, 'win');
++  serve(fool);
++  assert.equal((await fetchFeaturedGame())?.tonkaiColor, 'b');
++  serve(fool.replace('[White "Rodent IV"]', '[White "TonkAI"]').replace('[Black "TonkAI"]', '[Black "Stockfish"]'));
++  assert.equal(await fetchFeaturedGame(), null);
++  serve('[Event "draw"]\n[White "TonkAI"]\n[Black "Stockfish"]\n[Result "1/2-1/2"]\n\n1. e4 e5 1/2-1/2');
++  assert.equal(await fetchFeaturedGame(), null);
++  serve('');
++  assert.equal(await fetchFeaturedGame(), null);
++});
+--- /dev/null
++++ b/public/tonkai/featured-game.pgn
+@@ -0,0 +1,15 @@
++[Event "TonkAI - featured victory"]
++[Site "local"]
++[Date "2026.09.23"]
++[Round "?"]
++[White "Stockfish 11 64 BMI2; nominal Elo 1500; 0.002s/move; Threads=1; Hash=16MiB"]
++[Black "TonkAI"]
++[Result "0-1"]
++[Termination "checkmate"]
++[PlyCount "8"]
++[TonkAIColor "black"]
++[FinalFEN "rnbqkb1r/pppppppp/8/8/4P3/2Pn4/PP1PNPPP/RNBQKB1R w KQkq - 1 5"]
++[OpponentElo "1500"]
++[RecordedUTC "2026-09-23T03:13:10+00:00"]
++
++1. e3 Nf6 2. Ne2 Nd5 3. e4 Nb4 4. c3 Nd3# 0-1

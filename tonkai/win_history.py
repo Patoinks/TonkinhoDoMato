@@ -4,6 +4,8 @@ from __future__ import annotations
 from contextlib import contextmanager
 from datetime import datetime, timezone
 import json
+import io
+import re
 import os
 from pathlib import Path
 import tempfile
@@ -136,13 +138,70 @@ def _atomic_write(path, text):
             temporary.unlink()
 
 
-class FeaturedGameRecorder:
-    """The site's one history game: the longest game against the strongest opponent.
+def _win_game(game):
+    if game is None or game.errors:
+        return False
+    names = {"tonkai", "tonkinho do mato"}
+    white = game.headers.get("White", "").strip().casefold() in names
+    black = game.headers.get("Black", "").strip().casefold() in names
+    if white == black or game.headers.get("Result") != ("1-0" if white else "0-1"):
+        return False
+    board = game.end().board()
+    outcome = board.outcome(claim_draw=True)
+    return (outcome is not None and outcome.result() == game.headers["Result"]
+            or outcome is None and game.headers.get("Termination", "").lower() in {"resigned", "resignation"})
 
-    Any finished result counts (win, draw, loss, resignation); self-play never
-    does. Ranking is (opponent Elo, plies): a stronger opponent always wins the
-    spot, then the longer game. Ties keep the stored game.
+
+def _recorded_time(value):
+    if not value:
+        return float("-inf")
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.timestamp()
+
+
+def featured_win_pgn(wins):
+    """Select one validated external win by rating, plies, then recording time.
+
+    Older archives put the configured Elo in the opponent name. Tiny's 800 is
+    the existing nominal estimate, not a measured rating. Unknown ratings rank
+    below known ones; their numeric engine/version names are never ratings.
     """
+    best_key, best = None, ""
+    for index, entry in enumerate(wins):
+        try:
+            stream = io.StringIO(entry["pgn"])
+            game = chess.pgn.read_game(stream)
+            if not _win_game(game) or chess.pgn.read_game(stream) is not None:
+                continue
+            white = game.headers["White"].strip().casefold() in {"tonkai", "tonkinho do mato"}
+            opponent = game.headers["Black" if white else "White"]
+            rating = entry.get("opponent_elo", game.headers.get("OpponentElo"))
+            if rating is None:
+                match = re.search(r"nominal Elo\s+(\d+)|(?:^|[·; ])(\d+)\s+Elo\b", opponent, re.I)
+                rating = next((v for v in match.groups() if v), None) if match else None
+            if rating is None and opponent.startswith("TinyOpponent"):
+                rating = 800
+            elo = max(0, int(rating or 0))
+            recorded = entry.get("recorded_utc", game.headers.get("RecordedUTC", ""))
+            plies = sum(1 for _ in game.mainline_moves())
+            key = (elo, plies, _recorded_time(recorded), index)
+            if best_key is None or key > best_key:
+                game.headers["OpponentElo"] = str(elo)
+                game.headers["PlyCount"] = str(plies)
+                if recorded:
+                    game.headers["RecordedUTC"] = recorded
+                game.headers["Event"] = "TonkAI - featured victory"
+                best = game.accept(chess.pgn.StringExporter(headers=True, variations=False, comments=False)) + "\n"
+                best_key = key
+        except (ValueError, TypeError, KeyError):
+            continue
+    return best
+
+
+class FeaturedGameRecorder:
+    """One external victory, ranked by opponent Elo, plies, then recency."""
 
     def __init__(self, path):
         self.path = Path(path) if path else None
@@ -152,23 +211,34 @@ class FeaturedGameRecorder:
             return None
         with self.path.open(encoding="utf-8") as stream:
             game = chess.pgn.read_game(stream)
-        if game is None:
-            return None
-        return int(game.headers.get("OpponentElo", 0)), sum(1 for _ in game.mainline_moves())
+        if not _win_game(game):
+            return None  # Legacy featured losses/draws must never block a win.
+        return (int(game.headers.get("OpponentElo", 0)), sum(1 for _ in game.mainline_moves()),
+                _recorded_time(game.headers.get("RecordedUTC", "")))
 
-    def consider(self, board, self_color, opponent_name, opponent_elo, result, termination):
+    def consider(self, board, self_color, opponent_name, opponent_elo, result, termination,
+                 *, recorded_utc=None):
         if self.path is None:
             return False
         if result not in ("1-0", "0-1", "1/2-1/2"):
             raise ValueError("result must be a completed PGN result")
+        if result != ("1-0" if self_color else "0-1"):
+            return False
+        if opponent_name.strip().casefold() in {"tonkai", "tonkinho do mato"}:
+            return False
         game, plies = build_win_game(board, self_color, opponent_name, result, termination)
-        game.headers["Event"] = "TonkAI - longest game against the strongest opponent"
+        if not _win_game(game):
+            raise ValueError("featured game must be a completed external victory")
+        recorded = recorded_utc or datetime.now(timezone.utc).isoformat(timespec="microseconds")
+        key = (int(opponent_elo), plies, _recorded_time(recorded))
+        game.headers["Event"] = "TonkAI - featured victory"
         game.headers["OpponentElo"] = str(int(opponent_elo))
+        game.headers["RecordedUTC"] = recorded
         text = game.accept(chess.pgn.StringExporter(headers=True, variations=False, comments=False)) + "\n"
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with _file_lock(self.path.with_name("." + self.path.name + ".lock")):
             stored = self.stored_key()
-            if stored is not None and (int(opponent_elo), plies) <= stored:
+            if stored is not None and key <= stored:
                 return False
             _atomic_write(self.path, text)
         return True
