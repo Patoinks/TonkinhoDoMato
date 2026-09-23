@@ -115,6 +115,11 @@ class CognitiveConfig(SurvivalConfig):
     # The owner's value of a drawn ending in decisions (None: the objective's own,
     # e.g. 0.75 for shaped with victory_weight 0.5). Lower = draws are avoided.
     draw_value: float | None = None
+    # Owner's rule: a game is drawn by repetition only once the position HAS
+    # occurred three times - repeating is a choice TonkAI values at the draw
+    # value (so, with a low draw value, only when its position is worse). Off:
+    # the old rule, where merely being able to claim ended the game.
+    strict_repetition: bool = False
     exchange_node_limit: int = 200_000
     exchange_labels: bool = False
     trade_explore: float = 0.0

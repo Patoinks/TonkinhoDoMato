@@ -920,6 +920,20 @@ public:
         return -1;
     }
 
+    // Owner's rule (strict repetition): a draw by repetition only once the
+    // position HAS occurred three times (the player chose to repeat); no
+    // "could claim" endings. Mate, stalemate, insufficient material, 5-fold
+    // and the move rules (100/150 half-moves) as in terminal().
+    int terminal_strict() {
+        bool legal = pos.any_legal();
+        if (!legal && pos.is_check()) return pos.turn == WHITE ? 2 : 1;
+        if (pos.insufficient(WHITE) && pos.insufficient(BLACK)) return 0;
+        if (!legal) return 0;
+        if (pos.halfmove >= 100) return 0;
+        if (repetition(3)) return 0;
+        return -1;
+    }
+
     std::pair<double, double> king_risks() const {
         auto rows = king_senses(pos);
         return {rows[WHITE].risk, rows[BLACK].risk};
@@ -1336,6 +1350,7 @@ PYBIND11_MODULE(tonkai_fast, m) {
         .def_property_readonly("turn", &Board::turn)
         .def_property_readonly("ply", &Board::ply)
         .def("terminal", &Board::terminal)
+        .def("terminal_strict", &Board::terminal_strict)
         .def("king_risks", &Board::king_risks)
         .def("king_detail", &Board::king_detail)
         .def("piece_risks", &Board::piece_risks_py, py::arg("values"), py::arg("promotion"), py::arg("tolerance"),

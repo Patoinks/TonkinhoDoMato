@@ -44,9 +44,10 @@ def board(position: chess.Board):
     return fast
 
 
-def terminal_value(fast, colour, objective="survival", weight=0.5, draw=None):
-    """cognitive_agent.terminal_value on a C++ board."""
-    result = fast.terminal()
+def terminal_value(fast, colour, objective="survival", weight=0.5, draw=None, strict=False):
+    """cognitive_agent.terminal_value on a C++ board (strict: repetition only
+    once the position has occurred three times, see terminal_strict)."""
+    result = fast.terminal_strict() if strict else fast.terminal()
     if result == NONE:
         return None
     if result == DRAW:

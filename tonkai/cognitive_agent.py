@@ -22,8 +22,23 @@ def terminal_draw_value(objective="survival", weight=0.5, draw=None):
     return .5 if objective == "victory" else 1.0 - weight / 2 if objective == "shaped" else 1.0
 
 
-def terminal_value(board, colour, objective="survival", weight=0.5, draw=None):
+def strict_ending(board):
+    """Owner's rule (strict repetition): True/False = that colour won, None =
+    draw, "" = the game goes on. A draw by repetition only once the position HAS
+    occurred three times; no "could claim" endings."""
+    if board.is_checkmate():
+        return not board.turn
+    if (board.is_insufficient_material() or not any(board.generate_legal_moves())
+            or board.halfmove_clock >= 100 or board.is_repetition(3)):
+        return None
+    return ""
+
+
+def terminal_value(board, colour, objective="survival", weight=0.5, draw=None, strict=False):
     draw = terminal_draw_value(objective, weight, draw)
+    if strict:
+        ending = strict_ending(board)
+        return None if ending == "" else draw if ending is None else float(ending == colour)
     result = board.outcome(claim_draw=False)
     if result is None and board.can_claim_fifty_moves():
         return draw
@@ -89,6 +104,10 @@ class CognitiveAgent(SurvivalAgent):
         return self._piece_embedding_cache[1][indices]
 
     def game_over(self, board):
+        if getattr(self.cfg, "strict_repetition", False):
+            if self.use_fast_rules:
+                return fast_rules.board(board).terminal_strict() != fast_rules.NONE
+            return strict_ending(board) != ""
         if self.use_fast_rules:
             return fast_rules.board(board).terminal() != fast_rules.NONE
         return board.is_game_over(claim_draw=True)
@@ -194,13 +213,18 @@ class CognitiveAgent(SurvivalAgent):
         """
         fast = fast_rules.board(board) if self.use_fast_rules else None
         if fast is not None:
-            ending = fast_rules.terminal_value(fast, self_color, "victory")
+            ending = fast_rules.terminal_value(fast, self_color, "victory", strict=self.cfg.strict_repetition)
             if ending is not None:
                 return ending
         else:
-            outcome = board.outcome(claim_draw=True)
-            if outcome is not None:
-                return 0.5 if outcome.winner is None else float(outcome.winner == self_color)
+            if self.cfg.strict_repetition:
+                ending = strict_ending(board)
+                if ending != "":
+                    return 0.5 if ending is None else float(ending == self_color)
+            else:
+                outcome = board.outcome(claim_draw=True)
+                if outcome is not None:
+                    return 0.5 if outcome.winner is None else float(outcome.winner == self_color)
         labels = int(getattr(self.cfg, "mate_labels", 0) or 0)
         if labels and fast_rules.AVAILABLE:
             proven = self._proven_ending(board if fast is None else fast, self_color, labels)
@@ -260,7 +284,8 @@ class CognitiveAgent(SurvivalAgent):
         for ordinal, index in enumerate(root_indices):
             if fast is not None:
                 fast.push(fast_rules.code(moves[index]))
-                ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value)
+                ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value,
+                                                strict=cfg.strict_repetition)
                 if ending is not None:
                     fast.pop()
                     changes[index] = ending
@@ -269,7 +294,8 @@ class CognitiveAgent(SurvivalAgent):
             candidate = board.copy(stack=fast is None)
             candidate.push(moves[index])
             if fast is None:
-                ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value)
+                ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value,
+                                                strict=cfg.strict_repetition)
                 if ending is not None:
                     changes[index] = ending
                     continue
@@ -309,7 +335,8 @@ class CognitiveAgent(SurvivalAgent):
             for j, reply in enumerate(replies):
                 if fast is not None:
                     fast.push(fast_rules.code(reply))
-                    ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value)
+                    ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value,
+                                                strict=cfg.strict_repetition)
                     if ending is not None:
                         reply_values[j] = ending
                         if getattr(cfg, "batch_search", False): overrides[j] = ending
@@ -320,7 +347,8 @@ class CognitiveAgent(SurvivalAgent):
                     fast.pop()
                     continue
                 candidate.push(reply)
-                ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value)
+                ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg), draw=cfg.draw_value,
+                                                strict=cfg.strict_repetition)
                 if ending is not None:
                     reply_values[j] = ending
                     if getattr(cfg, "batch_search", False): overrides[j] = ending
@@ -526,12 +554,14 @@ class CognitiveAgent(SurvivalAgent):
         for index, move in enumerate(moves):
             if fast is not None:
                 fast.push(codes[index])
-                ending = fast_rules.terminal_value(fast, self_color, self.cfg.objective, victory_weight(self.cfg), draw=self.cfg.draw_value)
+                ending = fast_rules.terminal_value(fast, self_color, self.cfg.objective, victory_weight(self.cfg), draw=self.cfg.draw_value,
+                                                strict=self.cfg.strict_repetition)
                 fast.pop()
             else:
                 branch = board.copy(stack=True)
                 branch.push(move)
-                ending = terminal_value(branch, self_color, self.cfg.objective, victory_weight(self.cfg), draw=self.cfg.draw_value)
+                ending = terminal_value(branch, self_color, self.cfg.objective, victory_weight(self.cfg), draw=self.cfg.draw_value,
+                                                strict=self.cfg.strict_repetition)
             if ending is not None:
                 scores[index] = ending
                 if ending == draw_value:
@@ -556,7 +586,7 @@ class CognitiveAgent(SurvivalAgent):
         allows = {}
         for index, code in enumerate(codes):
             fast.push(code)
-            if fast.terminal() == fast_rules.NONE:
+            if (fast.terminal_strict() if self.cfg.strict_repetition else fast.terminal()) == fast_rules.NONE:
                 found = fast.forced_mate(not self_color, depth, limit)[0]
                 if found:
                     allows[index] = found
@@ -674,7 +704,7 @@ class CognitiveAgent(SurvivalAgent):
             mated = fast_rules.WHITE_WINS if self_color else fast_rules.BLACK_WINS
             for index, code in enumerate(codes):
                 fast.push(code)
-                ending = fast.terminal()                  # a draw (e.g. a repetition) ends the line
+                ending = (fast.terminal_strict() if self.cfg.strict_repetition else fast.terminal())                  # a draw (e.g. a repetition) ends the line
                 if ending == mated or (ending == fast_rules.NONE and found > 1
                                        and fast.forced_mate(self_color, found - 1, limit)[0]):
                     line.append(index)
@@ -733,12 +763,12 @@ class CognitiveAgent(SurvivalAgent):
             for index, move in enumerate(choice.moves):
                 if fast is not None:
                     fast.push(self._evaluation["codes"][index])
-                    wins = fast_rules.terminal_value(fast, self_color, "victory") == 1
+                    wins = fast_rules.terminal_value(fast, self_color, "victory", strict=self.cfg.strict_repetition) == 1
                     fast.pop()
                 else:
                     branch = board.copy(stack=True)
                     branch.push(move)
-                    wins = terminal_value(branch, self_color, "victory") == 1
+                    wins = terminal_value(branch, self_color, "victory", strict=self.cfg.strict_repetition) == 1
                 if wins:
                     winning.append(index)
         attack = int(getattr(self.cfg, "mate_search_moves", 0) or 0)
