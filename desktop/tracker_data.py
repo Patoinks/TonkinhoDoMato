@@ -103,7 +103,9 @@ def opponent_totals(base, raw, count, counts, launch, config, exact_base):
     campaign_games = max(0, launch.get('resume_games', 0) - campaign) + count
     # New mixture runs exclude self-play from the global W/D/L. Its separate
     # table row is still useful, but must never be counted as an external result.
-    self_excluded = isinstance(raw.get('opponents'), dict) and sum(counts.values()) < campaign_games
+    # (An engine-only run after mixture runs keeps those self-play rows in its prefix.)
+    has_self = isinstance(raw.get('opponents'), dict) or any(row['kind'] == 'self' for row in table.values())
+    self_excluded = has_self and sum(counts.values()) < campaign_games
     included = [row for row in table.values() if not self_excluded or row['kind'] != 'self']
     missing = {key: counts[key] - sum(row[key] for row in included) for key in RESULTS}
     if any(value < 0 for value in missing.values()):
@@ -115,7 +117,8 @@ def opponent_totals(base, raw, count, counts, launch, config, exact_base):
     return table
 
 
-def score_rows(table):
+def score_rows(table, current=None):
+    """Rows by games played; the current run's engine first."""
     rows = []
     for value in table.values():
         row = dict(value)
@@ -125,7 +128,7 @@ def score_rows(table):
                    score=points / finished if finished else None,
                    win_rate=row['wins'] / finished if finished else None)
         rows.append(row)
-    return sorted(rows, key=lambda row: (row['kind'] == 'unknown', -row['games'], row['name']))
+    return sorted(rows, key=lambda row: (row['id'] != current, row['kind'] == 'unknown', -row['games'], row['name']))
 
 
 def timestamp(value):
@@ -280,7 +283,8 @@ class TrainingReader:
                     eta=(total-latest['games'])/speed if state == 'running' and speed > 0 else None,
                     turns=latest['session_mean_turns'], rates=rates, duration=duration,
                     draw_reasons=row.get('draw_reasons', {}), metrics=row, config=tail.config,
-                    opponents=score_rows(latest['opponents']))
+                    opponents=score_rows(latest['opponents'],
+                                         opponent_identity('external', launch, self.tails[launch['history']].config)['id']))
 
 
 def metric_rows(value, prefix=''):
