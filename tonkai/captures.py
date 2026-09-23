@@ -159,13 +159,38 @@ def episode_capture_targets(episode) -> np.ndarray | None:
     return capture_targets(snapshots, capturer, episode_owner_color(episode))
 
 
-class CaptureStats:
-    """Kills/deaths per piece type, and how games end after a hot capture."""
+def parse_weights(text):
+    """'fairy=0.35,external=0.65' -> {'fairy': .35, 'external': .65}, normalised; '' -> None."""
+    if not text:
+        return None
+    weights = {}
+    for part in str(text).split(","):
+        kind, _, value = part.partition("=")
+        weights[kind.strip()] = float(value)
+    total = sum(weights.values())
+    if not weights or total <= 0 or min(weights.values()) < 0:
+        raise ValueError("value opponent weights must be non-negative and sum above zero")
+    return {kind: value / total for kind, value in weights.items()}
 
-    def __init__(self, hot_kills: int = 2):
+
+MEASURES = ("mobility", "mobility_n", "threats", "threats_n")
+
+
+class CaptureStats:
+    """Kills/deaths per piece type, and how games end after a hot capture.
+
+    With ``opponent_weights`` (owner's rule, e.g. {'fairy': .35, 'external': .65})
+    the piece values take the opponent side ONLY from those opponent kinds, in
+    those shares, per game; TonkAI's own pieces still count from every game.
+    """
+
+    def __init__(self, hot_kills: int = 2, opponent_weights=None):
         if hot_kills < 1:
             raise ValueError("hot_kills must be positive")
         self.hot_kills = hot_kills
+        self.opponent_weights = opponent_weights
+        # opponent kind -> the opponent side's games, kills, deaths and activity
+        self.by_kind = {}
         self.games = 0
         self.kills = {"self": Counter(), "opponent": Counter()}
         self.deaths = {"self": Counter(), "opponent": Counter()}
@@ -176,7 +201,11 @@ class CaptureStats:
         self.activity = {side: {key: Counter() for key in ("mobility", "mobility_n", "threats", "threats_n")}
                          for side in ("self", "opponent")}
 
-    def add(self, moves, self_color: bool, outcome: str, initial_fen: str | None = None):
+    def _kind(self, kind):
+        return self.by_kind.setdefault(kind, {"games": 0, "kills": Counter(), "deaths": Counter(),
+                                              "activity": {key: Counter() for key in MEASURES}})
+
+    def add(self, moves, self_color: bool, outcome: str, initial_fen: str | None = None, opponent_kind=None):
         if outcome not in OUTCOMES:
             raise ValueError(f"unknown outcome {outcome!r}")
         snapshots, _, events, _ = track(moves, initial_fen)
@@ -187,17 +216,26 @@ class CaptureStats:
         else:
             measurements = activity(moves, snapshots, initial_fen)
         self.games += 1
+        mine = self._kind(opponent_kind) if opponent_kind else None
+        if mine is not None:
+            mine["games"] += 1
         for colour, rows in measurements.items():
             side = "self" if colour == self_color else "opponent"
             for key, counter in rows.items():
                 for kind, value in counter.items():
                     self.activity[side][key][PIECE_NAMES[kind - 1]] += value
+                    if side == "opponent" and mine is not None:
+                        mine["activity"][key][PIECE_NAMES[kind - 1]] += value
         hot = False
         for event in events:
             killer = "self" if event["capturer_color"] == self_color else "opponent"
             victim = "self" if event["victim_color"] == self_color else "opponent"
             self.kills[killer][PIECE_NAMES[event["capturer_type"] - 1]] += 1
             self.deaths[victim][PIECE_NAMES[event["victim_type"] - 1]] += 1
+            if mine is not None and killer == "opponent":
+                mine["kills"][PIECE_NAMES[event["capturer_type"] - 1]] += 1
+            if mine is not None and victim == "opponent":
+                mine["deaths"][PIECE_NAMES[event["victim_type"] - 1]] += 1
             if killer == "self" and event["victim_kills"] >= self.hot_kills:
                 hot = True
                 self.hot_captures[PIECE_NAMES[event["victim_type"] - 1]] += 1
@@ -238,9 +276,61 @@ class CaptureStats:
             return None
         return {kind: mean / pawn for kind, mean in means.items()}
 
+    def _weighted_rate(self, pick, name):
+        """(raw count, per-game rate) of one quantity: TonkAI's side over every
+        game plus the weighted opponents' side, each per game of that kind."""
+        raw = pick(self.kills["self"], self.deaths["self"], self.activity["self"])[name]
+        rate = raw / max(1, self.games)
+        for kind, weight in self.opponent_weights.items():
+            row = self.by_kind.get(kind)
+            if not row or not row["games"]:
+                return None
+            value = pick(row["kills"], row["deaths"], row["activity"])[name]
+            raw += value
+            rate += weight * value / row["games"]
+        return raw, rate
+
+    def weighted_kd(self, min_deaths: int = 50, min_games: int = 30):
+        if not self.opponent_weights or any(self.by_kind.get(k, {}).get("games", 0) < min_games
+                                            for k in self.opponent_weights):
+            return None
+        values = {}
+        for index, name in enumerate(PIECE_NAMES[:5], start=1):
+            kills = self._weighted_rate(lambda k, d, a: k, name)
+            deaths = self._weighted_rate(lambda k, d, a: d, name)
+            if kills is None or deaths is None or deaths[0] < min_deaths or deaths[1] <= 0:
+                return None
+            values[index] = kills[1] / deaths[1]
+        pawn = values[chess.PAWN]
+        return None if pawn <= 0 else {kind: kd / pawn for kind, kd in values.items()}
+
+    def weighted_activity(self, measure: str, min_samples: int = 500, min_games: int = 30):
+        if not self.opponent_weights or any(self.by_kind.get(k, {}).get("games", 0) < min_games
+                                            for k in self.opponent_weights):
+            return None
+        means = {}
+        for index, name in enumerate(PIECE_NAMES[:5], start=1):
+            total = self._weighted_rate(lambda k, d, a: a[measure], name)
+            samples = self._weighted_rate(lambda k, d, a: a[measure + "_n"], name)
+            if total is None or samples is None or samples[0] < min_samples or samples[1] <= 0:
+                return None
+            means[index] = total[1] / samples[1]
+        pawn = means[chess.PAWN]
+        return None if pawn <= 0 else {kind: mean / pawn for kind, mean in means.items()}
+
     def measures(self) -> dict:
+        # The weighted opponents' rule once there is enough of their data;
+        # until then the plain two-side pooling keeps decisions supplied.
+        weighted = {"kd": self.weighted_kd(), "mobility": self.weighted_activity("mobility"),
+                    "threats": self.weighted_activity("threats")}
+        if all(value is not None for value in weighted.values()):
+            return weighted
         return {"kd": self.pooled_kd(), "mobility": self.pooled_activity("mobility"),
                 "threats": self.pooled_activity("threats")}
+
+    def value_source(self) -> str:
+        weighted = [self.weighted_kd(), self.weighted_activity("mobility"), self.weighted_activity("threats")]
+        return "weighted" if all(value is not None for value in weighted) else "pooled"
 
     def piece_values(self) -> dict[int, float] | None:
         """Owner's rule: 1/3 K/D + 1/3 mobility after the first move + 1/3
@@ -280,7 +370,9 @@ class CaptureStats:
                 {PIECE_NAMES[kind - 1]: value for kind, value in pooled.items()},
                 "hot_captures_by_victim": dict(self.hot_captures),
                 "games_with_hot_capture": outcomes(self.after_hot),
-                "games_without_hot_capture": outcomes(self.without_hot)}
+                "games_without_hot_capture": outcomes(self.without_hot),
+                "value_source": self.value_source(), "value_opponents": self.opponent_weights,
+                "value_opponent_games": {kind: row["games"] for kind, row in self.by_kind.items()}}
 
     def state_dict(self) -> dict:
         return {"hot_kills": self.hot_kills, "games": self.games,
@@ -289,7 +381,10 @@ class CaptureStats:
                 "hot_captures": dict(self.hot_captures), "after_hot": dict(self.after_hot),
                 "without_hot": dict(self.without_hot),
                 "activity": {side: {key: dict(value) for key, value in rows.items()}
-                             for side, rows in self.activity.items()}}
+                             for side, rows in self.activity.items()},
+                "by_kind": {kind: {"games": row["games"], "kills": dict(row["kills"]), "deaths": dict(row["deaths"]),
+                                   "activity": {key: dict(value) for key, value in row["activity"].items()}}
+                            for kind, row in self.by_kind.items()}}
 
     def load_state_dict(self, state: dict) -> None:
         self.games = state["games"]
@@ -302,3 +397,10 @@ class CaptureStats:
         for side, rows in state.get("activity", {}).items():   # older states lack it
             for key, value in rows.items():
                 self.activity[side][key].update(value)
+        for kind, row in state.get("by_kind", {}).items():     # older states lack it
+            mine = self._kind(kind)
+            mine["games"] += row["games"]
+            mine["kills"].update(row["kills"])
+            mine["deaths"].update(row["deaths"])
+            for key, value in row["activity"].items():
+                mine["activity"][key].update(value)

@@ -18,7 +18,7 @@ import uuid
 import numpy as np
 import torch
 
-from tonkai.captures import CaptureStats
+from tonkai.captures import CaptureStats, parse_weights
 from tonkai import opponents
 from tonkai import fast_rules
 from tonkai.cognitive_config import CognitiveConfig
@@ -77,6 +77,8 @@ def main(argv=None):
     parser.add_argument("--fairy-elo", type=int, help="Fairy-Stockfish nominal UCI_Elo")
     parser.add_argument("--self-snapshot-every", type=int,
                         help="self-play against a frozen TonkAI saved every N games (0 = current weights)")
+    parser.add_argument("--value-opponents",
+                        help="piece values take the opponent side only from these kinds, e.g. 'fairy=0.35,external=0.65'")
     parser.add_argument("--self-games-per-snapshot", type=int,
                         help="play this many games against each new frozen TonkAI, right after it is saved")
     parser.add_argument("--checkpoint-every", type=int, help="save latest.pt every N games")
@@ -130,6 +132,7 @@ def main(argv=None):
                             ("mix_self", "mix_self"), ("mix_tiny", "mix_tiny"), ("mix_fairy", "mix_fairy"),
                             ("self_snapshot_every", "self_snapshot_every"), ("checkpoint_every", "checkpoint_every"),
                             ("self_games_per_snapshot", "self_games_per_snapshot"),
+                            ("value_opponents", "value_opponents"),
                             ("fairy_elo", "fairy_elo")):
         value = getattr(args, argument)
         if value is not None:
@@ -181,7 +184,7 @@ def main(argv=None):
     resign = (ResignController(resign_cfg, hope_threshold(resign_cfg, cfg.objective, cfg.survival_gamma,
                                                             cfg.victory_weight))
               if resign_cfg.enabled else None)
-    capture_stats = CaptureStats(cfg.hot_piece_kills)
+    capture_stats = CaptureStats(cfg.hot_piece_kills, opponent_weights=parse_weights(cfg.value_opponents))
     if not args.new_campaign:
         if resign is not None and state.get("resign"):
             # A state measured against another threshold (e.g. another objective)
@@ -396,7 +399,7 @@ def main(argv=None):
                 outcome = ("loss" if episode.lost else "draw" if stats["result"] == "1/2-1/2" else "win")
             else:
                 outcome = "unfinished"
-            capture_stats.add(board.move_stack, colour, outcome)
+            capture_stats.add(board.move_stack, colour, outcome, opponent_kind=kind)
             by_kind[kind][outcome] += 1
             if kind == "self" and "opponent_version" in stats:
                 by_version[stats["opponent_version"]][outcome] += 1

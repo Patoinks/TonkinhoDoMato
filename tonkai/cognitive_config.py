@@ -71,6 +71,9 @@ class CognitiveConfig(SurvivalConfig):
     # With snapshots: this many games right after each new snapshot are played
     # against it, as one series; the rest follow the mix_* shares. 0 = none.
     self_games_per_snapshot: int = 0
+    # Piece values: take the OPPONENT side only from these opponent kinds, in
+    # these shares, e.g. "fairy=0.35,external=0.65". Empty = every opponent.
+    value_opponents: str = ""
 
     def validate(self):
         super().validate()
