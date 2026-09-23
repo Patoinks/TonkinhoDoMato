@@ -40,7 +40,8 @@ def main():
                    "--objective", "shaped", "--victory-weight", "0.5", "--kd-weight", "0.75",
                    "--mate-search-moves", "3", "--mate-defense-moves", "2",
                    "--threat-explore", "0.1", "--mate-labels", "2", "--trade-explore", "0.1",
-                   "--exchange-labels", "1", "--batch-search"]
+                   "--exchange-labels", "1", "--batch-search",
+                   "--self-games-per-snapshot", "0"]         # every game against Stockfish
         for item in settings:
             command += ["--set", item]
         print(f"== {member}: {args.games} jogos contra Stockfish {args.elo}", flush=True)
