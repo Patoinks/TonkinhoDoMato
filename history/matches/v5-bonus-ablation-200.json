@@ -1,0 +1,52 @@
+{
+  "current": "v5 protection-mobility",
+  "current_file": "checkpoints\\cognitive-v5-self500-20260923\\latest.pt",
+  "rival": "v5 old piece-safety bonus",
+  "rival_file": "checkpoints\\cognitive-v5-self500-20260923\\latest.pt",
+  "rival_run": null,
+  "seed": 2026,
+  "mate_calculation": {
+    "mate_search_moves": 3,
+    "mate_defense_moves": 2,
+    "mate_node_limit": 20000
+  },
+  "piece_values": null,
+  "current_policy": {
+    "piece_safety_weight": 0.0,
+    "piece_activity_weight": 0.08
+  },
+  "rival_policy": {
+    "piece_safety_weight": 0.08,
+    "piece_activity_weight": 0.0
+  },
+  "finished_utc": "2026-09-23T21:03:08+00:00",
+  "games": 200,
+  "win": 62,
+  "draw": 44,
+  "loss": 93,
+  "unfinished": 1,
+  "score": 0.4221105527638191,
+  "elo_difference": -54.56742171669201,
+  "score_95": [
+    0.36160994073643704,
+    0.48261116479120114
+  ],
+  "as_white": {
+    "games": 100,
+    "win": 28,
+    "draw": 22,
+    "loss": 49,
+    "unfinished": 1,
+    "score": 0.3939393939393939
+  },
+  "as_black": {
+    "games": 100,
+    "win": 34,
+    "draw": 22,
+    "loss": 44,
+    "unfinished": 0,
+    "score": 0.45
+  },
+  "mean_plies": 96.895,
+  "pgn": "v5-bonus-ablation-200.pgn"
+}

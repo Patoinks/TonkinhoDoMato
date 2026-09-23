@@ -109,6 +109,30 @@ def test_tracker_needs_patience_and_min_ply():
     assert tracker.report(48)["trigger_ply"] == 48
 
 
+def test_piece_balance_waits_for_three_further_worsening_turns():
+    tracker = ResignTracker(ACTIVE, -5, patience=3, min_ply=40, metric="piece_balance")
+    assert not tracker.observe(-6.0, 38)  # The threshold is ignored before move 40.
+    assert not tracker.observe(-5.0, 40)  # Start observing, do not resign yet.
+    assert not tracker.observe(-5.2, 42)
+    assert not tracker.observe(-5.4, 44)
+    assert tracker.observe(-5.6, 46)
+    assert tracker.report(46)["trigger_ply"] == 46
+
+
+def test_piece_balance_recovery_or_flat_reading_cancels_the_watch():
+    tracker = ResignTracker(ACTIVE, -5, patience=3, min_ply=40, metric="piece_balance")
+    for ply, balance in ((40, -5.5), (42, -5.8), (44, -1.0),  # queen recaptured
+                         (46, -5.1), (48, -5.2), (50, -5.2),
+                         (52, -5.3), (54, -5.4)):
+        assert not tracker.observe(balance, ply)
+    assert tracker.observe(-5.5, 56)
+
+
+def test_constant_low_piece_balance_does_not_resign():
+    tracker = ResignTracker(ACTIVE, -5, patience=3, min_ply=40, metric="piece_balance")
+    assert not any(tracker.observe(-5.5, ply) for ply in range(40, 80, 2))
+
+
 @pytest.mark.parametrize("mode", [SHADOW, VERIFY])
 def test_shadow_and_verify_record_but_never_stop(mode):
     tracker = ResignTracker(mode, 0.05, patience=2, min_ply=0)
@@ -228,12 +252,16 @@ def test_high_network_estimate_never_resigns():
 
 
 def test_piece_balance_resigns_below_minus_five_even_if_survival_head_is_high():
-    agent = StubAgent(mean=.9, balance=-5.5)
+    class WorseningAgent(StubAgent):
+        def piece_balance(self, board, colour):
+            return -5.0 - 0.1 * len(board.move_stack)
+
+    agent = WorseningAgent(mean=.9)
     tracker = ResignTracker(ACTIVE, -5, patience=3, min_ply=10, metric="piece_balance")
     episode, _, _, stats = play_episode(agent, FirstMove(), cfg(), np.random.default_rng(1),
                                         self_color=chess.WHITE, resign=tracker)
     assert episode.lost and stats["resign"]["resigned"]
-    assert stats["resign"]["lowest_piece_balance"] == -5.5
+    assert stats["resign"]["lowest_piece_balance"] < -5.0
     assert stats["resign"]["lowest_hope"] is None
 
 

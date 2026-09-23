@@ -26,3 +26,23 @@ def test_match_keeps_each_checkpoints_own_policy_and_piece_values(monkeypatch):
     assert _state["ccfg"].piece_activity_weight == .08
     assert _state["rival_cfg"].piece_activity_weight == 0
     assert _state["kd"][5] == 9 and _state["rival_kd"][5] == 8
+
+
+def test_match_can_compare_two_policies_from_the_same_checkpoint(monkeypatch):
+    import scripts.match_checkpoints as match
+
+    original = CognitiveConfig(piece_safety_weight=.08, piece_activity_weight=.08,
+                               mate_search_moves=3, mate_defense_moves=2)
+    monkeypatch.setattr(match, "_load", lambda path, fallback=None:
+                        ("v5", object(), object(), CognitiveConfig.from_dict(vars(original)), {1: 1}))
+    _init("v5.pt", "v5.pt", "old bonus", {"mate_search_moves": 3, "mate_defense_moves": 2},
+          current_policy={"piece_safety_weight": 0, "piece_activity_weight": .08},
+          rival_policy={"piece_safety_weight": .08, "piece_activity_weight": 0},
+          current_name="protection and mobility")
+    assert _state["name"] == "protection and mobility"
+    assert _state["ccfg"].piece_safety_weight == 0
+    assert _state["ccfg"].piece_activity_weight == .08
+    assert _state["rival_cfg"].piece_safety_weight == .08
+    assert _state["rival_cfg"].piece_activity_weight == 0
+    assert _state["rival_cfg"].mate_search_moves == 3
+    assert original.piece_safety_weight == original.piece_activity_weight == .08

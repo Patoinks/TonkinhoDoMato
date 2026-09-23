@@ -44,6 +44,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Concluído
 
+- Codex | 2026-09-23 | Regra de desistência por saldo: −5 inicia observação; só desiste após três decisões seguintes com saldo estritamente pior, reiniciando ao melhorar ou ficar igual. Comparação sem treino de duas políticas do mesmo checkpoint v5 em 200 partidas: proteção + mobilidade 62 vitórias/44 empates/93 derrotas/1 inacabada contra bónus antigo de segurança; 42,2% dos pontos nas 199 concluídas. `python -m pytest -q` passou. Treino e site inalterados; reservas libertadas.
+
 - Codex | 2026-09-23 | Confronto v5 self500 vs v4 aumentado para 100 jogos (seed 2026, 50 brancas/50 pretas, sem treino): 43 vitórias, 26 empates, 31 derrotas; 56% dos pontos, intervalo 95% 47,6%-64,4%. `history/matches/v5-self500-vs-v4-100.json/.pgn` têm 100 partidas válidas; primeiras 20 idênticas ao ensaio anterior. `python -m pytest -q` passou. Reservas libertadas.
 
 - Codex | 2026-09-23 | `d1df8df`: v5 com soma dos valores aprendidos dos atacantes/defensores, ameaças de peça inferior a alvo superior e sinal de mobilidade protegida dividido 50/50. Suite `python -m pytest -q` passou. Self-play 500/500 concluído em `checkpoints/cognitive-v5-self500-20260923/latest.pt` (jogos 74757 a 75257); checkpoint v4 de origem preservado. Matches de 20 em `history/matches/v5-self500-vs-*.json/.pgn`: Checkpoint 1 10/9/1, v3.1 11/6/3, v4 7/5/8 (vitoria/empate/derrota v5). Site sem deploy; auto-publicação do modelo desativada. Reservas libertadas.

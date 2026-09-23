@@ -71,7 +71,8 @@ def _load(path, cfg=None):
     return name, trainer.net.eval(), trainer.knowledge, cfg, kd
 
 
-def _init(current, rival, rival_name, mates=None, piece_values=None, rival_run_config=None):
+def _init(current, rival, rival_name, mates=None, piece_values=None, rival_run_config=None,
+          current_policy=None, rival_policy=None, current_name=None):
     import torch
     from tonkai.cognitive_config import CognitiveConfig
     torch.set_num_threads(1)
@@ -81,9 +82,15 @@ def _init(current, rival, rival_name, mates=None, piece_values=None, rival_run_c
     ccfg = copy(cfg)                       # mate calculation for the current side only
     for key, value in (mates or {}).items():
         setattr(ccfg, key, value)
+    for key, value in (current_policy or {}).items():
+        setattr(ccfg, key, value)
+    for key, value in (rival_policy or {}).items():
+        setattr(rcfg, key, value)
+    ccfg.validate()
+    rcfg.validate()
     if piece_values:                       # explicitly shared values, if requested
         kd = rkd = piece_values
-    _state.update(name=name, net=net, knowledge=knowledge, cfg=cfg, ccfg=ccfg, kd=kd,
+    _state.update(name=current_name or name, net=net, knowledge=knowledge, cfg=cfg, ccfg=ccfg, kd=kd,
                   rival_name=rival_name or other, rnet=rnet, rknowledge=rknowledge,
                   rival_cfg=rcfg, rival_kd=rkd)
 
@@ -151,6 +158,7 @@ def main():
     parser.add_argument("--current", type=Path, default=ROOT / "checkpoints/cognitive-mix-20260923/latest.pt")
     parser.add_argument("--rival", type=Path, required=True, help="a snapshot file (tonkinho-jogo-N.pt)")
     parser.add_argument("--name", help="the rival's display name")
+    parser.add_argument("--current-name", help="the current side's display name")
     parser.add_argument("--rival-run", type=Path,
                         help="original JSONL run for a legacy snapshot without an embedded config")
     parser.add_argument("--games", type=int, default=50)
@@ -164,6 +172,9 @@ def main():
                         help="current side avoids moves after which the rival forces mate within N moves")
     parser.add_argument("--mate-node-limit", type=int, default=20_000, help="nodes per mate search")
     parser.add_argument("--piece-values", help="both sides use these values, e.g. 1:1,2:1.03,3:1.22,4:1.70,5:4.02")
+    for side in ("current", "rival"):
+        parser.add_argument(f"--{side}-piece-safety-weight", type=float, default=None)
+        parser.add_argument(f"--{side}-piece-activity-weight", type=float, default=None)
     args = parser.parse_args()
     rival_run_config = None
     if args.rival_run:
@@ -178,11 +189,21 @@ def main():
               if args.piece_values else None)
     mates = {"mate_search_moves": args.mate_search_moves, "mate_defense_moves": args.mate_defense_moves,
              "mate_node_limit": args.mate_node_limit}
+    policies = {}
+    for side in ("current", "rival"):
+        policy = {}
+        for key in ("piece_safety_weight", "piece_activity_weight"):
+            value = getattr(args, f"{side}_{key}")
+            if value is not None:
+                if not math.isfinite(value) or not 0 <= value <= 1:
+                    parser.error(f"--{side.replace('_', '-')}-{key.replace('_', '-')} must be between 0 and 1")
+                policy[key] = value
+        policies[side] = policy
 
     rows = []
     with ProcessPoolExecutor(max_workers=args.workers, mp_context=get_context("spawn"), initializer=_init,
                              initargs=(str(args.current), str(args.rival), args.name, mates, values,
-                                       rival_run_config)) as pool:
+                                       rival_run_config, policies["current"], policies["rival"], args.current_name)) as pool:
         for row in pool.map(_game, range(args.games), [args.seed] * args.games):
             rows.append(row)
             if len(rows) % 50 == 0:
@@ -191,6 +212,7 @@ def main():
     report = {"current": rows[0][5], "current_file": str(args.current), "rival": rows[0][6],
               "rival_file": str(args.rival), "rival_run": str(args.rival_run) if args.rival_run else None,
               "seed": args.seed, "mate_calculation": mates, "piece_values": values,
+              "current_policy": policies["current"], "rival_policy": policies["rival"],
               "finished_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), **summarise(rows)}
     stem = args.label or f"match-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     args.out.mkdir(parents=True, exist_ok=True)

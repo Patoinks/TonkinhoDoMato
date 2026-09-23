@@ -13,6 +13,9 @@ The optional piece-balance rule sums TonkAI's learned, contextual values for
 its pieces minus the opponent's. It is measured in TonkAI pawn units, not
 Stockfish centipawns or classical material. Never use the opponent's engine
 score or the heuristic-adjusted move scores to decide resignation.
+After the balance reaches the negative threshold, this rule waits for three
+further TonkAI decisions with a strictly worsening balance. Any recovery or
+flat reading starts a new watch, allowing a capture-and-recapture to finish.
 
 Safeguards
   * Playout check (as in AlphaZero): some games that would resign are played
@@ -52,7 +55,7 @@ class ResignConfig:
     piece_balance_threshold: float | None = None  # signed sum of TonkAI's own piece values
     survival_plies: int = 10         # survival: death predicted within this
     victory_score: float = 0.05      # victory: expected score at or below this
-    patience: int = 3                # consecutive hopeless decisions
+    patience: int = 3                # hope: low decisions; piece balance: subsequent worsening decisions
     min_ply: int = 40                # never resign before this half-move
     playout: float = 0.10            # share of would-resign games played out
     min_verified: int = 200          # played-out triggers before trusting it
@@ -122,6 +125,7 @@ class ResignTracker:
         self.metric = metric
         self.patience, self.min_ply = int(patience), int(min_ply)
         self.streak = 0
+        self.previous_balance: float | None = None
         self.decisions = 0
         self.trigger_ply: int | None = None
         self.resigned = False
@@ -135,7 +139,14 @@ class ResignTracker:
         """Record one decision. True means: resign now, do not move."""
         self.decisions += 1
         self.lowest_hope = min(self.lowest_hope, float(hope))
-        if ply >= self.min_ply and hope <= self.threshold:
+        if self.metric == "piece_balance":
+            if ply < self.min_ply or hope > self.threshold:
+                self.streak = 0
+                self.previous_balance = None
+            else:
+                self.streak = self.streak + 1 if self.previous_balance is not None and hope < self.previous_balance else 0
+                self.previous_balance = float(hope)
+        elif ply >= self.min_ply and hope <= self.threshold:
             self.streak += 1
         else:
             self.streak = 0
