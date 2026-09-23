@@ -33,6 +33,31 @@ VALUE_MEASURES = ("kd", "mobility", "threats")
 ACTIVITY = ("mobility", "mobility_n", "threats", "threats_n", "threats_active", "threats_active_n")
 
 
+def _level(kind: int):
+    return "minor" if kind in (chess.KNIGHT, chess.BISHOP) else kind
+
+
+def death_kinds(events):
+    """How each death happened, from the capture events of one game.
+
+    'trade': the capture right before or after, on the same pieces, took a piece
+    of the same level (knight and bishop are one level); 'unequal': it was an
+    immediate exchange of different levels; 'free': nothing was taken back at
+    once (the piece was simply lost). Returns [(event, kind), ...]."""
+    by_ply = {event["ply"]: event for event in events}
+    rows = []
+    for event in events:
+        following, previous = by_ply.get(event["ply"] + 1), by_ply.get(event["ply"] - 1)
+        other = None
+        if following is not None and following["victim"] == event["capturer"]:
+            other = following["victim_type"]          # the killer was taken back at once
+        elif previous is not None and previous["capturer"] == event["victim"]:
+            other = previous["victim_type"]           # it died taking back: what it had just eaten
+        kind = "free" if other is None else "trade" if _level(other) == _level(event["victim_type"]) else "unequal"
+        rows.append((event, kind))
+    return rows
+
+
 def _captured_square(board: chess.Board, move: chess.Move) -> int:
     if board.is_en_passant(move):
         return move.to_square + (-8 if board.turn == chess.WHITE else 8)
@@ -208,6 +233,8 @@ class CaptureStats:
         self.kills = {"self": Counter(), "opponent": Counter()}
         self.deaths = {"self": Counter(), "opponent": Counter()}
         self.hot_captures = Counter()                  # victim type -> count
+        # side -> "Piece:kind" -> deaths, kind = trade / unequal / free (death_kinds)
+        self.death_kinds = {"self": Counter(), "opponent": Counter()}
         self.after_hot = Counter()                      # outcome -> games
         self.without_hot = Counter()
         # side -> measure -> piece name -> sum / sample count (see ``activity``)
@@ -259,6 +286,9 @@ class CaptureStats:
             mine["games"] += 1
         events = self._measure(moves, self_color, outcome, initial_fen, mine)
         hot = False
+        for event, kind in death_kinds(events):
+            victim_side = "self" if event["victim_color"] == self_color else "opponent"
+            self.death_kinds[victim_side][f'{PIECE_NAMES[event["victim_type"] - 1]}:{kind}'] += 1
         for event in events:
             killer = "self" if event["capturer_color"] == self_color else "opponent"
             victim = "self" if event["victim_color"] == self_color else "opponent"
@@ -476,6 +506,15 @@ class CaptureStats:
             return None
         return {kind: score / scores[chess.PAWN] for kind, score in scores.items()}
 
+    def free_share(self, side: str = "self") -> dict:
+        """Per piece: share of `side`'s deaths that were not an immediate exchange."""
+        out = {}
+        for name in PIECE_NAMES[:5]:
+            total = sum(self.death_kinds[side][f"{name}:{kind}"] for kind in ("trade", "unequal", "free"))
+            if total:
+                out[name] = self.death_kinds[side][f"{name}:free"] / total
+        return out
+
     def summary(self) -> dict:
         def table(side):
             rows = {}
@@ -504,6 +543,7 @@ class CaptureStats:
                 "kd_pooled_vs_pawn": None if pooled is None else
                 {PIECE_NAMES[kind - 1]: value for kind, value in pooled.items()},
                 "hot_captures_by_victim": dict(self.hot_captures),
+                "deaths_free_share": {side: self.free_share(side) for side in ("self", "opponent")},
                 "games_with_hot_capture": outcomes(self.after_hot),
                 "games_without_hot_capture": outcomes(self.without_hot),
                 "value_source": self.value_source(), "value_opponents": self.opponent_weights,
@@ -514,6 +554,7 @@ class CaptureStats:
                 "kills": {k: dict(v) for k, v in self.kills.items()},
                 "deaths": {k: dict(v) for k, v in self.deaths.items()},
                 "hot_captures": dict(self.hot_captures), "after_hot": dict(self.after_hot),
+                "death_kinds": {side: dict(value) for side, value in self.death_kinds.items()},
                 "without_hot": dict(self.without_hot),
                 "activity": {side: {key: dict(value) for key, value in rows.items()}
                              for side, rows in self.activity.items()},
@@ -530,6 +571,8 @@ class CaptureStats:
             self.kills[side].update(state["kills"][side])
             self.deaths[side].update(state["deaths"][side])
         self.hot_captures.update(state["hot_captures"])
+        for side, value in state.get("death_kinds", {}).items():   # older states lack it
+            self.death_kinds[side].update(value)
         self.after_hot.update(state["after_hot"])
         self.without_hot.update(state["without_hot"])
         for side, rows in state.get("activity", {}).items():   # older states lack it
