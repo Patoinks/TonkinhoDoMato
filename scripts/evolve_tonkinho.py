@@ -112,49 +112,45 @@ def _game(genes_white, genes_black, seed):
     return 1.0 if outcome.winner == chess.WHITE else 0.0
 
 
-def _best_of_3(a, b, seed):
-    """(points of a, points of b, games) over at most three games."""
-    rng = np.random.default_rng(seed)
-    points = [0.0, 0.0]
-    games = 0
-    for game in range(3):
-        a_white = game == 0 or (game == 2 and rng.random() < .5)
-        white, black = (a, b) if a_white else (b, a)
-        score = _game(white["genes"], black["genes"], sub(seed, game))
-        points[0 if a_white else 1] += score
-        points[1 if a_white else 0] += 1 - score
-        games += 1
-        if abs(points[0] - points[1]) > 3 - games:        # the third game cannot change the winner
-            break
-    return points[0], points[1], games
-
-
-def _series(genes_current, genes_base, games, seed):
-    """Final: points of the current side over `games` games, colours alternating."""
-    total = []
-    for game in range(games):
-        if game % 2 == 0:
-            total.append(_game(genes_current, genes_base, sub(seed, game)))
-        else:
-            total.append(1 - _game(genes_base, genes_current, sub(seed, game)))
-    return total
+def _final_game(genes_current, genes_base, game, seed):
+    """Points of the current side in one final game; colours alternate."""
+    if game % 2 == 0:
+        return _game(genes_current, genes_base, sub(seed, game))
+    return 1 - _game(genes_base, genes_current, sub(seed, game))
 
 
 def tournament(pool, population, rng, seed):
     """Random pairs, best-of-3; returns (survivors, rows). A tie kills both; an
-    odd member out survives untouched."""
+    odd member out survives untouched. Every game runs in parallel: games 1 and
+    2 of all pairs at once, then the third games that can still matter."""
     order = list(rng.permutation(len(population)))
     pairs = [(population[order[i]], population[order[i + 1]]) for i in range(0, len(order) - 1, 2)]
     bye = [population[order[-1]]] if len(order) % 2 else []
-    futures = [pool.submit(_best_of_3, a, b, sub(seed, i)) for i, (a, b) in enumerate(pairs)]
+    points = [[0.0, 0.0] for _ in pairs]
+    games = [0 for _ in pairs]
+
+    def play(i, game, a_white):
+        a, b = pairs[i]
+        white, black = (a, b) if a_white else (b, a)
+        return pool.submit(_game, white["genes"], black["genes"], sub(seed, i, game)), i, a_white
+
+    def collect(futures):
+        for future, i, a_white in futures:
+            score = future.result()
+            points[i][0 if a_white else 1] += score
+            points[i][1 if a_white else 0] += 1 - score
+            games[i] += 1
+
+    collect([play(i, game, game == 0) for i in range(len(pairs)) for game in (0, 1)])
+    collect([play(i, 2, bool(rng.random() < .5)) for i in range(len(pairs))
+             if abs(points[i][0] - points[i][1]) <= 1])       # the third game can still change the result
     survivors, rows = list(bye), []
-    for (a, b), future in zip(pairs, futures):
-        pa, pb, games = future.result()
+    for (a, b), (pa, pb), n in zip(pairs, points, games):
         winner = a if pa > pb else b if pb > pa else None
         if winner is not None:
             survivors.append(winner)
             winner["wins"] = winner.get("wins", 0) + 1
-        rows.append({"a": a["id"], "b": b["id"], "points": [pa, pb], "games": games,
+        rows.append({"a": a["id"], "b": b["id"], "points": [pa, pb], "games": n,
                      "survivor": winner["id"] if winner else None})
     return survivors, rows
 
@@ -168,10 +164,11 @@ def main():
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--seed", type=int, default=2027)
     parser.add_argument("--out", type=Path, default=ROOT / "history/evolution")
+    parser.add_argument("--resume", type=Path, help="an evolution folder: continue after its last generation")
     args = parser.parse_args()
     rng = np.random.default_rng(args.seed)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    out = args.out / stamp
+    out = args.resume or args.out / stamp
     out.mkdir(parents=True, exist_ok=True)
 
     import torch
@@ -181,6 +178,14 @@ def main():
     base = {"id": "base", "genes": base_genes(_historical_config(data)), "parent": None}
     del data
     log = {"base_file": str(args.base), "base_genes": base["genes"], "generations": []}
+    champion, first = base, 1
+    if args.resume:
+        log = json.loads((out / "evolution.json").read_text(encoding="utf-8"))
+        base = {"id": "base", "genes": log["base_genes"], "parent": None}
+        last = log["generations"][-1]
+        champion = next(p for p in last["population"] if p["id"] == last["champion"])
+        first = last["generation"] + 1
+        rng = np.random.default_rng([args.seed, first])        # a fresh stream for the continued run
 
     def save():
         (out / "evolution.json").write_text(json.dumps(log, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -196,10 +201,9 @@ def main():
             population = survivors or population
         return population[0], rounds
 
-    champion = base
     with ProcessPoolExecutor(max_workers=args.workers, mp_context=get_context("spawn"), initializer=_init,
                              initargs=(str(args.base),)) as pool:
-        for generation in range(1, args.generations + 1):
+        for generation in range(first, args.generations + 1):
             population = [dict(champion)] + [
                 {"id": f"G{generation}-M{i + 1}", "parent": champion["id"],
                  "genes": mutate(champion["genes"], rng, rate=.7 if generation == 1 else .5,
@@ -214,11 +218,9 @@ def main():
                   flush=True)
         print(f"Tonkão JR = {champion['id']}", flush=True)
 
-        chunks = max(1, args.workers)
-        per = [args.final_games // chunks + (i < args.final_games % chunks) for i in range(chunks)]
-        futures = [pool.submit(_series, champion["genes"], base["genes"], n, [args.seed, 5000, i])
-                   for i, n in enumerate(per) if n]
-        scores = [score for future in futures for score in future.result()]
+        futures = [pool.submit(_final_game, champion["genes"], base["genes"], game, [args.seed, 5000])
+                   for game in range(args.final_games)]
+        scores = [future.result() for future in futures]
 
     mean = sum(scores) / len(scores)
     se = math.sqrt(sum((x - mean) ** 2 for x in scores) / max(1, len(scores) - 1) / len(scores))
