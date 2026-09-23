@@ -77,7 +77,8 @@ def publish(checkpoint, config_path, allow_stopped=False):
         state = torch.load(snapshot, map_location="cpu", weights_only=False)
         kind = state.get("format")
         run_id = state.get("run_id")
-        allowed = ("completed", "stopped") if allow_stopped else ("completed",)
+        # By hand only: a campaign that ended early (stopped, or failed after its final save).
+        allowed = ("completed", "stopped", "failed") if allow_stopped else ("completed",)
         if kind in ("tonkai-cognitive-v3", "tonkai-survival-v2") and state.get("status") not in allowed:
             raise ValueError("Only completed checkpoints can be published automatically "
                              "(a cleanly stopped one only with --allow-stopped, by hand)")
