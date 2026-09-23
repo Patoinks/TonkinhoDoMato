@@ -2,7 +2,7 @@
 #   75% self-play, 20% TinyOpponent, 4% Fairy-Stockfish 1000, 1% Stockfish 11 1500
 # A NEW campaign from the stopped Rodent campaign (its checkpoint is left untouched).
 # --compile-learner needs MSVC on PATH, so the run starts inside vcvars64 with
-# English compiler output (PyTorch cannot decode localised messages).
+# UTF-8 console output (the localised MSVC help otherwise breaks PyTorch decoding).
 # A completed campaign auto-publishes the model to the site; history/<run>/STOP
 # stops gracefully without publishing.
 param([int]$Workers = 8, [int]$Games = 100000, [switch]$Resume, [switch]$NoCompile, [switch]$CudaGraphs, [switch]$BatchSearch)
@@ -35,7 +35,7 @@ $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $stdout = Join-Path $root "history\mix-$stamp.stdout.log"
 $stderr = Join-Path $root "history\mix-$stamp.stderr.log"
 $quoted = ($arguments | ForEach-Object { if ($_ -match '\s') { "`"$_`"" } else { $_ } }) -join ' '
-$command = "set VSLANG=1033&& set PYTHONUTF8=1&& call `"$vcvars`" >nul 2>nul && `"$python`" $quoted"
+$command = "chcp 65001 >nul&& call `"$vcvars`" >nul 2>nul && set VSLANG=1033&& set PYTHONUTF8=1&& `"$python`" $quoted"
 $process = Start-Process -FilePath 'cmd.exe' -ArgumentList '/d', '/c', "`"$command`"" -WorkingDirectory $root `
     -WindowStyle Hidden -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
 [pscustomobject]@{ pid = $process.Id; stdout = $stdout; stderr = $stderr; arguments = $arguments

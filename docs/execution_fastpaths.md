@@ -109,3 +109,11 @@ Validação final: **445 testes passaram em 67,62 s**, incluindo forward/backwar
 CUDA, refresh dos pesos das experiências, isolamento de versões no broker,
 jogadas especiais, pesquisa e leitura de todas as métricas. Um aviso CUDA de
 streams permanece documentado acima; esse caminho não será ativado na campanha.
+
+
+Arranque Windows: a primeira tentativa terminou com erro no probe do MSVC
+(`UnicodeDecodeError` no output localizado de `cl /help`). O launcher passou a
+configurar `chcp 65001` e a aplicar VSLANG/PYTHONUTF8 depois de vcvars. O probe
+`torch._inductor.cpp_builder.get_cpp_compiler()` passou no processo oculto,
+com stdout `cl` e stderr vazio. A campanha é retomada do checkpoint de erro,
+conservando o jogo já ingerido e o seu replay; não se apaga a primeira sessão.
