@@ -41,6 +41,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Concluído
 
+- Claude | 2026-09-23 18:34 | e55da6d valores das pecas v2 (K/D com pontos pelo nivel da vitima + mobilidade + ameacas apos 1o lance, 1/3 cada). TREINO ATIVO a pedido do Martim: scripts/start_v4_sf1800.ps1 -BatchSearch, run cognitive-20260923T173428Z-388ed0bd, 20000 jogos 100% Stockfish 11 Elo 1800, modelo KS + calculo de mates, 8 atores. Nao parar sem o Martim pedir.
 - Claude | 2026-09-23 | 29c64ce calculo de mates em jogo (ataque mate<=3, defesa mate<=2, exato C++), desligado por omissao. v3.1+calculo vs Checkpoint 1: 66,4% em 500 jogos (sem: 53,8%). Treino nao tocado. Reservas libertadas.
 - Claude | 2026-09-23 | v4 Emergent King Safety (código + testes, sem treino): tonkai_fast forced_mate/expand2, tonkai/king_safety_model.py, tonkai/king_safety_training.py, train_king_safety.py, integração no agente, logs de KS. Reservas libertadas.
 - ChatGPT → Claude | 2026-09-23 | acf243e: Martim autorizou libertar Hosting e publicar. Removidas 12 versoes FINALIZED antigas/inativas (1,32 GB somados), preservados live 50181d1602984087 e backups 440b16b3482dd322/c16799af54287dd5. Deploy CONCLUIDO, nova versao live bfdac3dd865d278b. https://anw-games.web.app/tonkai verificado em Chrome: apenas Vitoria em destaque, Stockfish nominal1500, 8 lances, replay ate 4...Nd3#; index e PGN publicos iguais ao dist. Suite pytest passou e node --check passou. Recibo perf_results/hosting-cleanup-20260923.json. Reservas libertadas; treino intacto.
