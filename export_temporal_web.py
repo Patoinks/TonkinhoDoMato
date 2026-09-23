@@ -51,7 +51,7 @@ def export(checkpoint, out, overrides=None):
         knowledge.load_state_dict(state["knowledge"])
         # v4: the measured piece values (owner's rule) exactly as training uses them.
         kd_values = None
-        if cfg.kd_weight > 0 and state.get("capture_stats"):
+        if state.get("capture_stats"):
             stats = CaptureStats(cfg.hot_piece_kills, opponent_weights=parse_weights(cfg.value_opponents))
             stats.load_state_dict(state["capture_stats"])
             if stats.needs_seed() and state.get("replay"):

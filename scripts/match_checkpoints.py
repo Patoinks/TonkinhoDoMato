@@ -66,7 +66,7 @@ def _load(path, cfg=None):
         stats.load_state_dict(data["capture_stats"])
     if stats.needs_seed() and data.get("replay"):
         stats.seed_new_measures(replay_games(data["replay"]["episodes"]))
-    kd = stats.piece_values() if cfg.kd_weight > 0 else None
+    kd = stats.piece_values()                  # kd_weight only sets the blend share
     name = f"{data.get('model_name', 'TonkAI')} (jogo {data['games']})"
     return name, trainer.net.eval(), trainer.knowledge, cfg, kd
 

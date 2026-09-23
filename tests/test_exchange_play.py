@@ -72,3 +72,10 @@ def test_labels_use_the_exact_result_for_the_side_to_move():
     w, b = white.position_proxy(board, chess.WHITE), black.position_proxy(board, chess.BLACK)
     assert white.diagnostics["exchange_labels"] == 1 and black.diagnostics["exchange_labels"] == 1
     assert w > 0.5 > b
+
+
+def test_exchange_search_stays_on_when_kd_weight_is_zero():
+    board = chess.Board(QUEENS)
+    tonkai = agent(exchange_depth=6, kd_weight=0.0)                 # values measured, blend share zero
+    tonkai.choose(board, chess.WHITE, np.random.default_rng(0), explore=False)
+    assert tonkai._evaluation["exchange_nets"] is not None

@@ -407,7 +407,9 @@ def main(argv=None):
                 extras = {}
                 if resign is not None:
                     extras["resign_plan"] = resign.plan()
-                kd_values = capture_stats.piece_values() if cfg.kd_weight > 0 else None
+                # Always measured values: kd_weight only sets their share in the blend,
+                # it must not switch off the exact exchange search.
+                kd_values = capture_stats.piece_values()
                 if kd_values is not None:
                     extras["kd_values"] = kd_values
                 if rival["remaining"] > 0 and rival["payload"] is not None:
