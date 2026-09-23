@@ -48,6 +48,7 @@ GENES = {
     "mate_search_moves": ("int", 0, 3),
     "mate_defense_moves": ("int", 0, 2),
     "avoid_repetition_margin": ("float", 0.0, 4.0),
+    "exchange_depth": ("int", 0, 8),
 }
 
 _state = {}

@@ -217,6 +217,14 @@ class CognitiveAgent(SurvivalAgent):
                     else king_balance(king_senses(board), self_color))
             senses = self.sense_pieces(board, self_color, self.context, value=value)
             pieces = position_risk(senses, not self_color) - position_risk(senses, self_color)
+        exchange_values = self._exchange_values() if getattr(self.cfg, "exchange_labels", False) else None
+        if exchange_values is not None:
+            exact = fast if fast is not None else fast_rules.board(board)
+            gain, complete, _ = exact.exchange_gain(exchange_values, int(self.cfg.exchange_depth),
+                                                    int(getattr(self.cfg, "exchange_node_limit", 200_000)))
+            if complete:
+                pieces = float(np.tanh(gain / 3.0)) * (1 if board.turn == self_color else -1)
+                self.diagnostics["exchange_labels"] += 1
         activity = 0.0
         if self.cfg.piece_activity_weight:
             own_pressure, enemy_pressure = position_pressure(board, value, self_color)
@@ -398,6 +406,9 @@ class CognitiveAgent(SurvivalAgent):
         safety, kings = [], []
         king_bonuses = np.zeros(len(moves))
         activity_bonuses = np.zeros(len(moves))
+        exchange_values = self._exchange_values()
+        nets = (self._exchange_nets(board, moves, codes, fast, exchange_values)
+                if exchange_values is not None and self.cfg.piece_safety_weight else None)
         if self.cfg.piece_safety_weight or self.cfg.piece_activity_weight:
             branches, item_lists = [], []
             for index, move in enumerate(moves):
@@ -416,7 +427,11 @@ class CognitiveAgent(SurvivalAgent):
             for index, move in enumerate(moves):
                 value = self._valuer(raws[index], item_lists[index], self_color, row_contexts[index])
                 branch = branches[index] if fast is None else None
-                if self.cfg.piece_safety_weight:
+                if self.cfg.piece_safety_weight and nets is not None:
+                    # Exact: the forced capture sequence's material result for this move.
+                    own_risk = enemy_risk = 0.0
+                    scores[index] += self.cfg.piece_safety_weight * float(np.tanh(nets[index] / 3.0))
+                elif self.cfg.piece_safety_weight:
                     if fast is not None:
                         fast.push(codes[index])
                         own_risk, enemy_risk = self._fast_piece_risks(fast, self_color, row_contexts[index],
@@ -430,6 +445,8 @@ class CognitiveAgent(SurvivalAgent):
                 else:
                     own_risk = enemy_risk = 0.0
                 row = {"own_risk": own_risk, "enemy_risk": enemy_risk}
+                if nets is not None:
+                    row["exchange_net"] = nets[index]
                 if self.cfg.piece_activity_weight:
                     if branch is None:
                         branch = board.copy(stack=False)
@@ -524,7 +541,7 @@ class CognitiveAgent(SurvivalAgent):
             self._rank_last(scores, allows_mate)
         self._evaluation = {"keys": keys, "retrieved": retrieved, "uncertainty": uncertainty,
                             "information": information, "gap": gap, "piece_safety": safety, "king_safety": kings,
-                            "fast": fast, "codes": codes, "allows_mate": allows_mate}
+                            "fast": fast, "codes": codes, "allows_mate": allows_mate, "exchange_nets": nets}
         return SurvivalChoice(moves, scores, mean, epistemic, aleatoric, information)
 
     def _moves_allowing_mate(self, board, self_color, moves, codes, fast, depth):
@@ -560,6 +577,35 @@ class CognitiveAgent(SurvivalAgent):
             if scores[index] > -1e8:
                 scores[index] = floor + 1e-3 * found
 
+    def _exchange_values(self):
+        """[0, pawn, knight, bishop, rook, queen] in TonkAI's measured values, or
+        None when the exact exchange search is off or no values are measured."""
+        if int(getattr(self.cfg, "exchange_depth", 0) or 0) <= 0 or not self.kd_values or not fast_rules.AVAILABLE:
+            return None
+        return [0.0] + [float(self.kd_values[kind]) for kind in range(1, 6)]
+
+    def _exchange_nets(self, board, moves, codes, fast, values):
+        """Per move: material it takes minus what the opponent then wins by force
+        (exact capture search), in TonkAI's pawn units; None if a search aborts."""
+        fast = fast_rules.board(board) if fast is None else fast
+        codes = [fast_rules.code(move) for move in moves] if codes is None else codes
+        try:
+            after = fast.exchange_after_moves(codes, values, int(self.cfg.exchange_depth),
+                                              int(getattr(self.cfg, "exchange_node_limit", 200_000)))
+        except RuntimeError:
+            self.diagnostics["exchange_aborted"] += 1
+            return None
+        nets = []
+        for move, loss in zip(moves, after):
+            gain = 0.0
+            if board.is_capture(move):
+                gain = values[chess.PAWN if board.is_en_passant(move) else board.piece_type_at(move.to_square)]
+            if move.promotion:
+                gain += values[move.promotion] - values[chess.PAWN]
+            nets.append(gain - loss)
+        self.diagnostics["exchange_searches"] += len(moves)
+        return nets
+
     def _proven_ending(self, position, self_color, depth):
         """Rules-only truth for the victory measure: 1 if TonkAI forces mate
         within `depth` moves, 0 if the opponent does, else None."""
@@ -572,6 +618,22 @@ class CognitiveAgent(SurvivalAgent):
             self.diagnostics["mate_labels_lost"] += 1
             return 0.0
         return None
+
+    def _trade_move(self, board, choice, rng):
+        """Exploration: a capture the exact exchange search does not lose
+        (net >= 0), sampled by TonkAI's own scores; None if there is none."""
+        nets = self._evaluation.get("exchange_nets")
+        if not nets:
+            return None
+        vetoed = self._evaluation.get("allows_mate") or {}
+        candidates = [index for index, move in enumerate(choice.moves)
+                      if board.is_capture(move) and nets[index] >= 0 and index not in vetoed]
+        if not candidates:
+            return None
+        scores = choice.scores[candidates]
+        weights = np.exp((scores - scores.max()) / max(1e-6, float(self.cfg.temperature)))
+        self.diagnostics["trades_explored"] += 1
+        return candidates[int(rng.choice(len(candidates), p=weights / weights.sum()))]
 
     def _threat_move(self, board, self_color, choice, rng):
         """Exploration: index of a move that creates a mate threat (were the
@@ -684,10 +746,16 @@ class CognitiveAgent(SurvivalAgent):
         share = float(getattr(self.cfg, "threat_explore", 0.0) or 0.0)
         if not winning and explore and share > 0 and fast_rules.AVAILABLE and rng.random() < share:
             threat = self._threat_move(board, self_color, choice, rng)
+        trade = None
+        trade_share = float(getattr(self.cfg, "trade_explore", 0.0) or 0.0)
+        if not winning and threat is None and explore and trade_share > 0 and rng.random() < trade_share:
+            trade = self._trade_move(board, choice, rng)
         if winning:
             choice.index = winning[0]
         elif threat is not None:
             choice.index = threat
+        elif trade is not None:
+            choice.index = trade
         elif explore and temperature > 0:
             weights = np.exp((choice.scores - choice.scores.max()) / temperature)
             choice.index = int(rng.choice(len(weights), p=weights / weights.sum()))

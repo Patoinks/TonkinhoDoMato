@@ -95,6 +95,10 @@ def main(argv=None):
     parser.add_argument("--threat-explore", type=float,
                         help="share of exploring decisions that try a move creating a mate threat")
     parser.add_argument("--threat-moves", type=int, help="mate threat = forced mate within N moves after a pass")
+    parser.add_argument("--exchange-depth", type=int, help="exact capture search depth for piece safety (0 = off)")
+    parser.add_argument("--exchange-labels", type=int, choices=(0, 1),
+                        help="1: the victory measure's piece part is the exact exchange result")
+    parser.add_argument("--trade-explore", type=float, help="share of exploring decisions that try a non-losing capture")
     parser.add_argument("--mate-labels", type=int,
                         help="victory measure = proven result when a forced mate within N moves exists")
     parser.add_argument("--avoid-repetition-margin", type=float,
@@ -165,10 +169,13 @@ def main(argv=None):
                             ("mate_search_moves", "mate_search_moves"), ("mate_defense_moves", "mate_defense_moves"),
                             ("mate_node_limit", "mate_node_limit"), ("threat_explore", "threat_explore"),
                             ("threat_moves", "threat_moves"), ("mate_labels", "mate_labels"),
+                            ("exchange_depth", "exchange_depth"), ("trade_explore", "trade_explore"),
                             ("fairy_elo", "fairy_elo")):
         value = getattr(args, argument)
         if value is not None:
             setattr(cfg, field, str(value) if isinstance(value, Path) else value)
+    if args.exchange_labels is not None:
+        cfg.exchange_labels = bool(args.exchange_labels)
     cfg.validate()
     output = (Path(cfg.checkpoint_dir) / "latest.pt").resolve()
     if args.new_campaign and (not args.resume or state.get("status") not in ("completed", "stopped")

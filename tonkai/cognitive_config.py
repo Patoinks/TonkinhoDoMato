@@ -104,6 +104,17 @@ class CognitiveConfig(SurvivalConfig):
     threat_explore: float = 0.0
     threat_moves: int = 1
     mate_labels: int = 0
+    # Organic piece safety / trading (off by default), with TonkAI's measured
+    # piece values: exchange_depth - the piece-safety term of each move is the
+    # EXACT material result of the forced capture sequence (tonkai_fast
+    # exchange search, this many plies) instead of the per-square estimate;
+    # exchange_labels - the victory measure's piece part is that exact result;
+    # trade_explore - share of exploring decisions that try a capture the
+    # exact search does not lose, so the results teach which trades pay.
+    exchange_depth: int = 0
+    exchange_node_limit: int = 200_000
+    exchange_labels: bool = False
+    trade_explore: float = 0.0
 
     def validate(self):
         super().validate()
@@ -129,6 +140,8 @@ class CognitiveConfig(SurvivalConfig):
             raise ValueError("mix_fairy needs fairy_path and a positive fairy_elo")
         if not 0 < self.capture_target_clip < float("inf"):
             raise ValueError("capture_target_clip must be finite and positive")
+        if self.exchange_depth < 0 or self.exchange_node_limit < 1 or not 0 <= self.trade_explore <= 1:
+            raise ValueError("exchange_depth >= 0, exchange_node_limit positive, trade_explore in [0, 1]")
         if not 0 <= self.threat_explore <= 1 or self.threat_moves < 1 or self.mate_labels < 0:
             raise ValueError("threat_explore must be in [0, 1], threat_moves positive, mate_labels >= 0")
         if self.mate_search_moves < 0 or self.mate_defense_moves < 0 or self.mate_node_limit < 1:
