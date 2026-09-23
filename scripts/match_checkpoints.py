@@ -60,7 +60,7 @@ def _load(path, cfg=None):
     return name, trainer.net.eval(), trainer.knowledge, cfg, kd
 
 
-def _init(current, rival, rival_name, mates=None):
+def _init(current, rival, rival_name, mates=None, piece_values=None):
     import copy
     import torch
     torch.set_num_threads(1)
@@ -69,6 +69,8 @@ def _init(current, rival, rival_name, mates=None):
     ccfg = copy.copy(cfg)                  # mate calculation for the current side only
     for key, value in (mates or {}).items():
         setattr(ccfg, key, value)
+    if piece_values:                       # both sides play with these piece values
+        kd = piece_values
     _state.update(name=name, net=net, knowledge=knowledge, cfg=cfg, ccfg=ccfg, kd=kd,
                   rival_name=rival_name or other, rnet=rnet, rknowledge=rknowledge)
 
@@ -145,20 +147,23 @@ def main():
     parser.add_argument("--mate-defense-moves", type=int, default=0,
                         help="current side avoids moves after which the rival forces mate within N moves")
     parser.add_argument("--mate-node-limit", type=int, default=20_000, help="nodes per mate search")
+    parser.add_argument("--piece-values", help="both sides use these values, e.g. 1:1,2:1.03,3:1.22,4:1.70,5:4.02")
     args = parser.parse_args()
+    values = ({int(k): float(v) for k, v in (part.split(":") for part in args.piece_values.split(","))}
+              if args.piece_values else None)
     mates = {"mate_search_moves": args.mate_search_moves, "mate_defense_moves": args.mate_defense_moves,
              "mate_node_limit": args.mate_node_limit}
 
     rows = []
     with ProcessPoolExecutor(max_workers=args.workers, mp_context=get_context("spawn"), initializer=_init,
-                             initargs=(str(args.current), str(args.rival), args.name, mates)) as pool:
+                             initargs=(str(args.current), str(args.rival), args.name, mates, values)) as pool:
         for row in pool.map(_game, range(args.games), [args.seed] * args.games):
             rows.append(row)
             if len(rows) % 50 == 0:
                 print(f"{len(rows)}/{args.games} jogos", flush=True)
     rows.sort()
     report = {"current": rows[0][5], "current_file": str(args.current), "rival": rows[0][6],
-              "rival_file": str(args.rival), "seed": args.seed, "mate_calculation": mates,
+              "rival_file": str(args.rival), "seed": args.seed, "mate_calculation": mates, "piece_values": values,
               "finished_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), **summarise(rows)}
     stem = args.label or f"match-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     args.out.mkdir(parents=True, exist_ok=True)

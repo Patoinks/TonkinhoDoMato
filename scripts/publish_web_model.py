@@ -22,7 +22,7 @@ def atomic(path, data):
     temp.replace(path)
 
 
-def publish(checkpoint, config_path):
+def publish(checkpoint, config_path, allow_stopped=False):
     config = json.loads(Path(config_path).read_text(encoding="utf-8-sig"))
     site = Path(config["site_directory"]).resolve(strict=True)
     checkpoint = Path(checkpoint).resolve(strict=True)
@@ -77,8 +77,10 @@ def publish(checkpoint, config_path):
         state = torch.load(snapshot, map_location="cpu", weights_only=False)
         kind = state.get("format")
         run_id = state.get("run_id")
-        if kind in ("tonkai-cognitive-v3", "tonkai-survival-v2") and state.get("status") != "completed":
-            raise ValueError("Only completed checkpoints can be published automatically")
+        allowed = ("completed", "stopped") if allow_stopped else ("completed",)
+        if kind in ("tonkai-cognitive-v3", "tonkai-survival-v2") and state.get("status") not in allowed:
+            raise ValueError("Only completed checkpoints can be published automatically "
+                             "(a cleanly stopped one only with --allow-stopped, by hand)")
         candidate = directory / "candidate"
         exporter = "export_temporal_web.py" if kind in ("tonkai-cognitive-v3", "tonkai-survival-v2") else "export_web.py"
         del state
@@ -155,5 +157,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--config", default=str(ROOT / "web_publish.local.json"))
+    parser.add_argument("--allow-stopped", action="store_true",
+                        help="owner's explicit request: publish a cleanly stopped campaign checkpoint")
     arguments = parser.parse_args()
-    publish(arguments.checkpoint, arguments.config)
+    publish(arguments.checkpoint, arguments.config, arguments.allow_stopped)

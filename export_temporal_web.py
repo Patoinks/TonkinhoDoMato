@@ -15,6 +15,7 @@ from tonkai.cognitive_trainer import CognitiveKnowledge
 from tonkai.survival_agent import SurvivalAgent
 from tonkai.temporal_model import SurvivalNet
 from tonkai.king_safety import king_senses
+from tonkai.captures import CaptureStats, parse_weights, replay_games
 
 
 def plain(value):
@@ -44,7 +45,15 @@ def export(checkpoint, out):
     if kind == "tonkai-cognitive-v3":
         knowledge = CognitiveKnowledge(cfg, net.encoder)
         knowledge.load_state_dict(state["knowledge"])
-        agent = CognitiveAgent(net, cfg, knowledge)
+        # v4: the measured piece values (owner's rule) exactly as training uses them.
+        kd_values = None
+        if cfg.kd_weight > 0 and state.get("capture_stats"):
+            stats = CaptureStats(cfg.hot_piece_kills, opponent_weights=parse_weights(cfg.value_opponents))
+            stats.load_state_dict(state["capture_stats"])
+            if stats.needs_seed() and state.get("replay"):
+                stats.seed_new_measures(replay_games(state["replay"]["episodes"]))
+            kd_values = stats.piece_values()
+        agent = CognitiveAgent(net, cfg, knowledge, kd_values=kd_values)
     else:
         agent = SurvivalAgent(net, cfg)
     # Keep all learned heads, including those used only during training. Frozen
@@ -52,6 +61,8 @@ def export(checkpoint, out):
     bundle = torch.nn.ModuleDict({"net": net})
     if knowledge:
         bundle["knowledge_encoder"] = knowledge.encoder
+    if getattr(agent, "king_model", None) is not None:
+        bundle["king_safety"] = agent.king_model.net      # v4 learned King Safety: 782 -> 256 -> 256 -> 1
     out.mkdir(parents=True, exist_ok=True)
     tensors, blob, size = export_weights(bundle, str(out))
     if not all(torch.isfinite(t).all() for t in bundle.state_dict().values()):
@@ -67,7 +78,12 @@ def export(checkpoint, out):
                     "memory_similarity", "memory_weight", "planning_nodes", "planning_candidates", "planning_replies",
                     "planning_uncertainty", "planning_gap", "calibration_min_samples", "robust_weight", "survival_gamma",
                     "skill_min_support", "skill_bonus", "piece_safety_weight", "piece_exchange_tolerance",
-                    "piece_exchange_depth", "king_safety_weight")}, inference="deterministic; exploration disabled")
+                    "piece_exchange_depth", "king_safety_weight", "kd_weight", "mate_search_moves",
+                    "mate_defense_moves", "mate_node_limit", "objective", "victory_weight")},
+                inference="deterministic; exploration disabled",
+                model_name=state.get("model_name"),
+                kd_values=({str(k): v for k, v in agent.kd_values.items()} if getattr(agent, "kd_values", None) else None),
+                king_safety_model=getattr(agent, "king_model", None) is not None)
     if knowledge:
         data["knowledge"] = plain(dict(entries=[{k:e[k] for k in ("key", "target", "game", "trust", "own_turn")}
                                                for e in knowledge.memory.entries],
@@ -93,6 +109,9 @@ def export(checkpoint, out):
         ("king_exposed", "5rk1/8/8/2b4q/8/8/8/6K1 w - - 0 1", [], True),
         ("king_pinned_defender", "k3r3/8/8/8/7q/8/4B3/4K3 w - - 0 1", [], True),
         ("king_endgame", "8/7k/8/8/3K4/8/4P3/8 w - - 0 1", [], True),
+        # v4 mate calculation: a forced mate in two, and a back-rank mate to avoid.
+        ("forced_mate_in_two", "3r2k1/5ppp/8/8/8/8/4RPPP/4R1K1 w - - 0 1", [], True),
+        ("back_rank_defence", "4r1k1/R4ppp/8/8/8/8/5PPP/6K1 w - - 0 1", [], True),
     ]
     for label, fen, moves, colour in fixtures:
         board = chess.Board(fen)
@@ -107,11 +126,17 @@ def export(checkpoint, out):
         if knowledge:
             entry["piece_senses"] = agent.sense_pieces(board, colour)
             entry["king_senses"] = king_senses(board)
+            ks = agent.king_safety_values(board)
+            if ks is not None:
+                entry["ks"] = {"w": ks[0], "b": ks[1]}           # learned KS of each king
         if board.turn == colour:
             choice = agent.choose(board, colour, np.random.default_rng(1), explore=False, temperature=0)
             entry["rank"] = [{"uci": move.uci(), "utility": float(score)}
                              for move, score in zip(choice.moves, choice.scores)]
             entry["best"] = choice.move.uci()
+            entry["forced_mate"] = int(getattr(choice, "forced_mate", 0))
+            entry["allows_mate"] = {choice.moves[i].uci(): n
+                                    for i, n in (agent._evaluation.get("allows_mate") or {}).items()}
         else:
             replies, probabilities = agent.predict_reply(board, colour)
             entry["predict"] = [{"uci": m.uci(), "p": float(p)} for m, p in zip(replies, probabilities)]
