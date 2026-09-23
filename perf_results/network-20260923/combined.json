@@ -1,0 +1,62 @@
+{
+  "runs": [
+    {
+      "mode": "baseline",
+      "updates": 100,
+      "seconds": 4.390653599999496,
+      "updates_per_second": 22.77565235390273,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "reply+buffers",
+      "updates": 100,
+      "seconds": 4.461559399991529,
+      "updates_per_second": 22.413687913734794,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "reply+buffers",
+      "updates": 100,
+      "seconds": 4.373530800003209,
+      "updates_per_second": 22.86482125607224,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "baseline",
+      "updates": 100,
+      "seconds": 4.442303699994227,
+      "updates_per_second": 22.51084274137537,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    }
+  ],
+  "mean_seconds": {
+    "baseline": 4.416478649996861,
+    "reply+buffers": 4.417545099997369
+  },
+  "speedups": {
+    "baseline": 1.0,
+    "reply+buffers": 0.9997585876371679
+  },
+  "source_checkpoint_unchanged": true,
+  "conditions": "Same saved source, CPU single thread, same checkpoint and replay, 10 warmup updates then timed updates; each mode twice in reverse order. No opponent, campaign writes or publishing."
+}

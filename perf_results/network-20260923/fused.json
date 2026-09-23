@@ -1,0 +1,72 @@
+{
+  "runs": [
+    {
+      "mode": "baseline",
+      "updates": 100,
+      "seconds": 4.4525388999900315,
+      "updates_per_second": 22.459096314739416,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "fused",
+      "updates": 100,
+      "seconds": 4.291787499998463,
+      "updates_per_second": 23.30031484551269,
+      "equivalence": {
+        "exact": false,
+        "max_abs": {
+          "state.trainer.model": 0.0015572011470794678,
+          "state.trainer.target": 0.0008992254734039307,
+          "state.trainer.optimizer": 4.831235855817795e-08,
+          "state.trainer.replay": 1.341104507446289e-07
+        },
+        "different_scalars": 778
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "fused",
+      "updates": 100,
+      "seconds": 4.260500500007765,
+      "updates_per_second": 23.47142078725674,
+      "equivalence": {
+        "exact": false,
+        "max_abs": {
+          "state.trainer.model": 0.0015572011470794678,
+          "state.trainer.target": 0.0008992254734039307,
+          "state.trainer.optimizer": 4.831235855817795e-08,
+          "state.trainer.replay": 1.341104507446289e-07
+        },
+        "different_scalars": 778
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "baseline",
+      "updates": 100,
+      "seconds": 4.400018299988005,
+      "updates_per_second": 22.72717820293443,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    }
+  ],
+  "mean_seconds": {
+    "baseline": 4.426278599989018,
+    "fused": 4.276144000003114
+  },
+  "speedups": {
+    "baseline": 1.0,
+    "fused": 1.0351098092079674
+  },
+  "source_checkpoint_unchanged": true,
+  "conditions": "Same saved source, CPU single thread, same checkpoint and replay, 10 warmup updates then timed updates; each mode twice in reverse order. No opponent, campaign writes or publishing."
+}

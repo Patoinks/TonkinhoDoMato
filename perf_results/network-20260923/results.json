@@ -1,0 +1,218 @@
+{
+  "runs": [
+    {
+      "mode": "baseline",
+      "updates": 100,
+      "seconds": 4.675844299999881,
+      "updates_per_second": 21.386511950366387,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "gru",
+      "updates": 100,
+      "seconds": 4.4974927000002936,
+      "updates_per_second": 22.23461085328576,
+      "equivalence": {
+        "exact": false,
+        "max_abs": {
+          "state.trainer.model": 0.0017817914485931396,
+          "state.trainer.target": 0.00078621506690979,
+          "state.trainer.optimizer": 5.2998075261712074e-08,
+          "state.trainer.replay": 1.4901161193847656e-07
+        },
+        "different_scalars": 747
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "cache",
+      "updates": 100,
+      "seconds": 4.630499299993971,
+      "updates_per_second": 21.595943228007872,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": [
+        28393,
+        34967
+      ]
+    },
+    {
+      "mode": "target",
+      "updates": 100,
+      "seconds": 4.488171699995291,
+      "updates_per_second": 22.28078751980565,
+      "equivalence": {
+        "exact": false,
+        "max_abs": {
+          "state.trainer.model": 0.0004012584686279297,
+          "state.trainer.target": 2.6345252990722656e-05,
+          "state.trainer.optimizer": 4.21423465013504e-08,
+          "state.trainer.replay": 3.725290298461914e-08
+        },
+        "different_scalars": 133
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "optimizer",
+      "updates": 100,
+      "seconds": 4.619924600003287,
+      "updates_per_second": 21.645374905020926,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "reply",
+      "updates": 100,
+      "seconds": 4.66995379999571,
+      "updates_per_second": 21.413488073499114,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "buffers",
+      "updates": 100,
+      "seconds": 4.447570799995447,
+      "updates_per_second": 22.48418395050673,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "buffers",
+      "updates": 100,
+      "seconds": 4.609074600011809,
+      "updates_per_second": 21.69632923705418,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "reply",
+      "updates": 100,
+      "seconds": 4.441949000000022,
+      "updates_per_second": 22.512640284703743,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "optimizer",
+      "updates": 100,
+      "seconds": 4.761257999998634,
+      "updates_per_second": 21.00285260744717,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "target",
+      "updates": 100,
+      "seconds": 4.943634999988717,
+      "updates_per_second": 20.228030588874024,
+      "equivalence": {
+        "exact": false,
+        "max_abs": {
+          "state.trainer.model": 0.0004012584686279297,
+          "state.trainer.target": 2.6345252990722656e-05,
+          "state.trainer.optimizer": 4.21423465013504e-08,
+          "state.trainer.replay": 3.725290298461914e-08
+        },
+        "different_scalars": 133
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "cache",
+      "updates": 100,
+      "seconds": 4.8394050000060815,
+      "updates_per_second": 20.66369729333964,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": [
+        28393,
+        34967
+      ]
+    },
+    {
+      "mode": "gru",
+      "updates": 100,
+      "seconds": 4.47155400000338,
+      "updates_per_second": 22.363589928674553,
+      "equivalence": {
+        "exact": false,
+        "max_abs": {
+          "state.trainer.model": 0.0017817914485931396,
+          "state.trainer.target": 0.00078621506690979,
+          "state.trainer.optimizer": 5.2998075261712074e-08,
+          "state.trainer.replay": 1.4901161193847656e-07
+        },
+        "different_scalars": 747
+      },
+      "cache_stats": null
+    },
+    {
+      "mode": "baseline",
+      "updates": 100,
+      "seconds": 4.593081199986045,
+      "updates_per_second": 21.771877231411416,
+      "equivalence": {
+        "exact": true,
+        "max_abs": {},
+        "different_scalars": 0
+      },
+      "cache_stats": null
+    }
+  ],
+  "mean_seconds": {
+    "baseline": 4.634462749992963,
+    "gru": 4.484523350001837,
+    "cache": 4.7349521500000264,
+    "target": 4.715903349992004,
+    "optimizer": 4.6905913000009605,
+    "reply": 4.555951399997866,
+    "buffers": 4.528322700003628
+  },
+  "speedups": {
+    "baseline": 1.0,
+    "gru": 1.0334348576847225,
+    "cache": 0.9787771033743049,
+    "target": 0.9827306469291447,
+    "optimizer": 0.9880338007687888,
+    "reply": 1.0172327013837623,
+    "buffers": 1.0234391533070843
+  },
+  "source_checkpoint_unchanged": true,
+  "conditions": "Same saved source, CPU single thread, same checkpoint and replay, 10 warmup updates then timed updates; each mode twice in reverse order. No opponent, campaign writes or publishing."
+}
