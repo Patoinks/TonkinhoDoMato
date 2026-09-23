@@ -219,18 +219,19 @@ def test_piece_values_are_a_third_of_each_measure():
     assert stats.piece_values() is None
     for side in ("self", "opponent"):
         for name in names:
-            stats.deaths[side][name] = 100
-            stats.kills[side][name] = 50
             stats.activity[side]["mobility_n"][name] = 500
-            stats.activity[side]["threats_n"][name] = 500
+            stats.activity[side]["threats_active_n"][name] = 500
             stats.activity[side]["mobility"][name] = 500
-            stats.activity[side]["threats"][name] = 100
+            stats.activity[side]["threats_active"][name] = 100
+            stats.pairs[side][f"{name}>{name}"] = 100               # every type trades 1:1 with itself
+    stats.pair_games = 10
     stats.activity["self"]["mobility"]["Rook"] = 2500          # rook: (500+2500)/1000 = 3 pawns
-    stats.activity["opponent"]["threats"]["Rook"] = 500          # rook: 600/1000 vs pawn 200/1000 = 3 pawns
+    stats.activity["opponent"]["threats_active"]["Rook"] = 500   # rook: 600/1000 vs pawn 200/1000 = 3 pawns
     values = stats.piece_values()
+    # Level-weighted K/D of the rook = its own value v; v = (v + 3 + 3) / 3 -> v = 3.
     assert values[chess.PAWN] == pytest.approx(1.0)
-    assert values[chess.ROOK] == pytest.approx((1 + 3 + 3) / 3)
+    assert values[chess.ROOK] == pytest.approx(3.0)
     restored = CaptureStats()
     restored.load_state_dict(stats.state_dict())
     assert restored.piece_values() == values
-    assert restored.summary()["piece_values_vs_pawn"]["Rook"] == pytest.approx(7 / 3)
+    assert restored.summary()["piece_values_vs_pawn"]["Rook"] == pytest.approx(3.0)

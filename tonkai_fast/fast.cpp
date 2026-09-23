@@ -947,7 +947,7 @@ public:
     py::dict activity(const std::vector<int>& ms) const {
         Pos work = pos;
         U64 moved = 0;
-        std::array<std::array<std::array<int, 7>, 4>, 2> totals{};
+        std::array<std::array<std::array<int, 7>, 6>, 2> totals{};
         for (int m : ms) {
             std::vector<int> legal;
             work.legal_moves(legal);
@@ -959,13 +959,20 @@ public:
             U64 enemy = work.occ[turn ^ 1] & ~work.bb[KING];
             for (U64 own = work.occ[turn] & ~work.bb[KING]; own; own &= own - 1) {
                 int sq = lsb(own), kind = work.type_at(sq);
-                if (moved & bit(sq)) {
+                bool active = (moved & bit(sq)) != 0;
+                if (active) {
                     totals[turn][0][kind] += destinations[sq];
                     ++totals[turn][1][kind];
                 }
+                int threats = 0;
                 for (U64 targets = work.attacks_mask(sq) & enemy; targets; targets &= targets - 1)
-                    if (work.attackers(turn ^ 1, lsb(targets), work.occupied())) ++totals[turn][2][kind];
+                    if (work.attackers(turn ^ 1, lsb(targets), work.occupied())) ++threats;
+                totals[turn][2][kind] += threats;
                 ++totals[turn][3][kind];
+                if (active) {
+                    totals[turn][4][kind] += threats;
+                    ++totals[turn][5][kind];
+                }
             }
             int from = mfrom(m), to = mto(m), captured = work.captured_square(m);
             if (work.type_at(from) == KING && std::abs(file_of(to) - file_of(from)) == 2) {
@@ -980,14 +987,16 @@ public:
             moved |= bit(to);
             work.make(m);
         }
-        static const char* names[] = {"mobility", "mobility_n", "threats", "threats_n"};
+        static const char* names[] = {"mobility", "mobility_n", "threats", "threats_n", "threats_active",
+                                      "threats_active_n"};
         py::dict out;
         for (int colour : {WHITE, BLACK}) {
             py::dict row;
-            for (int metric = 0; metric < 4; ++metric) {
+            for (int metric = 0; metric < 6; ++metric) {
                 py::dict values;
+                int samples = metric < 2 ? 1 : metric < 4 ? 3 : 5;
                 for (int kind = PAWN; kind <= QUEEN; ++kind)
-                    if (totals[colour][metric < 2 ? 1 : 3][kind])
+                    if (totals[colour][samples][kind])
                         values[py::int_(kind)] = totals[colour][metric][kind];
                 row[names[metric]] = values;
             }

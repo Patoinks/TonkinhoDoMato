@@ -30,7 +30,7 @@ def _load(path, cfg=None):
     """(name, net, knowledge, cfg, kd_values) from a campaign checkpoint or a snapshot."""
     import torch
     from tonkai.actor_snapshot import unpack_snapshot
-    from tonkai.captures import CaptureStats, parse_weights
+    from tonkai.captures import CaptureStats, parse_weights, replay_games
     from tonkai.cognitive_config import CognitiveConfig
     from tonkai.cognitive_trainer import CognitiveKnowledge, CognitiveTrainer
     from tonkai.temporal_model import SurvivalNet
@@ -53,6 +53,8 @@ def _load(path, cfg=None):
     stats = CaptureStats(cfg.hot_piece_kills, opponent_weights=parse_weights(cfg.value_opponents))
     if data.get("capture_stats"):
         stats.load_state_dict(data["capture_stats"])
+    if stats.needs_seed() and data.get("replay"):
+        stats.seed_new_measures(replay_games(data["replay"]["episodes"]))
     kd = stats.piece_values() if cfg.kd_weight > 0 else None
     name = f"{data.get('model_name', 'TonkAI')} (jogo {data['games']})"
     return name, trainer.net.eval(), trainer.knowledge, cfg, kd

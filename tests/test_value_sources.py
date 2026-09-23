@@ -44,7 +44,6 @@ def test_weighted_kd_uses_only_fairy_and_stockfish_per_game():
     queen = (3 + opponent_kills) / (2 + opponent_deaths)
     assert values[chess.PAWN] == pytest.approx(1.0)
     assert values[chess.QUEEN] == pytest.approx(queen / pawn)
-    assert stats.value_source() == "weighted"
 
 
 def test_tiny_and_self_play_never_count_on_the_opponent_side():
@@ -59,7 +58,7 @@ def test_falls_back_to_pooling_until_both_opponents_have_data():
     stats = filled({"fairy": .35, "external": .65})
     stats.by_kind["external"]["games"] = 5                  # too few Stockfish games yet
     assert stats.value_source() == "pooled"
-    assert stats.measures()["kd"] == stats.pooled_kd()
+    assert stats.measures()["mobility"] == stats.pooled_activity("mobility")
 
 
 def test_add_records_the_opponent_side_per_kind_and_state_roundtrips():

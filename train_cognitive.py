@@ -18,7 +18,7 @@ import uuid
 import numpy as np
 import torch
 
-from tonkai.captures import CaptureStats, parse_weights
+from tonkai.captures import CaptureStats, parse_weights, replay_games
 
 # v3.1: opponent mixture, frozen self-play series, weighted opponent piece
 # values, forced resignation and no repetition draw when ahead.
@@ -218,6 +218,10 @@ def main(argv=None):
                       f"{resign.initial_threshold:.4f}; verification restarts in shadow", flush=True)
         if state.get("capture_stats") and state["capture_stats"].get("hot_kills") == cfg.hot_piece_kills:
             capture_stats.load_state_dict(state["capture_stats"])
+        if capture_stats.needs_seed() and state.get("replay"):
+            # Piece values v2: the new measures start from the stored real games.
+            seeded = capture_stats.seed_new_measures(replay_games(state["replay"]["episodes"]))
+            print(f"[piece values] v2 measures seeded from {seeded} stored games", flush=True)
     saved_rival = None if args.new_campaign else state.get("self_play_rival")
     del state
     initial_games = trainer.games
