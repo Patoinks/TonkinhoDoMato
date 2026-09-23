@@ -25,7 +25,7 @@ from tonkai.cognitive_config import CognitiveConfig
 from tonkai.cognitive_pool import CognitivePool
 from tonkai.cognitive_trainer import CognitiveTrainer
 from tonkai.uci_opponent import UCIOpponent
-from tonkai.win_history import LongestWinRecorder, WinArchive
+from tonkai.win_history import FeaturedGameRecorder, LongestWinRecorder, WinArchive
 from tonkai.opening_history import OpeningHistory
 from tonkai.web_publish import publish_completed, publish_wins
 from tonkai.resign import (ResignController, add_resign_args, hope_threshold,
@@ -221,6 +221,9 @@ def main(argv=None):
     external = None
     recorder = LongestWinRecorder(cfg.win_pgn_path)
     archive = WinArchive(args.wins_dir or args.history_dir / "wins")
+    featured = FeaturedGameRecorder((args.wins_dir or args.history_dir / "wins") / "featured_game.pgn")
+    # Nominal strengths for ranking the featured game; TinyOpponent measured ~800 vs Fairy.
+    strength = {"external": cfg.opponent_elo, "fairy": cfg.fairy_elo, "tiny": 800}
     # Deploys are throttled: at most one running, and one every 10 minutes.
     site = {"process": None, "last": -1e9, "pending": False}
 
@@ -401,6 +404,20 @@ def main(argv=None):
                         record("win", game=completed, total_games=trainer.games, plies=len(board.move_stack))
                 except (OSError, ValueError) as error:
                     record("warning", component="win_history", error=str(error))
+                publish_archive()
+            # The site's single history game: longest vs the strongest opponent, any result.
+            if episode.terminated and kind != "self":
+                try:
+                    termination = ("resignation" if resigned else
+                                   board.outcome(claim_draw=True).termination.name.lower())
+                    elo = strength.get(kind, 0)
+                    name = f"{stats['opponent']} · {elo} Elo" if kind != "tiny" else stats["opponent"]
+                    if featured.consider(board, colour, name, elo, stats["result"], termination):
+                        site["pending"] = True
+                        record("featured", game=completed, total_games=trainer.games, opponent=name, elo=elo,
+                               plies=len(board.move_stack), result=stats["result"])
+                except (OSError, ValueError, AttributeError) as error:
+                    record("warning", component="featured_game", error=str(error))
                 publish_archive()
             # The separate engine only plays legal experimental continuations; its
             # evaluations never become labels and branches never count as real games.

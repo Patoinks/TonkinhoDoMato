@@ -67,3 +67,21 @@ def test_only_the_real_archive_is_ever_published(tmp_path, monkeypatch):
     config.write_text(json.dumps({"enabled": False}))
     assert web_publish.publish_wins(web_publish.ROOT / "history/wins", config_path=config) is None
     assert len(launched) == 1
+
+
+def test_featured_game_is_the_longest_against_the_strongest_opponent(tmp_path):
+    from tonkai.win_history import FeaturedGameRecorder
+    featured = FeaturedGameRecorder(tmp_path / "featured_game.pgn")
+    long_loss = mate(("f3", "e5", "g4", "Qh4#"))                      # TonkAI white loses, 4 plies
+    assert featured.consider(long_loss, chess.WHITE, "Fairy · 1000 Elo", 1000, "0-1", "checkmate")
+    assert featured.stored_key() == (1000, 4)
+    short_win = mate(SCHOLAR)                                         # 7 plies but weaker opponent
+    assert not featured.consider(short_win, chess.WHITE, "TinyOpponent", 800, "1-0", "checkmate")
+    stronger = mate(("f3", "e5", "g4", "Qh4#"))
+    assert featured.consider(stronger, chess.WHITE, "Stockfish 11 · 1500 Elo", 1500, "0-1", "checkmate")
+    assert not featured.consider(mate(("f3", "e5", "g4", "Qh4#")), chess.WHITE, "Stockfish 11 · 1500 Elo",
+                                 1500, "0-1", "checkmate")          # a tie keeps the stored game
+    assert featured.consider(mate(SCHOLAR), chess.BLACK, "Stockfish 11 · 1500 Elo", 1500, "1-0", "checkmate")
+    game = chess.pgn.read_game(io.StringIO((tmp_path / "featured_game.pgn").read_text(encoding="utf-8")))
+    assert game.headers["OpponentElo"] == "1500" and game.headers["White"] == "Stockfish 11 · 1500 Elo"
+    assert game.headers["PlyCount"] == "7"

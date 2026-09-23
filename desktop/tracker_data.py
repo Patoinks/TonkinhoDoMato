@@ -34,6 +34,29 @@ def opponent_identity(kind, launch, config):
     return dict(id=identity, kind=kind, name=name, elo=info.get('elo'), move_time=info.get('move_time'))
 
 
+def snapshot_versions(launch):
+    """Game counts of the frozen self-play rivals saved next to the checkpoint, in order."""
+    folder = Path(launch.get('checkpoint', '')).parent / 'snapshots'
+    versions = []
+    for path in folder.glob('tonkinho-jogo-*.pt'):
+        try:
+            versions.append(int(path.stem.rsplit('-', 1)[1]))
+        except ValueError:
+            continue
+    return sorted(versions)
+
+
+def rival_identity(version, launch):
+    """'Tonkinho self-play · Checkpoint 3 (jogo 45500)': the frozen copy it played."""
+    version = int(version)
+    known = snapshot_versions(launch)
+    ordinal = known.index(version) + 1 if version in known else None
+    label = f'Checkpoint {ordinal} (jogo {version})' if ordinal else f'jogo {version}'
+    name = f'Tonkinho self-play · {label}'
+    return dict(id=json.dumps(['self', 'snapshot', version]), kind='self', name=name, elo=None,
+                move_time=None, version=version)
+
+
 def add_opponent(table, identity, counts, resigned=0):
     row = table.setdefault(identity['id'], {**identity, **dict.fromkeys(RESULTS, 0), 'resigned': 0})
     for key in RESULTS:
@@ -49,9 +72,21 @@ def opponent_totals(base, raw, count, counts, launch, config, exact_base):
     """
     table = {key: dict(value) for key, value in base.get('opponents', {}).items()}
     if isinstance(raw.get('opponents'), dict):
+        versions = raw.get('self_versions') if isinstance(raw.get('self_versions'), dict) else {}
         for kind, results in raw['opponents'].items():
-            add_opponent(table, opponent_identity(kind, launch, config), result_counts(results),
-                         int(results.get('resigned', 0)))
+            counts_here = result_counts(results)
+            if kind == 'self' and versions:
+                # One row per frozen Tonkinho; anything not attributed stays generic.
+                for version, per_version in versions.items():
+                    add_opponent(table, rival_identity(version, launch), result_counts(per_version),
+                                 int(per_version.get('resigned', 0)))
+                    for key, value in result_counts(per_version).items():
+                        counts_here[key] -= value
+                if not any(value > 0 for value in counts_here.values()):
+                    continue
+                counts_here = {key: max(0, value) for key, value in counts_here.items()}
+            add_opponent(table, opponent_identity(kind, launch, config), counts_here,
+                         int(results.get('resigned', 0)) if kind != 'self' or not versions else 0)
     else:
         mixture = launch.get('opponent_mixture', {})
         mixed = any(value for key, value in mixture.items() if key != 'external') or any(

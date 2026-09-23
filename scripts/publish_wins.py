@@ -40,8 +40,9 @@ def publish(config_path):
     site = Path(config["site_directory"]).resolve(strict=True)
     url = config["public_url"].rstrip("/")
     source = WINS / "wins.pgn"
-    if not source.is_file():
-        return "no wins"
+    featured = WINS / "featured_game.pgn"
+    if not featured.is_file() and not source.is_file():
+        return "nothing to publish"
     RECEIPT.parent.mkdir(parents=True, exist_ok=True)
     # The model publisher also deploys this site and holds publish.lock while it
     # does; wait for it rather than deploy a dist it is rebuilding.
@@ -52,13 +53,17 @@ def publish(config_path):
         time.sleep(10)
     with _file_lock(RECEIPT.parent / ".wins-site.lock"):
         with _file_lock(WINS / ".wins.lock"):
-            text = source.read_text(encoding="utf-8")
+            text = source.read_text(encoding="utf-8") if source.is_file() else ""
+        game = featured.read_text(encoding="utf-8") if featured.is_file() else ""
         games = text.count("[Event ")
         local_index = (site / "dist" / "index.html").read_bytes()
         if hashlib.sha256(fetch(url + "/")).digest() != hashlib.sha256(local_index).digest():
             raise RuntimeError("live index.html differs from the local dist; refusing to roll the site back")
         for folder in (site / "public" / "tonkai", site / "dist" / "tonkai"):
-            _atomic_write(folder / "wins.pgn", text)
+            if text:
+                _atomic_write(folder / "wins.pgn", text)
+            if game:            # the site's one history game
+                _atomic_write(folder / "featured-game.pgn", game)
             if LONGEST.is_file():
                 _atomic_write(folder / "longest-win.pgn", LONGEST.read_text(encoding="utf-8"))
         deploy = ([os.environ.get("COMSPEC", "cmd.exe"), "/d", "/c",
@@ -72,10 +77,13 @@ def publish(config_path):
             if attempt == 2:
                 raise RuntimeError("firebase deploy failed")
             time.sleep(2 ** (attempt + 1))
-        live = fetch(url + "/tonkai/wins.pgn?v=" + str(time.time_ns())).decode("utf-8")
-        if live.replace("\r\n", "\n") != text.replace("\r\n", "\n"):
-            raise RuntimeError("the live wins.pgn does not match the archive")
-    return f"published {games} wins"
+        for name, expected in (("wins.pgn", text), ("featured-game.pgn", game)):
+            if not expected:
+                continue
+            live = fetch(url + f"/tonkai/{name}?v=" + str(time.time_ns())).decode("utf-8")
+            if live.replace("\r\n", "\n") != expected.replace("\r\n", "\n"):
+                raise RuntimeError(f"the live {name} does not match the local copy")
+    return f"published {games} wins" + (" + featured game" if game else "")
 
 
 def main():

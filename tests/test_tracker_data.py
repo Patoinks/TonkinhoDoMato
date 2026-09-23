@@ -150,3 +150,21 @@ def test_all_metrics_keep_unknown_fields_nested_arrays_zero_and_null():
     assert rows['future[1]'] == 'null'
     assert rows['empty'] == '{}'
     assert rows['enabled'] == 'false'
+
+
+def test_self_play_rows_name_each_frozen_checkpoint(tmp_path):
+    from desktop.tracker_data import opponent_totals
+    snapshots = tmp_path / "ckpt/snapshots"
+    snapshots.mkdir(parents=True)
+    for version in (44254, 44754, 45254):
+        (snapshots / f"tonkinho-jogo-{version}.pt").write_bytes(b"")
+    launch = {"checkpoint": str(tmp_path / "ckpt/latest.pt"), "campaign_start_games": 0, "resume_games": 0}
+    raw = {"opponents": {"self": {"win": 5, "draw": 3, "loss": 4}, "tiny": {"win": 1, "loss": 9}},
+           "self_versions": {"44754": {"win": 2, "draw": 1, "loss": 1}, "45254": {"win": 3, "draw": 2, "loss": 3}}}
+    counts = {"wins": 1, "draws": 0, "losses": 9, "truncated": 0}
+    table = opponent_totals({}, raw, 22, counts, launch, {"mix_self": .1, "mix_tiny": .5}, True)
+    names = sorted(row["name"] for row in table.values() if row["kind"] == "self")
+    assert names == ["Tonkinho self-play · Checkpoint 2 (jogo 44754)",
+                     "Tonkinho self-play · Checkpoint 3 (jogo 45254)"]
+    rows = {row["name"]: row for row in table.values()}
+    assert rows["Tonkinho self-play · Checkpoint 3 (jogo 45254)"]["wins"] == 3

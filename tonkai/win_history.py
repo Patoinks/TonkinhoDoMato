@@ -136,6 +136,44 @@ def _atomic_write(path, text):
             temporary.unlink()
 
 
+class FeaturedGameRecorder:
+    """The site's one history game: the longest game against the strongest opponent.
+
+    Any finished result counts (win, draw, loss, resignation); self-play never
+    does. Ranking is (opponent Elo, plies): a stronger opponent always wins the
+    spot, then the longer game. Ties keep the stored game.
+    """
+
+    def __init__(self, path):
+        self.path = Path(path) if path else None
+
+    def stored_key(self):
+        if self.path is None or not self.path.exists():
+            return None
+        with self.path.open(encoding="utf-8") as stream:
+            game = chess.pgn.read_game(stream)
+        if game is None:
+            return None
+        return int(game.headers.get("OpponentElo", 0)), sum(1 for _ in game.mainline_moves())
+
+    def consider(self, board, self_color, opponent_name, opponent_elo, result, termination):
+        if self.path is None:
+            return False
+        if result not in ("1-0", "0-1", "1/2-1/2"):
+            raise ValueError("result must be a completed PGN result")
+        game, plies = build_win_game(board, self_color, opponent_name, result, termination)
+        game.headers["Event"] = "TonkAI - longest game against the strongest opponent"
+        game.headers["OpponentElo"] = str(int(opponent_elo))
+        text = game.accept(chess.pgn.StringExporter(headers=True, variations=False, comments=False)) + "\n"
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        with _file_lock(self.path.with_name("." + self.path.name + ".lock")):
+            stored = self.stored_key()
+            if stored is not None and (int(opponent_elo), plies) <= stored:
+                return False
+            _atomic_write(self.path, text)
+        return True
+
+
 class LongestWinRecorder:
     def __init__(self, path):
         self.path = Path(path) if path else None
