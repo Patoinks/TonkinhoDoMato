@@ -52,8 +52,9 @@ class SurvivalConfig(Config):
             raise ValueError("model sizes, intervals and max_plies must be positive")
         if self.burn_in < 0 or not self.future_horizons or min(self.future_horizons) < 1:
             raise ValueError("burn_in must be nonnegative and future horizons positive")
-        if not 1 <= self.num_workers <= 8:
-            raise ValueError("V2 supports one to eight independent sequence actors")
+        if not 1 <= self.num_workers <= 16:
+            # Actors mostly wait on the external engine, so more than one per core pays off.
+            raise ValueError("one to sixteen independent sequence actors are supported")
         if min(self.external_probability, self.historical_probability) < 0 or (
             self.external_probability + self.historical_probability > 1
         ):
