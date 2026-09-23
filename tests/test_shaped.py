@@ -213,25 +213,22 @@ def test_mobility_counts_only_after_the_first_move():
     assert sum(white["mobility_n"].values()) == 0      # no white piece other than the king moved
 
 
-def test_piece_values_are_a_third_of_each_measure():
+def test_piece_values_are_three_times_the_self_play_level_kd():
     stats = CaptureStats()
     names = ("Pawn", "Knight", "Bishop", "Rook", "Queen")
-    assert stats.piece_values() is None
+    assert stats.piece_values() is None and stats.piece_scores() is None
+    row = stats._kind("self")
     for side in ("self", "opponent"):
         for name in names:
-            stats.activity[side]["mobility_n"][name] = 500
-            stats.activity[side]["threats_active_n"][name] = 500
-            stats.activity[side]["mobility"][name] = 500
-            stats.activity[side]["threats_active"][name] = 100
-            stats.pairs[side][f"{name}>{name}"] = 100               # every type trades 1:1 with itself
-    stats.pair_games = 10
-    stats.activity["self"]["mobility"]["Rook"] = 2500          # rook: (500+2500)/1000 = 3 pawns
-    stats.activity["opponent"]["threats_active"]["Rook"] = 500   # rook: 600/1000 vs pawn 200/1000 = 3 pawns
-    values = stats.piece_values()
-    # Level-weighted K/D of the rook = its own value v; v = (v + 3 + 3) / 3 -> v = 3.
-    assert values[chess.PAWN] == pytest.approx(1.0)
-    assert values[chess.ROOK] == pytest.approx(3.0)
+            row["pairs"][side][f"{name}>Pawn"] = 30          # everyone kills pawns...
+            row["pairs"][side][f"Pawn>{name}"] = 30          # ...and dies to pawns
+        row["pairs"][side]["Rook>Queen"] = 30                # the rook also eats queens
+    stats._kind("external")["pairs"]["opponent"]["Knight>Queen"] = 10 ** 6   # other kinds never count
+    scores, values = stats.piece_scores(), stats.piece_values()
+    assert values[chess.PAWN] == 1.0 and scores[chess.PAWN] > 0            # the pawn has its own score
+    assert values[chess.ROOK] > values[chess.KNIGHT] == pytest.approx(values[chess.BISHOP])
+    assert scores[chess.KNIGHT] == pytest.approx(3 * 60 * 1 / 60)          # 60 pawn kills / 60 deaths, x3
     restored = CaptureStats()
     restored.load_state_dict(stats.state_dict())
     assert restored.piece_values() == values
-    assert restored.summary()["piece_values_vs_pawn"]["Rook"] == pytest.approx(3.0)
+    assert restored.summary()["piece_scores_x3"]["Rook"] == pytest.approx(scores[chess.ROOK])

@@ -437,15 +437,44 @@ class CaptureStats:
     def value_source(self) -> str:
         return "weighted" if all(value is not None for value in self._measures(True).values()) else "pooled"
 
-    def piece_values(self) -> dict[int, float] | None:
-        """Owner's rule: 1/3 K/D (a kill worth the victim's value) + 1/3
-        mobility after the first move + 1/3 threats on defended pieces after
-        the first move, each relative to a pawn. None until all three exist."""
-        measures = self.measures()
-        if any(measures[name] is None for name in VALUE_MEASURES):
+    def piece_scores(self, min_deaths: int = 50) -> dict[int, float] | None:
+        """Owner's rule (2026-09-23): a piece's score is 3 x its K/D in
+        self-play games (TonkAI against a frozen TonkAI, both sides), where a
+        kill counts the victim's level in pawn units - so the pawn gets a score
+        too. None until every type has ``min_deaths`` self-play deaths."""
+        row = self.by_kind.get("self")
+        if not row:
             return None
-        return {kind: sum(measures[name][kind] for name in VALUE_MEASURES) / len(VALUE_MEASURES)
+        pairs = Counter()
+        for side in SIDES:
+            pairs.update(row["pairs"][side])
+        deaths = {kind: self._pair_deaths(pairs, PIECE_NAMES[kind - 1]) for kind in range(1, 6)}
+        if min(deaths.values()) < min_deaths:
+            return None
+        kills = {kind: sum(count for pair, count in pairs.items() if pair.split(">")[0] == PIECE_NAMES[kind - 1])
+                 for kind in range(1, 6)}
+        if not kills[chess.PAWN]:
+            return None
+        # Victim level in pawn units, from the level-weighted K/D itself.
+        level = {kind: (kills[kind] / deaths[kind]) / (kills[chess.PAWN] / deaths[chess.PAWN]) for kind in range(1, 6)}
+        for _ in range(200):
+            weighted = {kind: self._level_kills(pairs, PIECE_NAMES[kind - 1], level) / deaths[kind]
+                        for kind in range(1, 6)}
+            new = {kind: weighted[kind] / weighted[chess.PAWN] for kind in range(1, 6)}
+            settled = max(abs(new[kind] - level[kind]) for kind in level) < 1e-12
+            level = new
+            if settled:
+                break
+        return {kind: 3.0 * self._level_kills(pairs, PIECE_NAMES[kind - 1], level) / deaths[kind]
                 for kind in range(1, 6)}
+
+    def piece_values(self) -> dict[int, float] | None:
+        """The piece scores relative to the pawn's own score (pawn = 1): the
+        unit every value in TonkAI's decisions is expressed in."""
+        scores = self.piece_scores()
+        if scores is None or scores[chess.PAWN] <= 0:
+            return None
+        return {kind: score / scores[chess.PAWN] for kind, score in scores.items()}
 
     def summary(self) -> dict:
         def table(side):
@@ -470,7 +499,7 @@ class CaptureStats:
         measures = self.measures()
         return {"mobility_vs_pawn": named(measures["mobility"]), "threats_vs_pawn": named(measures["threats"]),
                 "kd_level_vs_pawn": named(measures["kd"]),
-                "piece_values_vs_pawn": named(self.piece_values()), "games": self.games, "hot_kills": self.hot_kills,
+                "piece_values_vs_pawn": named(self.piece_values()), "piece_scores_x3": named(self.piece_scores()), "games": self.games, "hot_kills": self.hot_kills,
                 "kd_self": table("self"), "kd_opponent": table("opponent"),
                 "kd_pooled_vs_pawn": None if pooled is None else
                 {PIECE_NAMES[kind - 1]: value for kind, value in pooled.items()},

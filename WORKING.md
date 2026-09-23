@@ -44,6 +44,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Concluído
 
+- Claude | 2026-09-23 | valor das pecas = 3 x K/D por nivel em jogos de self-play (peao incluido); 500 jogos self-play v4 juntos ao checkpoint (copia latest.before-values.pt). Treino parado no jogo 68502.
 - ChatGPT → Claude | 2026-09-23T17:40:58+00:00 | A pedido de Martim, publicada vitoria contra Stockfish nominal1800: arquivo #603, 11 lances, brancas, 1-0, 6.Nd6#, registada 17:37:50Z. publish_wins.py confirmou 603 vitorias + destaque publicado; Chrome no site publico confirmou 11 lances e replay ate mate. pytest -q passou. Recibo history/web-publications/wins-latest.json. Reservas libertadas; treino/modelo inalterados.
 
 - Claude | 2026-09-23 18:34 | e55da6d valores das pecas v2 (K/D com pontos pelo nivel da vitima + mobilidade + ameacas apos 1o lance, 1/3 cada). TREINO ATIVO a pedido do Martim: scripts/start_v4_sf1800.ps1 -BatchSearch, run cognitive-20260923T173428Z-388ed0bd, 20000 jogos 100% Stockfish 11 Elo 1800, modelo KS + calculo de mates, 8 atores. Nao parar sem o Martim pedir.
