@@ -90,6 +90,7 @@ def _config(genes):
     cfg = copy.copy(_state["cfg"])
     for name, value in genes.items():
         setattr(cfg, name, value)
+    cfg.threat_explore = cfg.trade_explore = 0.0     # training-only exploration, never in a tournament game
     cfg.validate()
     return cfg
 

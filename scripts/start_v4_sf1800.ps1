@@ -5,7 +5,7 @@
 # UTF-8 console output (the localised MSVC help otherwise breaks PyTorch decoding).
 # A completed campaign auto-publishes the model to the site; history/<run>/STOP
 # stops gracefully without publishing.
-param([int]$Workers = 6, [int]$Games = 20000, [int]$Elo = 1800, [double]$ThreatExplore = 0, [int]$MateLabels = 0, [switch]$NoCompile, [switch]$CudaGraphs, [switch]$BatchSearch)
+param([int]$Workers = 6, [int]$Games = 20000, [int]$Elo = 1800, [double]$ThreatExplore = 0, [int]$MateLabels = 0, [int]$ExchangeDepth = 0, [double]$TradeExplore = 0, [int]$ExchangeLabels = 0, [switch]$NoCompile, [switch]$CudaGraphs, [switch]$BatchSearch)
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $python = 'C:\Users\Martim\AppData\Local\Programs\Python\Python313\python.exe'
@@ -26,7 +26,8 @@ $arguments = @('train_cognitive.py', '--resume', $source,
     '--objective', 'shaped', '--victory-weight', '0.5', '--kd-weight', '0.75',
     '--king-safety-model', 'checkpoints\king_safety\latest.pt',
     '--mate-search-moves', '3', '--mate-defense-moves', '2',
-    '--threat-explore', "$ThreatExplore", '--mate-labels', "$MateLabels")
+    '--threat-explore', "$ThreatExplore", '--mate-labels', "$MateLabels",
+    '--exchange-depth', "$ExchangeDepth", '--trade-explore', "$TradeExplore", '--exchange-labels', "$ExchangeLabels")
 if ($CudaGraphs) { $arguments += @('--learner-device', 'cuda', '--cuda-graphs') }
 elseif (-not $NoCompile) { $arguments += '--compile-learner' }
 if ($BatchSearch) { $arguments += '--batch-search' }
