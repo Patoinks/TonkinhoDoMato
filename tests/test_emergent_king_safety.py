@@ -229,10 +229,6 @@ def test_threats_match_a_null_move_reference():
         board = chess.Board(fen)
         codes, threat, check = fast_rules.board(board).threats(1, 10 ** 7)
         for code, depth, checking in zip(codes, threat, check):
-            move = _move(code)
-            if move.promotion is None and board.piece_type_at(move.from_square) == chess.PAWN \
-                    and chess.square_rank(move.to_square) in (0, 7):
-                move.promotion = chess.QUEEN                       # decode as the code says
             move = next(m for m in board.legal_moves if fast_rules.code(m) == code)
             assert checking == board.gives_check(move)
             if checking:

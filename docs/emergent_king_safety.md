@@ -23,8 +23,10 @@ forced mate; an "ugly" king that cannot be mated keeps a high KS.
 | Input | the raw 782-value encoding TonkAI already uses, seen from the king's side |
 | Exact grounding (C++, `forced_mate`) | rules-only forced-mate search up to 3 attacker moves: a mate gives U exactly; a full search without mate proves U ≤ γ³ |
 | Beyond the horizon (`expand2`) | every legal attacker/defender continuation two plies deep, leaves valued by a lagged copy of the model (value iteration), capped by the exact bound |
-| Attack/defence episodes | the attacker plays what the model thinks hurts the king most, the defender what protects it most (10% random); their positions join the training pool |
+| Attack/defence episodes | the attacker plays a forced mate when the rules show one; otherwise, 30% of its moves, a move that **creates a mate threat** (were the defender to pass, mate would follow - asked only when no forced mate already exists); otherwise what the model thinks hurts the king most. The defender plays what protects it most (10% random each). Their positions join the training pool |
 | Positions | real TonkAI games (campaign replay) + benchmark games + those episodes, both kings each |
+
+Threats are found by the rules alone (C++ `threats`: a null move, then the exact mate search). Moving pieces against the king and the pieces around it is explored because it creates such threats - no rule says where pieces should go.
 
 ## Using it
 
