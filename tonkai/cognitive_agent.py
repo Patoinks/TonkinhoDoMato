@@ -208,6 +208,7 @@ class CognitiveAgent(SurvivalAgent):
         network estimates; this is a bounded depth-two search, not a mate proof.
         """
         cfg = self.cfg
+        pending = []
         budget, used, changes = cfg.planning_nodes, 0, {}
         root_count = len(root_indices)
         for ordinal, index in enumerate(root_indices):
@@ -247,29 +248,41 @@ class CognitiveAgent(SurvivalAgent):
             else:
                 encoded = encode_after_moves(candidate, replies, colour)
             x = torch.from_numpy(encoded).to(self.device)
-            contexts, _ = self.net.candidates(x, candidate_memory[index:index + 1])
-            reply_values = self.net.survival(contexts)[0].mean(-1).cpu().numpy()
-            reply_probabilities = self.net.predict_logits(contexts).softmax(0).cpu().numpy()
+            if getattr(cfg, "batch_search", False):
+                reply_values = np.zeros(len(replies), dtype=np.float32)
+                overrides, adjustments = {}, {}
+            else:
+                contexts, _ = self.net.candidates(x, candidate_memory[index:index + 1])
+                reply_values = self.net.survival(contexts)[0].mean(-1).cpu().numpy()
+                reply_probabilities = self.net.predict_logits(contexts).softmax(0).cpu().numpy()
             for j, reply in enumerate(replies):
                 if fast is not None:
                     fast.push(fast_rules.code(reply))
                     ending = fast_rules.terminal_value(fast, colour, cfg.objective, victory_weight(cfg))
                     if ending is not None:
                         reply_values[j] = ending
+                        if getattr(cfg, "batch_search", False): overrides[j] = ending
                     elif cfg.king_safety_weight:
                         reply_values[j] += cfg.king_safety_weight * fast_rules.king_balance(fast, colour)
+                        if getattr(cfg, "batch_search", False): adjustments[j] = float(reply_values[j])
                     fast.pop()
                     continue
                 candidate.push(reply)
                 ending = terminal_value(candidate, colour, cfg.objective, victory_weight(cfg))
                 if ending is not None:
                     reply_values[j] = ending
+                    if getattr(cfg, "batch_search", False): overrides[j] = ending
                 elif cfg.king_safety_weight:
                     reply_values[j] += cfg.king_safety_weight * king_balance(king_senses(candidate), colour)
+                    if getattr(cfg, "batch_search", False): adjustments[j] = float(reply_values[j])
                 candidate.pop()
             if fast is not None:
                 fast.pop()
             used += len(replies)
+            if getattr(cfg, "batch_search", False):
+                pending.append((index, x, candidate_memory[index:index + 1].expand(len(replies), -1),
+                                overrides, adjustments))
+                continue
             # Always include the worst measured reply, even when predicted unlikely.
             selected = list(np.argsort(reply_probabilities)[::-1][:max(1, cfg.planning_replies - 1)])
             worst = int(reply_values.argmin())
@@ -279,6 +292,20 @@ class CognitiveAgent(SurvivalAgent):
             expected = float(np.average(reply_values[selected], weights=reply_probabilities[selected] + 1e-8))
             continuation = (1 - cfg.robust_weight) * expected + cfg.robust_weight * float(reply_values[selected].min())
             changes[index] = continuation_value(continuation, 1, cfg)
+        if pending:
+            from .execution_fastpaths import batched_replies
+            results = batched_replies(self.net, torch.cat([p[1] for p in pending]),
+                                      torch.cat([p[2] for p in pending]), [len(p[1]) for p in pending])
+            for (index, _, _, overrides, adjustments), (reply_values, reply_probabilities) in zip(pending, results):
+                for j, value in overrides.items(): reply_values[j] = value
+                for j, value in adjustments.items(): reply_values[j] += value
+                selected = list(np.argsort(reply_probabilities)[::-1][:max(1, cfg.planning_replies - 1)])
+                worst = int(reply_values.argmin())
+                if worst not in selected: selected.append(worst)
+                selected = np.asarray(selected, dtype=int)
+                expected = float(np.average(reply_values[selected], weights=reply_probabilities[selected] + 1e-8))
+                continuation = (1 - cfg.robust_weight) * expected + cfg.robust_weight * float(reply_values[selected].min())
+                changes[index] = continuation_value(continuation, 1, cfg)
         self.diagnostics["planning_nodes"] += used
         self.diagnostics["planned_decisions"] += bool(changes)
         return changes
@@ -295,7 +322,12 @@ class CognitiveAgent(SurvivalAgent):
                    else encode_after_moves(board, moves, self_color))
         x = torch.from_numpy(encoded).to(self.device)
         # candidates() and keys() both encode x with the same module; do it once.
-        latent = self.net.encode(x)
+        if getattr(self.cfg, "incremental_encoder", False):
+            from .execution_fastpaths import incremental_encode
+            root = torch.from_numpy(encode(board, self_color)).to(self.device)
+            latent = incremental_encode(self.net.encoder, root, x)
+        else:
+            latent = self.net.encode(x)
         memories = self.net.memory_cell(latent, self.net._memory_for_batch(self.memory, len(x)))
         contexts = self.net.context_from_latent(latent, memories)
         heads, logvars = self.net.survival(contexts)

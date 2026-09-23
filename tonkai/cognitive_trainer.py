@@ -99,12 +99,28 @@ class CognitiveTrainer(SurvivalTrainer):
                 "value_absolute_error": priority}
 
     @torch.inference_mode()
+    def _experiment_policy(self):
+        # CUDA benefits the batched learner. Tiny sequential experiment calls
+        # stay on CPU with the very same current parameters, not an old actor.
+        if torch.device(self.device).type != 'cuda':
+            return self.net, self.device
+        stamp = tuple((id(p), p._version) for p in self.net.parameters())
+        if getattr(self, '_experiment_stamp', None) != stamp:
+            if not hasattr(self, '_experiment_net'):
+                self._experiment_net = deepcopy(self.net).cpu().eval().requires_grad_(False)
+            else:
+                self._experiment_net.load_state_dict(self.net.state_dict())
+            self._experiment_stamp = stamp
+        return self._experiment_net, 'cpu'
+
+    @torch.inference_mode()
     def _rollout(self, board, first_move, colour, opponent):
         """Finish a short real branch from an intact history, then bootstrap if cut."""
         branch = board.copy(stack=True)
         if first_move not in branch.legal_moves or branch.is_game_over(claim_draw=True):
             raise ValueError("Experiment root action must be legal in an ongoing game")
-        agent = SurvivalAgent(self.net, self.cfg, self.device)
+        policy, device = self._experiment_policy()
+        agent = SurvivalAgent(policy, self.cfg, device)
         agent.observe(branch, colour)
         first_ply = len(branch.move_stack)
         branch.push(first_move)
@@ -120,7 +136,7 @@ class CognitiveTrainer(SurvivalTrainer):
         outcome = branch.outcome(claim_draw=True)
         lost = bool(outcome and outcome.winner is not None and outcome.winner != colour)
         steps = len(branch.move_stack) - first_ply
-        bootstrap = float(self.net.survival(agent.context)[0].mean())
+        bootstrap = float(policy.survival(agent.context)[0].mean())
         if self.cfg.objective == "victory":
             value = outcome_value(outcome, colour, "victory") if outcome else bootstrap
         else:
@@ -157,7 +173,8 @@ class CognitiveTrainer(SurvivalTrainer):
         original = chess.Move.from_uci(row["move"])
         baseline = self._rollout(board, original, colour, opponent)
         if counterfactual:
-            evaluator = SurvivalAgent(self.net, self.cfg, self.device)
+            policy, device = self._experiment_policy()
+            evaluator = SurvivalAgent(policy, self.cfg, device)
             candidates = evaluator.evaluate(board, colour, explore=False)
             alternative = next(candidates.moves[i] for i in np.argsort(candidates.scores)[::-1]
                                if candidates.moves[i] != original)

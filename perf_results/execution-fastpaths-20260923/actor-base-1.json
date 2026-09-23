@@ -1,0 +1,16 @@
+{
+  "mode": "actor-base",
+  "repetition": 1,
+  "source_games": 42495,
+  "seconds": 1.5780359000054887,
+  "positions": 288,
+  "max_score_difference": 0.0,
+  "argmax_changes": 0,
+  "diagnostics": {
+    "piece_safety_positions": 739,
+    "king_safety_positions": 739,
+    "planning_nodes": 2175,
+    "planned_decisions": 24,
+    "unsearched_replies": 101
+  }
+}

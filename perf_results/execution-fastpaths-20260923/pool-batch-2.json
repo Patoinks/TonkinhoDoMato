@@ -1,0 +1,27 @@
+{
+  "mode": "pool-batch",
+  "repetition": 2,
+  "seconds": 15.485584900001413,
+  "games": 64,
+  "games_per_second": 4.132875859276982,
+  "plies": 5488,
+  "plies_per_second": 354.39410493300124,
+  "learner_seconds": 8.654033700033324,
+  "learned_positions": 30844,
+  "updates": 128,
+  "opponents": {
+    "tiny": 11,
+    "self": 47,
+    "fairy": 5,
+    "external": 1
+  },
+  "broker": {},
+  "timings": {
+    "submit": 0.43401219995575957,
+    "receive": 2.45520799998485,
+    "ingest": 3.5880078000045614,
+    "investigate": 0.35385419997328427,
+    "actors": 82.70541759999469
+  },
+  "changed_games": 6
+}

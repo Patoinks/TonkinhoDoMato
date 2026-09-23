@@ -108,7 +108,11 @@ class SurvivalTrainer:
         before, after = [], []
         # Encode all positions together. GRU time dependency remains sequential.
         with torch.set_grad_enabled(gradients):
-            latent = net.encode(x.flatten(0, 1)).reshape(len(x), x.shape[1], -1)
+            if getattr(self.cfg, "compact_sequences", False):
+                from .execution_fastpaths import compact_encode
+                latent = compact_encode(net.encode, x, valid)
+            else:
+                latent = net.encode(x.flatten(0, 1)).reshape(len(x), x.shape[1], -1)
         total, stop = x.shape[1], min(x.shape[1], burn_in + learn_length) if learner_window_only else x.shape[1]
         for t in range(stop):
             learning = gradients and burn_in <= t < burn_in + learn_length
@@ -322,7 +326,11 @@ class SurvivalTrainer:
                     proxies, has_proxy = self._proxy_targets(batch, offset, length)
                     weight = victory_weight(cfg)
                     targets = torch.where(has_proxy, (1 - weight) * targets + weight * proxies, targets)
-            future_targets = F.normalize(self.future_encoder(x.flatten(0, 1)), dim=-1).reshape(b, total, -1)
+            if getattr(cfg, "compact_sequences", False):
+                from .execution_fastpaths import compact_encode
+                future_targets = F.normalize(compact_encode(self.future_encoder, x, valid), dim=-1)
+            else:
+                future_targets = F.normalize(self.future_encoder(x.flatten(0, 1)), dim=-1).reshape(b, total, -1)
         learning = context[:, selection]
         mask = valid[:, selection]
         weights = torch.as_tensor(batch["importance_weights"], device=self.device)[:, None]

@@ -1,0 +1,20 @@
+{
+  "mode": "pool-base",
+  "repetition": 1,
+  "seconds": 16.83540900000662,
+  "games": 64,
+  "games_per_second": 3.801511445309991,
+  "plies": 5415,
+  "plies_per_second": 321.64350744302504,
+  "learner_seconds": 9.264557099944795,
+  "learned_positions": 31063,
+  "updates": 128,
+  "opponents": {
+    "tiny": 11,
+    "self": 47,
+    "fairy": 5,
+    "external": 1
+  },
+  "broker": {},
+  "changed_games": 6
+}

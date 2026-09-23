@@ -81,7 +81,15 @@ def main(argv=None):
     parser.add_argument("--dedicate-learner-core", action="store_true",
                         help="Windows: learner owns physical core 0 at above-normal priority; actors use the rest")
     add_resign_args(parser)
+    parser.add_argument('--compact-sequences', action='store_true')
+    parser.add_argument('--incremental-encoder', action='store_true')
+    parser.add_argument('--batch-search', action='store_true')
+    parser.add_argument('--inference-broker', action='store_true')
+    parser.add_argument('--cuda-graphs', action='store_true')
+    parser.add_argument('--learner-device', choices=('cpu', 'cuda'), default='cpu')
     args = parser.parse_args(argv)
+    if args.cuda_graphs and (args.learner_device != 'cuda' or args.compact_sequences or args.compile_learner):
+        parser.error('CUDA graphs need --learner-device cuda and a separate trial from compact/compile')
     if args.games < 1:
         parser.error("games must be positive")
     if args.game_cap < 1:
@@ -99,7 +107,9 @@ def main(argv=None):
         defaults = CognitiveConfig()
         for name in CognitiveConfig.__annotations__:
             setattr(cfg, name, getattr(defaults, name))
-    cfg.device = "cpu"
+    cfg.device = args.learner_device
+    for flag in ('compact_sequences', 'incremental_encoder', 'batch_search', 'inference_broker', 'cuda_graphs'):
+        setattr(cfg, flag, bool(getattr(args, flag)))
     cfg.opponent_elo = args.opponent_elo
     cfg.opponent_path = str((args.opponent_path or Path(cfg.opponent_path or ENGINE)).resolve(strict=True))
     if args.fairy_path is not None:
@@ -130,6 +140,9 @@ def main(argv=None):
     torch.set_num_threads(1)
     trainer = CognitiveTrainer(cfg)
     trainer.load_state_dict(state)
+    if args.cuda_graphs:
+        from tonkai.cuda_learner import CudaUnroll
+        trainer._unroll = CudaUnroll(trainer)
     if args.compile_learner:
         # Same maths, fused kernels: only last-bit float differences. Fixed batch
         # shapes, so it compiles once per process (learner and target unrolls).
@@ -197,6 +210,7 @@ def main(argv=None):
     started = time.perf_counter()
     history = history_path.open("a", encoding="utf-8", buffering=1)
     loss = {}
+    execution = dict(learner_seconds=0.0, learner_updates=0, learned_positions=0, actor_seconds=0.0)
     pool = None
     external = None
     recorder = LongestWinRecorder(cfg.win_pgn_path)
@@ -225,6 +239,13 @@ def main(argv=None):
                       archive=len(trainer.knowledge.memory.entries), skills=len(trainer.knowledge.skills.skills),
                       counterfactuals=trainer.experiments, generalizations=trainer.generalizations,
                       experiment_positions=trainer.experiment_positions, captures=capture_stats.summary())
+        result['execution'] = {**execution, 'learner_device': cfg.device,
+            'update_seconds_mean': execution['learner_seconds'] / max(1, execution['learner_updates']),
+            **{flag:getattr(cfg,flag,False) for flag in ('compact_sequences','incremental_encoder','batch_search','inference_broker','cuda_graphs')}}
+        if cfg.device == 'cuda':
+            result['execution']['gpu_allocated_mb'] = torch.cuda.memory_allocated() / 1048576
+        if pool is not None and getattr(pool, 'broker', None) is not None:
+            result['execution']['broker'] = dict(pool.broker.stats)
         if opponents.uses_mixture(cfg):
             result["opponents"] = {kind: dict(row) for kind, row in by_kind.items()}
         if resign is not None:
@@ -293,6 +314,7 @@ def main(argv=None):
                 record("opening", **{k:v for k,v in openings.rows[stats["game_number"]].items() if k != "pgn"})
             diagnostics.update(stats["cognitive"])
             all_plies += stats["plies"]
+            execution["actor_seconds"] += stats.get("actor_seconds", 0.0)
             resign_report = stats.get("resign")
             resigned = bool(resign_report and resign_report["resigned"])
             kind = stats.get("opponent_kind", "external")
@@ -344,9 +366,13 @@ def main(argv=None):
                 for event in trainer.investigate(episode, trace, colour, external):
                     record("experiment", experiment_type=event["kind"], **{key: value for key, value in event.items() if key != "kind"})
             for _ in range(cfg.updates_per_game):
+                update_started = time.perf_counter()
                 update = trainer.update()
+                execution['learner_seconds'] += time.perf_counter() - update_started
                 if update:
                     loss = update
+                    execution['learner_updates'] += 1
+                    execution['learned_positions'] += update['learned_positions']
             if completed % cfg.log_every == 0:
                 metrics()
             if completed % cfg.checkpoint_every == 0:

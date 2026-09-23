@@ -1,0 +1,22 @@
+{
+  "mode": "cuda-graphs",
+  "repetition": 1,
+  "source_games": 42495,
+  "seconds": 2.606931000002078,
+  "updates": 100,
+  "learned_positions": 24375,
+  "last_loss": {
+    "loss": 1.266408085823059,
+    "survival_loss": 0.05726544186472893,
+    "value_loss": 0.05726544186472893,
+    "objective": "shaped",
+    "future_loss": 0.00012340165267232805,
+    "novelty_loss": 3.049092356377514e-06,
+    "reply_loss": 1.2048625946044922,
+    "piece_loss": 0.00012065375631209463,
+    "learned_positions": 283,
+    "gradient_norm": 2.9438588619232178,
+    "capture_loss": 0.08486233651638031
+  },
+  "max_parameter_difference": 0.0009457170963287354
+}

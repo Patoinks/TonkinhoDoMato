@@ -1,0 +1,22 @@
+{
+  "mode": "pool-broker",
+  "repetition": 0,
+  "seconds": 4.917086299989023,
+  "games": 8,
+  "games_per_second": 1.6269797827257697,
+  "plies": 623,
+  "plies_per_second": 126.70105057976932,
+  "learner_seconds": 1.0244365999824367,
+  "learned_positions": 3824,
+  "updates": 16,
+  "opponents": {
+    "self": 7,
+    "tiny": 1
+  },
+  "broker": {
+    "requests": 5295,
+    "batches": 5091,
+    "rows": 97125
+  },
+  "changed_games": 4
+}

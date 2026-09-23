@@ -46,11 +46,20 @@ def actor_mask():
     return ((1 << (os.cpu_count() or 1)) - 1) & ~LEARNER_MASK
 
 
-def _initialize(cfg, engine_path, closing_barrier, dedicated=False):
+def _initialize(cfg, engine_path, closing_barrier, dedicated=False, broker_args=None):
     torch.set_num_threads(1)
     if dedicated:   # before any engine starts: child processes inherit the mask
         pin_process(actor_mask())
     net = SurvivalNet(cfg).cpu().eval().requires_grad_(False)
+    if broker_args is not None:
+        from .inference_broker import EncoderClient
+        requests, responses, counter = broker_args
+        with counter.get_lock():
+            slot = counter.value
+            counter.value += 1
+        client = EncoderClient(requests, responses[slot], slot)
+        _actor_state['encoder_client'] = client
+        net.encode = client.encode
     knowledge = CognitiveKnowledge(cfg, net.encoder)
     external = UCIOpponent(engine_path, cfg.opponent_elo, cfg.opponent_move_time)
     fairy = UCIOpponent(cfg.fairy_path, cfg.fairy_elo, cfg.opponent_move_time) if cfg.mix_fairy > 0 else None
@@ -81,9 +90,10 @@ def _opponent(kind, state, seed, kd_values):
     raise ValueError(f"unknown opponent kind {kind!r}")
 
 
-def _play(payload, seed, game_number, resign_plan=None, kd_values=None, kind="external"):
+def _play(payload, seed, game_number, resign_plan=None, kd_values=None, kind="external", version=None):
     weights, knowledge_state = unpack_snapshot(payload)
     state = _actor_state
+    if "encoder_client" in state: state["encoder_client"].version = version
     state["net"].load_state_dict(weights)
     state["knowledge"].load_state_dict(knowledge_state)
     agent = CognitiveAgent(state["net"], state["cfg"], state["knowledge"], kd_values=kd_values)
@@ -98,11 +108,19 @@ def _play(payload, seed, game_number, resign_plan=None, kd_values=None, kind="ex
 
 
 class CognitivePool:
+    broker = None
     def __init__(self, cfg, engine_path, dedicated=False):
         context = get_context("spawn")
+        self.broker = None
+        self.versions = {}
+        if getattr(cfg, 'inference_broker', False):
+            from .inference_broker import InferenceBroker
+            self.broker = InferenceBroker(context, cfg.num_workers)
+        broker_args = ((self.broker.requests, self.broker.responses, self.broker.slot_counter)
+                       if self.broker else None)
         self.barrier = context.Barrier(cfg.num_workers)
         self.executor = ProcessPoolExecutor(max_workers=cfg.num_workers, mp_context=context,
-                                            initializer=_initialize, initargs=(cfg, str(engine_path), self.barrier, dedicated))
+                                            initializer=_initialize, initargs=(cfg, str(engine_path), self.barrier, dedicated, broker_args))
         self.pending = set()
         self.capacity = cfg.num_workers
         self.closed = False
@@ -111,7 +129,13 @@ class CognitivePool:
         if len(self.pending) >= self.capacity:
             raise RuntimeError("Actor pool is full")
         payload = pack_snapshot(net, knowledge)
-        future = self.executor.submit(_play, payload, int(seed), game_number, resign_plan, kd_values, kind)
+        version = self.broker.register(net.encoder) if self.broker else None
+        try:
+            future = self.executor.submit(_play, payload, int(seed), game_number, resign_plan, kd_values, kind, version)
+        except BaseException:
+            if self.broker: self.broker.release(version)
+            raise
+        if self.broker: self.versions[future] = version
         self.pending.add(future)
 
     def receive(self, timeout=120):
@@ -122,7 +146,10 @@ class CognitivePool:
             raise TimeoutError("Cognitive actors did not finish a game in time")
         future = next(iter(ready))
         self.pending.remove(future)
-        return future.result()
+        try:
+            return future.result()
+        finally:
+            if self.broker: self.broker.release(self.versions.pop(future))
 
     def close(self):
         if self.closed:
@@ -136,6 +163,7 @@ class CognitivePool:
                 future.result(timeout=120)
         finally:
             self.executor.shutdown(wait=True, cancel_futures=True)
+            if self.broker: self.broker.close()
 
     def __enter__(self):
         return self

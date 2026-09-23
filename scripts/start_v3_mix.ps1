@@ -5,7 +5,7 @@
 # English compiler output (PyTorch cannot decode localised messages).
 # A completed campaign auto-publishes the model to the site; history/<run>/STOP
 # stops gracefully without publishing.
-param([int]$Workers = 8, [int]$Games = 100000, [switch]$Resume, [switch]$NoCompile)
+param([int]$Workers = 8, [int]$Games = 100000, [switch]$Resume, [switch]$NoCompile, [switch]$CudaGraphs, [switch]$BatchSearch)
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $python = 'C:\Users\Martim\AppData\Local\Programs\Python\Python313\python.exe'
@@ -28,7 +28,9 @@ $arguments = @('train_cognitive.py', '--resume', $source,
     '--resign', '--resign-min-non-loss', '0', '--capture-target-weight', '0.05',
     '--objective', 'shaped', '--victory-weight', '0.5', '--kd-weight', '0.75')
 if (-not $Resume) { $arguments += '--new-campaign' }
-if (-not $NoCompile) { $arguments += '--compile-learner' }
+if ($CudaGraphs) { $arguments += @('--learner-device', 'cuda', '--cuda-graphs') }
+elseif (-not $NoCompile) { $arguments += '--compile-learner' }
+if ($BatchSearch) { $arguments += '--batch-search' }
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $stdout = Join-Path $root "history\mix-$stamp.stdout.log"
 $stderr = Join-Path $root "history\mix-$stamp.stderr.log"

@@ -1,0 +1,22 @@
+{
+  "mode": "compact",
+  "repetition": 0,
+  "source_games": 42495,
+  "seconds": 4.110000800006674,
+  "updates": 100,
+  "learned_positions": 24375,
+  "last_loss": {
+    "loss": 1.2664085626602173,
+    "survival_loss": 0.05726540461182594,
+    "value_loss": 0.05726540461182594,
+    "objective": "shaped",
+    "future_loss": 0.00012340163812041283,
+    "novelty_loss": 3.0490875815303298e-06,
+    "reply_loss": 1.20486319065094,
+    "piece_loss": 0.00012065378541592509,
+    "learned_positions": 283,
+    "gradient_norm": 2.9438540935516357,
+    "capture_loss": 0.08486232906579971
+  },
+  "max_parameter_difference": 0.0010075569152832031
+}

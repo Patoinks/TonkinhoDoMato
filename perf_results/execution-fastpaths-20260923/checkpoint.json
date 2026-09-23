@@ -1,0 +1,18 @@
+{
+  "baseline_commit": "09d4d1f16ad5e2eb0fc6fe376d981bc1914bbafc",
+  "source": "checkpoints/cognitive-rodent-100k-20260922/latest.pt",
+  "input_sha256": "7c1d34d16929c3542a6af31569dd58dc29b57bda92cbb040ca4117b1c824617e",
+  "tests": {
+    "passed": 445,
+    "seconds": 67.62,
+    "warnings": 1
+  },
+  "selection": {
+    "compile_learner": true,
+    "batch_search": true,
+    "compact_sequences": false,
+    "incremental_encoder": false,
+    "inference_broker": false,
+    "cuda_graphs": false
+  }
+}

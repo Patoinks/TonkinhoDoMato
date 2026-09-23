@@ -244,5 +244,20 @@ class TrainingReader:
                     age=age, timestamp=latest['timestamp'], speed=speed, mean_speed=row.get('games_per_second', 0),
                     eta=(total-latest['games'])/speed if state == 'running' and speed > 0 else None,
                     turns=latest['session_mean_turns'], rates=rates, duration=duration,
-                    draw_reasons=row.get('draw_reasons', {}), metrics=row,
+                    draw_reasons=row.get('draw_reasons', {}), metrics=row, config=tail.config,
                     opponents=score_rows(latest['opponents']))
+
+
+def metric_rows(value, prefix=''):
+    """Flatten every recorded field, including zeros, nulls and new metrics."""
+    if isinstance(value, dict):
+        result = []
+        for key, child in sorted(value.items(), key=lambda item: str(item[0])):
+            result.extend(metric_rows(child, f'{prefix}.{key}' if prefix else str(key)))
+        return result or [(prefix, '{}')]
+    if isinstance(value, (list, tuple)):
+        result = []
+        for index, child in enumerate(value):
+            result.extend(metric_rows(child, f'{prefix}[{index}]'))
+        return result or [(prefix, '[]')]
+    return [(prefix, json.dumps(value, ensure_ascii=False))]

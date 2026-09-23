@@ -1,0 +1,22 @@
+{
+  "mode": "broker",
+  "repetition": 0,
+  "source_games": 42495,
+  "cases": [
+    {
+      "distinct_versions": false,
+      "broker_seconds": 0.2791136000014376,
+      "local_serial_seconds": 0.08191850000002887
+    },
+    {
+      "distinct_versions": true,
+      "broker_seconds": 0.33355419999861624,
+      "local_serial_seconds": 0.08069430000614375
+    }
+  ],
+  "stats": {
+    "requests": 1616,
+    "batches": 1024,
+    "rows": 48480
+  }
+}

@@ -6,6 +6,11 @@ from .survival_config import SurvivalConfig
 
 @dataclass
 class CognitiveConfig(SurvivalConfig):
+    compact_sequences: bool = False
+    incremental_encoder: bool = False
+    batch_search: bool = False
+    inference_broker: bool = False
+    cuda_graphs: bool = False
     checkpoint_dir: str = "checkpoints/cognitive"
     external_probability: float = 1.0
     historical_probability: float = 0.0

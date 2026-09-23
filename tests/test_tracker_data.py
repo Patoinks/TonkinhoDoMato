@@ -139,3 +139,14 @@ def test_self_play_is_separate_from_external_totals_after_resume(tmp_path):
     assert rows['external']['games'] == 3 and rows['tiny']['score'] == .75
     assert result['counts'] == dict(wins=2, losses=2, draws=1, truncated=0)
     assert result['turns'] == 20  # The external-only duration must not label all games.
+
+
+def test_all_metrics_keep_unknown_fields_nested_arrays_zero_and_null():
+    rows = dict(module.metric_rows({'opponents': {'self': {'wins': 0}},
+                                   'loss': {'new_head': .125}, 'future': [1, None],
+                                   'empty': {}, 'enabled': False}))
+    assert rows['opponents.self.wins'] == '0'
+    assert rows['loss.new_head'] == '0.125'
+    assert rows['future[1]'] == 'null'
+    assert rows['empty'] == '{}'
+    assert rows['enabled'] == 'false'

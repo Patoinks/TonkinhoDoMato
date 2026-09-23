@@ -38,3 +38,17 @@ O botão Escolher pasta permite apontar a outro projeto durante a sessão.
 
 Para desenvolvimento: `python desktop/tonkinho_tracker.py --project CAMINHO`.
 Testes: `python -m pytest tests/test_tracker_data.py -q`.
+
+
+A aba **Todas as estatísticas** apresenta todos os campos do último registo de
+métricas, incluindo perdas por cabeça, capturas/KD, calibração, experiências,
+pesquisa, desistências e métricas de execução. Mostra também configuração e
+resumos da campanha. A pesquisa filtra por nome/caminho ou valor, e campos novos
+aparecem automaticamente. Valores zero e null não são escondidos; dados não
+registados não são inventados. Os campos em `treino` são o último registo da
+sessão; os de `campanha` agregam retomas quando aplicável.
+
+As métricas `execution` identificam CPU/GPU, opções ativas, tempo por update,
+updates e posições aprendidas na sessão, tempo agregado dos atores e memória
+CUDA alocada (quando disponível). Os tempos dos atores somam trabalho paralelo,
+pelo que não equivalem ao tempo de parede da campanha.

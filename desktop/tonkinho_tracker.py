@@ -9,7 +9,7 @@ import sys
 import tkinter as tk
 from tkinter import filedialog, ttk
 
-from tracker_data import TrainingReader
+from tracker_data import TrainingReader, metric_rows
 
 BG = '#101813'
 CARD = '#19251e'
@@ -162,6 +162,27 @@ class Tracker:
         self.speed_chart.grid(row=0,column=0,sticky='nsew',padx=(0,7))
         self.survival_chart = Chart(charts,'Duração das partidas','turnos / jogo',BLUE)
         self.survival_chart.grid(row=0,column=1,sticky='nsew',padx=(7,0))
+        all_stats = tk.Frame(self.tabs, bg=BG)
+        self.tabs.add(all_stats, text='Todas as estatísticas')
+        all_stats.grid_columnconfigure(0, weight=1)
+        all_stats.grid_rowconfigure(2, weight=1)
+        tk.Label(all_stats, text='Último registo, totais da campanha e configuração. Pesquisa pelo nome ou valor.',
+                 bg=BG, fg=MUTED, anchor='w').grid(row=0, column=0, sticky='ew', pady=(4,6))
+        self.stats_filter = tk.StringVar()
+        ttk.Entry(all_stats, textvariable=self.stats_filter).grid(row=1, column=0, sticky='ew', pady=(0,6))
+        self.stats_filter.trace_add('write', lambda *_: self.render_all_stats(self.snapshot or {}))
+        self.stats_table = ttk.Treeview(all_stats, columns=('metric','value'), show='headings')
+        self.stats_table.heading('metric', text='Estatística / campo')
+        self.stats_table.heading('value', text='Valor registado')
+        self.stats_table.column('metric', width=460, minwidth=220)
+        self.stats_table.column('value', width=380, minwidth=180)
+        self.stats_table.grid(row=2, column=0, sticky='nsew')
+        scroll = ttk.Scrollbar(all_stats, orient='vertical', command=self.stats_table.yview)
+        scroll.grid(row=2, column=1, sticky='ns')
+        self.stats_table.configure(yscrollcommand=scroll.set)
+        horizontal = ttk.Scrollbar(all_stats, orient='horizontal', command=self.stats_table.xview)
+        horizontal.grid(row=3, column=0, sticky='ew')
+        self.stats_table.configure(xscrollcommand=horizontal.set)
         results = tk.Frame(root,bg=CARD,padx=20,pady=14)
         results.grid(row=4,column=0,sticky='ew',padx=28)
         for i in range(4): results.grid_columnconfigure(i,weight=1)
@@ -208,6 +229,21 @@ class Tracker:
             self.opponent_table.selection_set(rows[0]['id'])
         self.show_opponent_detail()
 
+    def render_all_stats(self, data):
+        groups = {'treino': data.get('metrics', {}), 'configuração': data.get('config', {}),
+                  'campanha': {key:data.get(key) for key in ('games','total','counts','speed','eta','draw_reasons','opponents')}}
+        query = self.stats_filter.get().casefold().strip()
+        wanted = {key:value for key,value in metric_rows(groups)
+                  if not query or query in key.casefold() or query in value.casefold()}
+        for key in self.stats_table.get_children():
+            if key not in wanted: self.stats_table.delete(key)
+        for index,(key,value) in enumerate(wanted.items()):
+            if self.stats_table.exists(key):
+                self.stats_table.item(key, values=(key,value))
+                self.stats_table.move(key, '', index)
+            else:
+                self.stats_table.insert('', index, iid=key, values=(key,value))
+
     def show_opponent_detail(self):
         selected = self.opponent_table.selection()
         row = self.opponent_rows.get(selected[0]) if selected else None
@@ -240,6 +276,7 @@ class Tracker:
                 adversaries = f"{len(known)} adversários registados" if len(known) > 1 else opponent.get('engine_name','Adversário externo')
                 self.opponent.configure(text=f"{adversaries}  ·  Objetivo: {objective}")
                 self.render_opponents(data.get('opponents', []))
+                self.render_all_stats(data)
                 if 'metrics' in data:
                     for key in ('wins','draws','losses','truncated'): self.values[key].configure(text=number(data['counts'][key]))
                     self.values['speed'].configure(text=f"{data['speed']:.2f}")
@@ -283,6 +320,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--project', type=Path)
     parser.add_argument('--smoke-test', type=Path)
+    parser.add_argument('--smoke-tab', type=int, default=0)
     args = parser.parse_args()
     base = Path(sys.executable).resolve().parent if getattr(sys,'frozen',False) else Path(__file__).resolve().parent
     project = args.project or (base / 'tracker-config.json')
@@ -295,12 +333,18 @@ def main():
     if args.smoke_test:
         def capture():
             from PIL import ImageGrab
+            app.tabs.select(args.smoke_tab)
             root.update()
             box = (root.winfo_rootx(),root.winfo_rooty(),root.winfo_rootx()+root.winfo_width(),root.winfo_rooty()+root.winfo_height())
             ImageGrab.grab().crop(box).save(args.smoke_test)
             result = {k:app.snapshot.get(k) for k in ('state','games','total','speed','opponents')}
             result['chart_height'] = app.speed_chart.winfo_height()
             result['opponent_rows'] = len(app.opponent_table.get_children())
+            result['metric_rows'] = len(app.stats_table.get_children())
+            result['tab'] = app.tabs.index(app.tabs.select())
+            app.stats_filter.set('execution')
+            result['execution_metric_rows'] = len(app.stats_table.get_children())
+            app.stats_filter.set('')
             args.smoke_test.with_suffix('.json').write_text(json.dumps(result,ensure_ascii=False),encoding='utf-8')
             if sys.stdout:
                 print(json.dumps(result,ensure_ascii=False))
