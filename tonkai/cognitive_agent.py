@@ -14,6 +14,10 @@ from .king_safety import king_senses, king_balance
 from .objective import outcome_value, continuation_value, victory_weight
 
 
+def terminal_draw_value(objective="survival", weight=0.5):
+    return .5 if objective == "victory" else 1.0 - weight / 2 if objective == "shaped" else 1.0
+
+
 def terminal_value(board, colour, objective="survival", weight=0.5):
     draw = .5 if objective == "victory" else 1.0 - weight / 2 if objective == "shaped" else 1.0
     result = board.outcome(claim_draw=False)
@@ -423,6 +427,8 @@ class CognitiveAgent(SurvivalAgent):
         # Known endings override noisy critics and intrinsic incentives.
         if safety or kings or self.cfg.objective in ("victory", "shaped"):
             scores = np.minimum(scores, .999999)
+        drawn = []   # moves whose ending is a draw (for the repetition rule)
+        draw_value = terminal_draw_value(self.cfg.objective, victory_weight(self.cfg))
         for index, move in enumerate(moves):
             if fast is not None:
                 fast.push(codes[index])
@@ -434,10 +440,33 @@ class CognitiveAgent(SurvivalAgent):
                 ending = terminal_value(branch, self_color, self.cfg.objective, victory_weight(self.cfg))
             if ending is not None:
                 scores[index] = ending
+                if ending == draw_value:
+                    drawn.append(index)
+        margin = float(getattr(self.cfg, "avoid_repetition_margin", 0.0) or 0.0)
+        if margin > 0 and drawn:
+            self._avoid_repetition_when_ahead(board, self_color, moves, scores, drawn, margin)
         self._evaluation = {"keys": keys, "retrieved": retrieved, "uncertainty": uncertainty,
                             "information": information, "gap": gap, "piece_safety": safety, "king_safety": kings,
                             "fast": fast, "codes": codes}
         return SurvivalChoice(moves, scores, mean, epistemic, aleatoric, information)
+
+    def _avoid_repetition_when_ahead(self, board, self_color, moves, scores, drawn, margin):
+        """Owner's rule: ahead by `margin` pawns (own piece values) -> a repetition draw is nearly worthless."""
+        repeated = []
+        for index in drawn:
+            branch = board.copy(stack=True)
+            branch.push(moves[index])
+            if branch.can_claim_threefold_repetition() or branch.is_repetition(5):
+                repeated.append(index)
+        if not repeated:
+            return
+        value = self.piece_valuer(board, self_color)
+        balance = sum(value(piece, square) for square, piece in board.piece_map().items()
+                      if piece.piece_type != chess.KING)
+        if balance >= margin:
+            for index in repeated:
+                scores[index] = min(scores[index], 0.05)
+            self.diagnostics["repetitions_avoided"] += len(repeated)
 
     @torch.inference_mode()
     def choose(self, board, self_color, rng, *, temperature=None, explore=True, head=None):

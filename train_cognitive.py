@@ -19,6 +19,10 @@ import numpy as np
 import torch
 
 from tonkai.captures import CaptureStats, parse_weights
+
+# v3.1: opponent mixture, frozen self-play series, weighted opponent piece
+# values, forced resignation and no repetition draw when ahead.
+MODEL_NAME, MODEL_VERSION = "Tonkinho do Mato v3.1", "3.1"
 from tonkai import opponents
 from tonkai import fast_rules
 from tonkai.cognitive_config import CognitiveConfig
@@ -77,6 +81,8 @@ def main(argv=None):
     parser.add_argument("--fairy-elo", type=int, help="Fairy-Stockfish nominal UCI_Elo")
     parser.add_argument("--self-snapshot-every", type=int,
                         help="self-play against a frozen TonkAI saved every N games (0 = current weights)")
+    parser.add_argument("--avoid-repetition-margin", type=float,
+                        help="when ahead by this many pawns (own piece values), avoid drawing by repetition")
     parser.add_argument("--value-opponents",
                         help="piece values take the opponent side only from these kinds, e.g. 'fairy=0.35,external=0.65'")
     parser.add_argument("--self-games-per-snapshot", type=int,
@@ -133,6 +139,7 @@ def main(argv=None):
                             ("self_snapshot_every", "self_snapshot_every"), ("checkpoint_every", "checkpoint_every"),
                             ("self_games_per_snapshot", "self_games_per_snapshot"),
                             ("value_opponents", "value_opponents"),
+                            ("avoid_repetition_margin", "avoid_repetition_margin"),
                             ("fairy_elo", "fairy_elo")):
         value = getattr(args, argument)
         if value is not None:
@@ -245,7 +252,7 @@ def main(argv=None):
 
     def metrics(final=False):
         seconds = time.perf_counter() - started
-        result = dict(games=completed, final=final, state=status, objective=cfg.objective,
+        result = dict(games=completed, final=final, state=status, objective=cfg.objective, model=MODEL_NAME,
                       rules_backend=fast_rules.BACKEND, wins=counts["wins"],
                       losses=counts["losses"], draws=counts["draws"], truncated=counts["truncated"],
                       draw_reasons=dict(reasons), games_per_second=completed / max(.001, seconds),
@@ -304,6 +311,7 @@ def main(argv=None):
                      campaign_results=dict(counts), campaign_draw_reasons=dict(reasons),
                      capture_stats=capture_stats.state_dict(),
                      resign=resign.state_dict() if resign is not None else None,
+                     model_name=MODEL_NAME, model_version=MODEL_VERSION,
                      self_play_rival=({"version": rival["version"], "path": rival["path"],
                                        "remaining": rival["remaining"]}
                                       if rival["version"] is not None else None))
@@ -313,6 +321,7 @@ def main(argv=None):
         launch = dict(pid=os.getpid(), run_id=run_id, resume_games=initial_games, additional_games=args.games,
                       rules_backend=fast_rules.BACKEND,
                       pretrained_games=pretrained_games, objective=cfg.objective, version="cognitive-v3",
+                      model_name=MODEL_NAME, model_version=MODEL_VERSION,
                       history=str(history_path.resolve()), checkpoint=str(output), source_checkpoint=str(source_path),
                       stop_file=str(stop_file.resolve()), opponent=external.info,
                       campaign_start_games=campaign_start, campaign_cap=campaign_cap,

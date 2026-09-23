@@ -74,6 +74,10 @@ class CognitiveConfig(SurvivalConfig):
     # Piece values: take the OPPONENT side only from these opponent kinds, in
     # these shares, e.g. "fairy=0.35,external=0.65". Empty = every opponent.
     value_opponents: str = ""
+    # Owner's rule: when TonkAI is ahead by at least this many pawns (its own
+    # piece values), moves that draw by repetition are nearly worthless (0.05),
+    # so it only repeats when everything else is terrible. 0 = off.
+    avoid_repetition_margin: float = 0.0
 
     def validate(self):
         super().validate()

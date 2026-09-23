@@ -60,6 +60,7 @@ class ResignConfig:
     window: int = 1000               # recent games for the non-loss rate
     tighten: float = 0.8             # threshold multiplier when too eager
     seed: int = 0x5E516              # own stream; never the games' RNG
+    force: bool = False              # owner's choice: always ACTIVE, no shadow, no played-out checks
 
     def validate(self):
         if self.patience < 1 or self.min_ply < 0 or self.survival_plies < 1:
@@ -151,6 +152,8 @@ class ResignController:
         self.initial_threshold = self.threshold
         self.state = SHADOW if rc.enabled else OFF
         self.reason = "shadow: waiting for verified triggers" if rc.enabled else "disabled"
+        if rc.enabled and rc.force:
+            self.state, self.reason = ACTIVE, "active (forced by the owner)"
         self.rng = np.random.default_rng(rc.seed)
         self.recent = deque(maxlen=rc.window)             # 1.0 = game not lost
         self.verified = deque(maxlen=rc.min_verified)     # True = would have been wrong
@@ -160,6 +163,8 @@ class ResignController:
 
     def plan(self):
         """(mode, threshold, patience, min_ply) for the next game, or None."""
+        if self.rc.enabled and self.rc.force:
+            return (ACTIVE, self.threshold, self.rc.patience, self.rc.min_ply)
         mode = choose_mode(self.state, self.rc.playout, self.rng)
         if mode is None:
             return None
@@ -203,6 +208,9 @@ class ResignController:
 
     def _gate(self) -> list[str]:
         if self.state == OFF:
+            return []
+        if self.rc.force:        # never demoted, never tightened
+            self.state, self.reason = ACTIVE, "active (forced by the owner)"
             return []
         rc, messages = self.rc, []
         n, rate, non_loss = len(self.verified), self.false_rate, self.non_loss
@@ -265,6 +273,8 @@ class ResignController:
         self.after_trigger.extend(state["after_trigger"])
         self.resign_plies.extend(state["resign_plies"])
         self.counts.update(state["counts"])
+        if self.rc.force:
+            self.state, self.reason = ACTIVE, "active (forced by the owner)"
 
 
 def add_resign_args(parser) -> None:
@@ -279,6 +289,8 @@ def add_resign_args(parser) -> None:
     group.add_argument("--resign-playout", type=float, default=0.10)
     group.add_argument("--resign-min-verified", type=int, default=200)
     group.add_argument("--resign-min-non-loss", type=float, default=0.10)
+    group.add_argument("--resign-force", action="store_true",
+                       help="always resign when triggered: no shadow mode and no played-out verification")
 
 
 def resign_config_from_args(args) -> ResignConfig:
@@ -287,6 +299,6 @@ def resign_config_from_args(args) -> ResignConfig:
                       victory_score=args.resign_victory_score,
                       patience=args.resign_patience, min_ply=args.resign_min_ply,
                       playout=args.resign_playout, min_verified=args.resign_min_verified,
-                      min_non_loss=args.resign_min_non_loss)
+                      min_non_loss=args.resign_min_non_loss, force=bool(getattr(args, "resign_force", False)))
     rc.validate()
     return rc

@@ -84,7 +84,8 @@ class Tracker:
         header = tk.Frame(root, bg=BG)
         header.grid(row=0, column=0, sticky='ew', padx=28, pady=(24,18))
         header.grid_columnconfigure(0, weight=1)
-        tk.Label(header, text='TONKINHO DO MATO', bg=BG, fg=GREEN, font=('Segoe UI', 10, 'bold')).grid(row=0,column=0,sticky='w')
+        self.model_label = tk.Label(header, text='TONKINHO DO MATO', bg=BG, fg=GREEN, font=('Segoe UI', 10, 'bold'))
+        self.model_label.grid(row=0,column=0,sticky='w')
         tk.Label(header, text='O treino, em direto.', bg=BG, fg=TEXT, font=('Segoe UI', 25, 'bold')).grid(row=1,column=0,sticky='w')
         self.status = tk.Label(header, text='A ligar aos logs…', bg=CARD, fg=GREEN, padx=16, pady=9)
         self.status.grid(row=0,column=1,rowspan=2,sticky='e')
@@ -264,6 +265,8 @@ class Tracker:
         try:
             self.snapshot = data = self.reader.snapshot()
             if data:
+                model = data['launch'].get('model_name') or data.get('metrics', {}).get('model')
+                self.model_label.configure(text=(model or 'Tonkinho do Mato').upper())
                 labels = {'starting':'A iniciar', 'running':'●  Em treino', 'completed':'Concluído', 'failed':'Erro no treino',
                           'stopped':'Parado', 'interrupted':'Treino interrompido', 'stale':'Sem dados recentes'}
                 self.status.configure(text=labels[data['state']],fg=GREEN if data['state'] in ('running','completed') else GOLD)
