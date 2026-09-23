@@ -117,3 +117,12 @@ configurar `chcp 65001` e a aplicar VSLANG/PYTHONUTF8 depois de vcvars. O probe
 `torch._inductor.cpp_builder.get_cpp_compiler()` passou no processo oculto,
 com stdout `cl` e stderr vazio. A campanha é retomada do checkpoint de erro,
 conservando o jogo já ingerido e o seu replay; não se apaga a primeira sessão.
+
+
+Validação ao vivo: campanha `cognitive-20260923T030055Z-60fa3fc5`, PID Python
+32280, código de arranque `71b1033`. A app instalada passou o smoke com estado
+`running`: 476 jogos no primeiro recibo e 701 no segundo, quatro adversários,
+354 campos e 11 métricas de execução. A captura `tracker-live.png` mostra o
+score ao vivo; `tracker-all.png` mostra a nova aba antes do arranque. A segunda
+captura ao vivo estava tapada por outra janela e foi descartada; o seu recibo
+JSON continua a documentar os valores reais lidos pelos widgets.
