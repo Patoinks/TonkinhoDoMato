@@ -44,6 +44,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Concluído
 
+- Claude | 2026-09-23 23:15 | 80f38dd ataque organico (threat_explore, mate_labels). TREINO a pedido do Martim: modelo KS 60 min (a correr) e depois, automaticamente, start_v4_sf1800.ps1 -Elo 1200 -Games 5000 -ThreatExplore 0.1 -MateLabels 2 -BatchSearch (6 atores, prioridade baixa). Nao parar sem o Martim pedir.
 - Claude | 2026-09-23 | Tonkinho organico outra vez (pedido do Martim): piece_activity_weight=0 por omissao, desistencia sem --resign-piece-balance no lancador. Trabalho a meio do Codex (prioridades) guardado em site-patches/codex-priority-policy-unfinished.patch, nao aplicado. 501 testes.
 - Codex | 2026-09-23 | Regra de desistência por saldo: −5 inicia observação; só desiste após três decisões seguintes com saldo estritamente pior, reiniciando ao melhorar ou ficar igual. Comparação sem treino de duas políticas do mesmo checkpoint v5 em 200 partidas: proteção + mobilidade 62 vitórias/44 empates/93 derrotas/1 inacabada contra bónus antigo de segurança; 42,2% dos pontos nas 199 concluídas. `python -m pytest -q` passou. Treino e site inalterados; reservas libertadas.
 
