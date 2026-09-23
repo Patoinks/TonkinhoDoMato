@@ -121,7 +121,7 @@ def _final_game(genes_current, genes_base, game, seed):
     return 1 - _game(genes_base, genes_current, sub(seed, game))
 
 
-def tournament(pool, population, rng, seed):
+def tournament(pool, population, rng, seed, series=3):
     """Random pairs, best-of-3; returns (survivors, rows). A tie kills both; an
     odd member out survives untouched. Every game runs in parallel: games 1 and
     2 of all pairs at once, then the third games that can still matter."""
@@ -143,9 +143,12 @@ def tournament(pool, population, rng, seed):
             points[i][1 if a_white else 0] += 1 - score
             games[i] += 1
 
-    collect([play(i, game, game == 0) for i in range(len(pairs)) for game in (0, 1)])
-    collect([play(i, 2, bool(rng.random() < .5)) for i in range(len(pairs))
-             if abs(points[i][0] - points[i][1]) <= 1])       # the third game can still change the result
+    if series == 3:
+        collect([play(i, game, game == 0) for i in range(len(pairs)) for game in (0, 1)])
+        collect([play(i, 2, bool(rng.random() < .5)) for i in range(len(pairs))
+                 if abs(points[i][0] - points[i][1]) <= 1])   # the third game can still change the result
+    else:                                                     # longer series: every game, colours alternating
+        collect([play(i, game, game % 2 == 0) for i in range(len(pairs)) for game in range(series)])
     survivors, rows = list(bye), []
     for (a, b), (pa, pb), n in zip(pairs, points, games):
         winner = a if pa > pb else b if pb > pa else None
@@ -167,6 +170,8 @@ def main():
     parser.add_argument("--seed", type=int, default=2027)
     parser.add_argument("--out", type=Path, default=ROOT / "history/evolution")
     parser.add_argument("--resume", type=Path, help="an evolution folder: continue after its last generation")
+    parser.add_argument("--series", type=int, default=3, help="games per series (3 = best-of-3)")
+    parser.add_argument("--start", help="evolution.json:ID - start from that player's settings as generation-1 champion")
     args = parser.parse_args()
     rng = np.random.default_rng(args.seed)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -181,6 +186,14 @@ def main():
     del data
     log = {"base_file": str(args.base), "base_genes": base["genes"], "generations": []}
     champion, first = base, 1
+    if args.start:
+        source, _, player = args.start.rpartition(":")
+        earlier = json.loads(Path(source).read_text(encoding="utf-8"))
+        found = next(p for g in earlier["generations"] for p in g["population"] if p["id"] == player)
+        champion = {"id": player, "genes": dict(found["genes"]), "parent": found.get("parent")}
+        for name in GENES:                                   # genes added after that run keep the base value
+            champion["genes"].setdefault(name, base["genes"][name])
+        log["start"] = {"from": source, "player": player}
     if args.resume:
         log = json.loads((out / "evolution.json").read_text(encoding="utf-8"))
         base = {"id": "base", "genes": log["base_genes"], "parent": None}
@@ -197,7 +210,7 @@ def main():
         rounds, round_number = [], 0
         while len(population) > 1:
             round_number += 1
-            survivors, rows = tournament(pool, population, rng, [args.seed, generation, round_number])
+            survivors, rows = tournament(pool, population, rng, [args.seed, generation, round_number], args.series)
             rounds.append({"round": round_number, "players": len(population), "matches": rows,
                            "survivors": [s["id"] for s in survivors]})
             population = survivors or population
