@@ -66,6 +66,8 @@ def main(argv=None):
     parser.add_argument("--generalization-every", type=int)
     parser.add_argument("--win-pgn-path", default=None)
     parser.add_argument("--wins-dir", type=Path, help="archive of every win (default: <history-dir>/wins)")
+    parser.add_argument("--archive-wins", action="store_true",
+                        help="record wins (archive, featured and longest game); off by the owner's choice")
     parser.add_argument("--planning-nodes", type=int)
     parser.add_argument("--log-every", type=int)
     parser.add_argument("--stop-file", type=Path)
@@ -295,10 +297,12 @@ def main(argv=None):
     execution = dict(learner_seconds=0.0, learner_updates=0, learned_positions=0, actor_seconds=0.0)
     pool = None
     external = None
-    recorder = LongestWinRecorder(cfg.win_pgn_path)
+    # Owner's choice: training records no wins unless --archive-wins.
+    recorder = LongestWinRecorder(cfg.win_pgn_path if args.archive_wins else None)
     # wins.json is rewritten in batches (every 2 min and at each checkpoint), not per win.
-    archive = WinArchive(args.wins_dir or args.history_dir / "wins", flush_seconds=120)
-    featured = FeaturedGameRecorder((args.wins_dir or args.history_dir / "wins") / "featured_game.pgn")
+    wins_dir = (args.wins_dir or args.history_dir / "wins") if args.archive_wins else None
+    archive = WinArchive(wins_dir, flush_seconds=120)
+    featured = FeaturedGameRecorder(wins_dir / "featured_game.pgn" if wins_dir else None)
     # Nominal strengths for ranking the featured game; TinyOpponent measured ~800 vs Fairy.
     strength = {"external": cfg.opponent_elo, "fairy": cfg.fairy_elo, "tiny": 800}
     # Deploys are throttled: at most one running, and one every 10 minutes.
@@ -512,7 +516,7 @@ def main(argv=None):
                 by_version[stats["opponent_version"]][outcome] += 1
             # v4: how the learned KS of both kings moved through the game.
             if cfg.king_safety_model and (completed % max(1, cfg.king_safety_log_every) == 0
-                                          or (outcome == "win" and kind != "self")):
+                                          or (outcome == "win" and kind not in ("self", "tiny"))):
                 # Only the logged games pay for the KS series, rebuilt here in one batch.
                 series = stats.get("king_safety") or load_king_safety(cfg.king_safety_model).series(board.move_stack)
                 record("king_safety", game=completed, total_games=trainer.games, opponent=stats["opponent"],
@@ -524,7 +528,7 @@ def main(argv=None):
                     record("resign", game=completed, message=message, **resign.summary())
             # A win over itself is no win, and TinyOpponent is only a sparring partner:
             # only real engines enter the win history and the site.
-            archived = kind not in ("self", "tiny")
+            archived = args.archive_wins and kind not in ("self", "tiny")
             if episode.terminated and not resigned and not stats.get("stalled") and archived:
                 try:
                     termination = ("tablebase" if stats.get("tablebase") else
