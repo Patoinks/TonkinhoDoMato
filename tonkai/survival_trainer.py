@@ -70,6 +70,12 @@ def blend_win_speed(targets, won, terminated, remaining, weight, gamma):
     return torch.where(terminated, (1 - weight) * targets + weight * speed, targets)
 
 
+def lookahead_measure(ahead, bootstrap, ended):
+    """Owner's measure one horizon ahead: the observed measure there, half of it
+    replaced by the target network's value there; a finished game's result as is."""
+    return torch.where(ended, ahead, 0.5 * ahead + 0.5 * bootstrap)
+
+
 def survival_targets(remaining, lost, terminated, gamma, bootstrap, steps):
     """Wins and draws deliberately share the same `lost=False` target.
 
@@ -204,7 +210,10 @@ class SurvivalTrainer:
 
     def _proxy_targets(self, batch, offset, length):
         """(b, length) victory measures for the learning window, plus a mask."""
-        indices = batch["state_indices"][:, offset:offset + length]
+        return self._proxy_values(batch, batch["state_indices"][:, offset:offset + length])
+
+    def _proxy_values(self, batch, indices):
+        """Victory measures of the episodes' states at `indices` (b, n), plus a mask."""
         values = np.zeros(indices.shape, dtype=np.float32)
         present = np.zeros(indices.shape, dtype=bool)
         for row, episode in enumerate(batch["episodes"]):
@@ -333,6 +342,12 @@ class SurvivalTrainer:
                     # Owner's victory measure, recorded per state during play.
                     # States without one (old episodes, experiments) keep survival.
                     proxies, has_proxy = self._proxy_targets(batch, offset, length)
+                    if getattr(cfg, "measure_lookahead", False):
+                        states = np.take_along_axis(batch["state_indices"], endpoints.cpu().numpy(), axis=1)
+                        ahead, has_ahead = self._proxy_values(batch, states)
+                        ended = (torch.as_tensor(batch["terminated"], device=self.device)[:, None]
+                                 & (remaining <= horizon))
+                        proxies = torch.where(has_ahead, lookahead_measure(ahead, bootstrap, ended), proxies)
                     weight = victory_weight(cfg)
                     targets = torch.where(has_proxy, (1 - weight) * targets + weight * proxies, targets)
                     speed = float(getattr(cfg, "win_speed_weight", 0.0) or 0.0)

@@ -87,6 +87,11 @@ class CognitiveConfig(SurvivalConfig):
     # same piece of its own on the mirrored square (seen from its owner's side),
     # so both sides are measured with one scale. False = separate side embedding.
     symmetric_piece_values: bool = False
+    # Shaped objective: learn the measure as it will be one horizon later (the
+    # longest future horizon, or the finished game's result when it ends
+    # sooner), half of it bootstrapped from the target network there - the
+    # measure then looks ahead instead of describing the current position.
+    measure_lookahead: bool = False
     # Owner's "fast win" objective (shaped only): in a won game every position
     # also earns win_speed_gamma ** (half-moves until the win), blended into the
     # value target with this weight. Losses, draws: 0; unfinished: unchanged.
