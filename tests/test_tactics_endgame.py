@@ -77,3 +77,14 @@ def test_settings_are_validated():
         CognitiveConfig(tactic_candidates=-1).validate()
     with pytest.raises(ValueError):
         CognitiveConfig(endgame_mate_moves=0).validate()
+
+
+def test_deeper_search_sees_the_fork_too_and_counts_budget():
+    board = chess.Board(FORK)
+    fast = fast_rules.board(board)
+    codes = [fast_rules.code(chess.Move.from_uci(u)) for u in ("b2a2", "h2h3")]
+    assert fast.search_after_moves(codes, VALUES, 4, 5, 2_000_000) == [2.0, 0.0]      # 5 half-moves
+    assert np.isnan(fast.search_after_moves(codes, VALUES, 4, 5, 10)).all()          # out of nodes: NaN
+    tonkai = tactical(tactic_candidates=64, tactic_depth=2)
+    moves = tonkai.evaluate(board, chess.WHITE, explore=False).moves
+    assert tonkai._evaluation["exchange_nets"][moves.index(chess.Move.from_uci("b2a2"))] == pytest.approx(-2.0)

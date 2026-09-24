@@ -808,6 +808,29 @@ struct ExchangeSearch {
     }
 };
 
+// Full-width material search: every legal move for `plies` half-moves, then
+// the exact exchange search settles the captures left. Material and mate only.
+static double material_search(const Pos& p, int plies, double alpha, double beta, ExchangeSearch& q, int qdepth) {
+    if (++q.nodes > q.limit) { q.aborted = true; return 0.0; }
+    if (plies == 0) return q.search(p, qdepth, alpha, beta);
+    std::vector<int> moves;
+    p.legal_moves(moves);
+    if (moves.empty()) return p.is_check() ? -ExchangeSearch::MATE : 0.0;
+    std::stable_sort(moves.begin(), moves.end(), [&](int a, int b) { return q.move_gain(p, a) > q.move_gain(p, b); });
+    double best = -std::numeric_limits<double>::infinity();
+    for (int m : moves) {
+        double gain = q.move_gain(p, m);
+        Pos next = p;
+        next.make(m);
+        double score = gain - material_search(next, plies - 1, gain - beta, gain - alpha, q, qdepth);
+        if (q.aborted) return best;
+        if (score > best) best = score;
+        if (best > alpha) alpha = best;
+        if (alpha >= beta) break;
+    }
+    return best;
+}
+
 // ------------------------------------------------------------------ board
 
 class Board {
@@ -1182,6 +1205,29 @@ public:
         }
         return out;
     }
+    // Per candidate: what the opponent wins by force, searching every move for
+    // `plies` half-moves after ours (captures then settled exactly). NaN when
+    // the node budget runs out for that candidate.
+    std::vector<double> search_after_moves(const std::vector<int>& codes, const std::vector<double>& values,
+                                           int plies, int max_depth, long long node_limit) const {
+        if (values.size() != 6 || plies < 0 || max_depth < 0 || node_limit < 0)
+            throw std::invalid_argument("search_after_moves requires six values and non-negative limits");
+        std::vector<int> legal;
+        pos.legal_moves(legal);
+        std::vector<double> out;
+        out.reserve(codes.size());
+        const double inf = std::numeric_limits<double>::infinity();
+        for (int m : codes) {
+            if (std::find(legal.begin(), legal.end(), m) == legal.end())
+                throw std::invalid_argument("illegal move in search_after_moves");
+            Pos after = pos;
+            after.make(m);
+            ExchangeSearch q(values, node_limit);
+            double value = material_search(after, plies, -inf, inf, q, max_depth);
+            out.push_back(q.aborted ? std::numeric_limits<double>::quiet_NaN() : value);
+        }
+        return out;
+    }
     int ks_status_py(bool defender_white) const { return ks_status(pos, defender_white ? WHITE : BLACK); }
 
     // King safety (v4) exploration: for every legal move of the side to move
@@ -1419,6 +1465,8 @@ PYBIND11_MODULE(tonkai_fast, m) {
              py::arg("node_limit"))
         .def("exchange_after_moves", &Board::exchange_after_moves, py::arg("codes"), py::arg("values"),
              py::arg("max_depth"), py::arg("node_limit"))
+        .def("search_after_moves", &Board::search_after_moves, py::arg("codes"), py::arg("values"),
+             py::arg("plies"), py::arg("max_depth"), py::arg("node_limit"))
         .def("tactic_after_moves", &Board::tactic_after_moves, py::arg("codes"), py::arg("values"),
              py::arg("max_depth"), py::arg("node_limit"))
         .def("ks_status", &Board::ks_status_py, py::arg("defender_white"))

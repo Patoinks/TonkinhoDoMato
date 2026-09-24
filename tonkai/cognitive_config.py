@@ -97,6 +97,11 @@ class CognitiveConfig(SurvivalConfig):
     # with ONE move of its own (forks, double attacks) after our best reply.
     # 0 = captures only.
     tactic_candidates: int = 0
+    # > 0: those candidates are searched instead over every move for this many
+    # half-moves after ours (material and mate only, captures then settled
+    # exactly): 4 = a 5-half-move calculation. Node budget per candidate.
+    tactic_depth: int = 0
+    tactic_node_limit: int = 2_000_000
     # Endgame technique. With at most `endgame_pieces` pieces on the board
     # (0 = off) the mate search looks `endgame_mate_moves` own moves deep with
     # its own node budget, whatever the king safety model says.
@@ -232,7 +237,8 @@ class CognitiveConfig(SurvivalConfig):
             raise ValueError("exchange_depth >= 0, exchange_node_limit positive, trade_explore in [0, 1]")
         if not 0 <= self.threat_explore <= 1 or self.threat_moves < 1 or self.mate_labels < 0:
             raise ValueError("threat_explore must be in [0, 1], threat_moves positive, mate_labels >= 0")
-        if (self.tactic_candidates < 0 or self.endgame_pieces < 0 or self.endgame_mate_moves < 1
+        if (self.tactic_candidates < 0 or self.tactic_depth < 0 or self.tactic_node_limit < 1
+                or self.endgame_pieces < 0 or self.endgame_mate_moves < 1
                 or self.endgame_node_limit < 1 or self.avoid_draws_ahead < 0):
             raise ValueError("tactic/endgame settings must be non-negative (mate moves and node limit >= 1)")
         if not (0.0 <= self.win_speed_weight <= 1.0 and 0.0 < self.win_speed_gamma <= 1.0):

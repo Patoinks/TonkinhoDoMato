@@ -822,16 +822,30 @@ class CognitiveAgent(SurvivalAgent):
                 [ranked[0]] if ranked and ranked[0] not in checked else [])
             if not batch:
                 return
+            depth = int(getattr(self.cfg, "tactic_depth", 0) or 0)
             try:
-                losses = fast.tactic_after_moves([codes[i] for i in batch], values, int(self.cfg.exchange_depth),
-                                                 int(getattr(self.cfg, "exchange_node_limit", 200_000)))
+                if depth > 0:
+                    losses = fast.search_after_moves([codes[i] for i in batch], values, depth,
+                                                     int(self.cfg.exchange_depth), int(self.cfg.tactic_node_limit))
+                else:
+                    losses = fast.tactic_after_moves([codes[i] for i in batch], values, int(self.cfg.exchange_depth),
+                                                     int(getattr(self.cfg, "exchange_node_limit", 200_000)))
             except RuntimeError:
                 self.diagnostics["tactic_aborted"] += 1
                 return
             for index, loss in zip(batch, losses):
                 checked.add(index)
+                if loss != loss:                          # NaN: that search ran out of nodes
+                    self.diagnostics["tactic_aborted"] += 1
+                    continue
                 new = self._move_gain(board, moves[index], values) - loss
-                if new < nets[index] - 1e-9:
+                if depth > 0 and abs(new - nets[index]) > 1e-9:
+                    # The deep search can also find a move better than it looked.
+                    scores[index] += self.cfg.piece_safety_weight * (float(np.tanh(new / 3.0))
+                                                                     - float(np.tanh(nets[index] / 3.0)))
+                    self.diagnostics["tactics_found"] += int(new < nets[index])
+                    nets[index] = new
+                elif new < nets[index] - 1e-9:
                     scores[index] += self.cfg.piece_safety_weight * (float(np.tanh(new / 3.0))
                                                                      - float(np.tanh(nets[index] / 3.0)))
                     nets[index] = new
