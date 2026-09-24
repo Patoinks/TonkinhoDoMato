@@ -102,6 +102,8 @@ class CognitiveConfig(SurvivalConfig):
     # against the external engine at that nominal Elo. Falls back to "self"
     # while that record has too few deaths.
     piece_values_kind: str = "self"
+    # While that record has too few deaths: this one (then "self").
+    piece_values_fallback: str = "self"
     # Owner's choice (not organic): opening books, comma-separated JSON files
     # from scripts/make_book.py. In a book position of the book's side the
     # book move is played. Empty = no book.

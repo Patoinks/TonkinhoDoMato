@@ -67,7 +67,7 @@ def _load(path, cfg=None):
     if stats.needs_seed() and data.get("replay"):
         stats.seed_new_measures(replay_games(data["replay"]["episodes"]))
     kd = (stats.piece_values(getattr(cfg, "piece_values_kind", "self"))   # kd_weight only sets the blend share
-          or stats.piece_values())
+          or stats.piece_values(getattr(cfg, "piece_values_fallback", "self")) or stats.piece_values())
     name = f"{data.get('model_name', 'TonkAI')} (jogo {data['games']})"
     return name, trainer.net.eval(), trainer.knowledge, cfg, kd
 

@@ -478,6 +478,7 @@ def main(argv=None):
                 # Always measured values: kd_weight only sets their share in the blend,
                 # it must not switch off the exact exchange search.
                 kd_values = (capture_stats.piece_values(getattr(cfg, "piece_values_kind", "self"))
+                             or capture_stats.piece_values(getattr(cfg, "piece_values_fallback", "self"))
                              or capture_stats.piece_values())
                 if kd_values is not None:
                     extras["kd_values"] = kd_values

@@ -31,6 +31,7 @@ def main():
     parser.add_argument("--depth", type=int, default=3, help="tactic_depth: half-moves after our move")
     parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--eval-games", type=int, default=50)
+    parser.add_argument("--eval-elo", type=int, help="evaluate at this Elo (default: the training Elo)")
     parser.add_argument("--seed", type=int, default=1818)
     parser.add_argument("--set", action="append", default=[], dest="settings", help="extra setting name=value")
     parser.add_argument("--values-seed", type=Path, help="checkpoint whose stored games seed the piece values record")
@@ -56,15 +57,16 @@ def main():
     with open(ROOT / f"history/obj-{args.label}.log", "w", encoding="utf-8") as log:
         subprocess.run(cmd, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, creationflags=FLAGS, check=True)
     checkpoint = ROOT / f"checkpoints/obj-{args.label}/latest.pt"
-    command = [sys.executable, "scripts/match_engine.py", "--checkpoint", str(checkpoint), "--elo", str(args.elo),
+    eval_elo = args.eval_elo or args.elo
+    command = [sys.executable, "scripts/match_engine.py", "--checkpoint", str(checkpoint), "--elo", str(eval_elo),
                "--greedy", "--games", str(args.eval_games), "--workers", "5", "--seed", str(args.seed),
-               "--label", f"eval-sf{args.elo}-{args.label}"]
+               "--label", f"eval-sf{eval_elo}-{args.label}"]
     for item in quality + args.settings:
         command += ["--set", item]
     out = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, creationflags=FLAGS, check=True)
     result = json.loads([line for line in out.stdout.splitlines() if line.startswith("{")][-1])
     (ROOT / f"history/{args.label}-eval.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
-    print(f"{args.label}: eval vs {args.elo} W/D/L {result['win']}/{result['draw']}/{result['loss']} "
+    print(f"{args.label}: eval vs {eval_elo} W/D/L {result['win']}/{result['draw']}/{result['loss']} "
           f"score {result['score']:.3f}", flush=True)
 
 
