@@ -72,7 +72,7 @@ def _load(path, cfg=None):
 
 
 def _init(current, rival, rival_name, mates=None, piece_values=None, rival_run_config=None,
-          current_policy=None, rival_policy=None, current_name=None):
+          current_policy=None, rival_policy=None, current_name=None, side_values=None):
     import torch
     from tonkai.cognitive_config import CognitiveConfig
     torch.set_num_threads(1)
@@ -90,6 +90,9 @@ def _init(current, rival, rival_name, mates=None, piece_values=None, rival_run_c
     rcfg.validate()
     if piece_values:                       # explicitly shared values, if requested
         kd = rkd = piece_values
+    side_values = side_values or {}
+    kd = side_values.get("current") or kd  # or one side's own values
+    rkd = side_values.get("rival") or rkd
     _state.update(name=current_name or name, net=net, knowledge=knowledge, cfg=cfg, ccfg=ccfg, kd=kd,
                   rival_name=rival_name or other, rnet=rnet, rknowledge=rknowledge,
                   rival_cfg=rcfg, rival_kd=rkd)
@@ -178,6 +181,7 @@ def main():
     parser.add_argument("--mate-node-limit", type=int, default=20_000, help="nodes per mate search")
     parser.add_argument("--piece-values", help="both sides use these values, e.g. 1:1,2:1.03,3:1.22,4:1.70,5:4.02")
     for side in ("current", "rival"):
+        parser.add_argument(f"--{side}-piece-values", help="this side's values only, same format")
         parser.add_argument(f"--{side}-set", action="append", default=[],
                             help="any decision setting for this side, name=value (repeatable)")
         parser.add_argument(f"--{side}-piece-safety-weight", type=float, default=None)
@@ -192,8 +196,10 @@ def main():
                 break
         if rival_run_config is None:
             parser.error("--rival-run has no run config")
-    values = ({int(k): float(v) for k, v in (part.split(":") for part in args.piece_values.split(","))}
-              if args.piece_values else None)
+    def parse_values(text):
+        return {int(k): float(v) for k, v in (part.split(":") for part in text.split(","))} if text else None
+    values = parse_values(args.piece_values)
+    side_values = {side: parse_values(getattr(args, f"{side}_piece_values")) for side in ("current", "rival")}
     mates = {"mate_search_moves": args.mate_search_moves, "mate_defense_moves": args.mate_defense_moves,
              "mate_node_limit": args.mate_node_limit}
     policies = {}
@@ -218,7 +224,8 @@ def main():
     rows = []
     with ProcessPoolExecutor(max_workers=args.workers, mp_context=get_context("spawn"), initializer=_init,
                              initargs=(str(args.current), str(args.rival), args.name, mates, values,
-                                       rival_run_config, policies["current"], policies["rival"], args.current_name)) as pool:
+                                       rival_run_config, policies["current"], policies["rival"], args.current_name,
+                                       side_values)) as pool:
         for row in pool.map(_game, range(args.games), [args.seed] * args.games):
             rows.append(row)
             if len(rows) % 50 == 0:
@@ -226,7 +233,7 @@ def main():
     rows.sort()
     report = {"current": rows[0][5], "current_file": str(args.current), "rival": rows[0][6],
               "rival_file": str(args.rival), "rival_run": str(args.rival_run) if args.rival_run else None,
-              "seed": args.seed, "mate_calculation": mates, "piece_values": values,
+              "seed": args.seed, "mate_calculation": mates, "piece_values": values, "side_piece_values": side_values,
               "current_policy": policies["current"], "rival_policy": policies["rival"],
               "finished_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), **summarise(rows)}
     stem = args.label or f"match-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
