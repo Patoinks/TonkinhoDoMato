@@ -30,6 +30,7 @@ def main():
     parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--seed", type=int, default=2028)
     parser.add_argument("--set", action="append", default=[], help="setting=value for every player (e.g. tactic_search=exact)")
+    parser.add_argument("--only", nargs="+", help="play only these players")
     parser.add_argument("--label", required=True)
     args = parser.parse_args()
     log = json.loads(args.evolution.read_text(encoding="utf-8"))
@@ -39,6 +40,8 @@ def main():
     for generation in log["generations"]:
         champion = next(p for p in generation["population"] if p["id"] == generation["champion"])
         players.setdefault(champion["id"], dict(champion["genes"]))
+    if args.only:
+        players = {name: players[name] for name in args.only}
     extra = {}
     for item in args.set:
         key, _, raw = item.partition("=")
