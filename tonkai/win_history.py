@@ -9,6 +9,7 @@ import re
 import os
 from pathlib import Path
 import tempfile
+import time
 
 import chess
 import chess.pgn
@@ -84,10 +85,17 @@ class WinArchive:
 
     The JSON is what the website reads. Draws, losses and a disabled archive
     (``directory`` falsy) do nothing. Writes are locked and atomic.
+
+    ``flush_seconds`` > 0 (training): each win is appended to ``wins.pgn`` at
+    once, but the whole ``wins.json`` is rewritten at most that often and on
+    ``flush()`` - rewriting it on every win costs time that grows with it.
     """
 
-    def __init__(self, directory):
+    def __init__(self, directory, flush_seconds=0.0):
         self.directory = Path(directory) if directory else None
+        self.flush_seconds = float(flush_seconds)
+        self.pending = []
+        self.flushed = time.monotonic()
 
     @property
     def json_path(self):
@@ -107,20 +115,37 @@ class WinArchive:
         exporter = chess.pgn.StringExporter(headers=True, variations=False, comments=False)
         pgn = game.accept(exporter) + "\n"
         self.directory.mkdir(parents=True, exist_ok=True)
+        entry = {"number": None,
+                 "recorded_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                 "tonkai_color": "white" if self_color else "black",
+                 "opponent": opponent_name, "plies": plies, "termination": str(termination),
+                 "result": result, "final_fen": board.fen(en_passant="fen"),
+                 "moves": [move.uci() for move in board.move_stack], "pgn": pgn, **meta}
         with _file_lock(self.directory / ".wins.lock"):
-            wins = self.load()
-            entry = {"number": len(wins) + 1,
-                     "recorded_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                     "tonkai_color": "white" if self_color else "black",
-                     "opponent": opponent_name, "plies": plies, "termination": str(termination),
-                     "result": result, "final_fen": board.fen(en_passant="fen"),
-                     "moves": [move.uci() for move in board.move_stack], "pgn": pgn, **meta}
-            wins.append(entry)
-            _atomic_write(self.json_path, json.dumps({"format": "tonkai-wins-v1", "wins": wins},
-                                                     indent=1, allow_nan=False))
             with (self.directory / "wins.pgn").open("a", encoding="utf-8", newline="\n") as stream:
                 stream.write(pgn + "\n")
+            self.pending.append(entry)
+            if self.flush_seconds <= 0 or time.monotonic() - self.flushed >= self.flush_seconds:
+                self._write_pending()
         return True
+
+    def flush(self):
+        """Write the wins still only in memory into ``wins.json``."""
+        if self.directory is None or not self.pending:
+            return
+        with _file_lock(self.directory / ".wins.lock"):
+            self._write_pending()
+
+    def _write_pending(self):
+        # Under the lock: re-read, so wins other processes added are kept.
+        wins = self.load()
+        for entry in self.pending:
+            entry["number"] = len(wins) + 1
+            wins.append(entry)
+        _atomic_write(self.json_path, json.dumps({"format": "tonkai-wins-v1", "wins": wins},
+                                                 indent=1, allow_nan=False))
+        self.pending = []
+        self.flushed = time.monotonic()
 
 
 def _atomic_write(path, text):
@@ -205,16 +230,22 @@ class FeaturedGameRecorder:
 
     def __init__(self, path):
         self.path = Path(path) if path else None
+        self._cached = (None, None)                 # (file stamp, stored key)
 
     def stored_key(self):
         if self.path is None or not self.path.exists():
             return None
+        stat = self.path.stat()
+        stamp = (stat.st_mtime_ns, stat.st_size)
+        if self._cached[0] == stamp:
+            return self._cached[1]
         with self.path.open(encoding="utf-8") as stream:
             game = chess.pgn.read_game(stream)
-        if not _win_game(game):
-            return None  # Legacy featured losses/draws must never block a win.
-        return (int(game.headers.get("OpponentElo", 0)), sum(1 for _ in game.mainline_moves()),
-                _recorded_time(game.headers.get("RecordedUTC", "")))
+        # Legacy featured losses/draws must never block a win.
+        key = ((int(game.headers.get("OpponentElo", 0)), sum(1 for _ in game.mainline_moves()),
+                _recorded_time(game.headers.get("RecordedUTC", ""))) if _win_game(game) else None)
+        self._cached = (stamp, key)
+        return key
 
     def consider(self, board, self_color, opponent_name, opponent_elo, result, termination,
                  *, recorded_utc=None):
@@ -226,6 +257,9 @@ class FeaturedGameRecorder:
             return False
         if opponent_name.strip().casefold() in {"tonkai", "tonkinho do mato"}:
             return False
+        stored = self.stored_key()
+        if stored is not None and (int(opponent_elo), len(board.move_stack)) < stored[:2]:
+            return False                             # cannot beat the stored game: nothing to build
         game, plies = build_win_game(board, self_color, opponent_name, result, termination)
         if not _win_game(game):
             raise ValueError("featured game must be a completed external victory")
@@ -247,10 +281,20 @@ class FeaturedGameRecorder:
 class LongestWinRecorder:
     def __init__(self, path):
         self.path = Path(path) if path else None
+        self._cached = (None, None)                 # (file stamp, stored plies)
 
     def _stored_plies(self):
         if not self.path.exists():
             return -1
+        stat = self.path.stat()
+        stamp = (stat.st_mtime_ns, stat.st_size)
+        if self._cached[0] == stamp:
+            return self._cached[1]
+        plies = self._read_plies()
+        self._cached = (stamp, plies)
+        return plies
+
+    def _read_plies(self):
         with self.path.open(encoding="utf-8") as stream:
             game = chess.pgn.read_game(stream)
             if game is None or game.errors or chess.pgn.read_game(stream) is not None:
@@ -273,6 +317,8 @@ class LongestWinRecorder:
             raise ValueError("TonkAI's color is required")
         if self.path is None or result != ("1-0" if self_color else "0-1"):
             return False
+        if len(board.move_stack) <= self._stored_plies():
+            return False                             # not longer: nothing to build
         game, plies = build_win_game(board, self_color, opponent_name, result, termination)
         text = game.accept(chess.pgn.StringExporter(headers=True, variations=False, comments=False)) + "\n"
         self.path.parent.mkdir(parents=True, exist_ok=True)

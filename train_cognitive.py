@@ -296,7 +296,8 @@ def main(argv=None):
     pool = None
     external = None
     recorder = LongestWinRecorder(cfg.win_pgn_path)
-    archive = WinArchive(args.wins_dir or args.history_dir / "wins")
+    # wins.json is rewritten in batches (every 2 min and at each checkpoint), not per win.
+    archive = WinArchive(args.wins_dir or args.history_dir / "wins", flush_seconds=120)
     featured = FeaturedGameRecorder((args.wins_dir or args.history_dir / "wins") / "featured_game.pgn")
     # Nominal strengths for ranking the featured game; TinyOpponent measured ~800 vs Fairy.
     strength = {"external": cfg.opponent_elo, "fairy": cfg.fairy_elo, "tiny": 800}
@@ -307,6 +308,7 @@ def main(argv=None):
         running = site["process"] is not None and site["process"].poll() is None
         if not site["pending"] or running or (not force and time.monotonic() - site["last"] < 600):
             return
+        archive.flush()
         site.update(process=publish_wins(archive.directory), last=time.monotonic(), pending=False)
 
     def record(kind, **data):
@@ -368,6 +370,10 @@ def main(argv=None):
         return True
 
     def save():
+        try:
+            archive.flush()
+        except (OSError, ValueError) as error:
+            record("warning", component="win_history", error=str(error))
         trainer.save(output, actor_rng=deepcopy(rng.bit_generator.state), pretrained_games=pretrained_games,
                      source_checkpoint=str(source_path), run_id=run_id, status=status,
                      campaign_start_games=campaign_start, campaign_cap=campaign_cap, opening_history=openings.state(),
