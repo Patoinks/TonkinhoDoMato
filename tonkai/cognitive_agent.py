@@ -15,6 +15,7 @@ from .king_safety import king_senses, king_balance
 from .objective import outcome_value, continuation_value, victory_weight
 from .king_safety_model import load_cached as load_king_safety
 from . import tablebase as tb
+from .cognitive_config import measure_parts
 
 
 def terminal_draw_value(objective="survival", weight=0.5, draw=None):
@@ -275,9 +276,37 @@ class CognitiveAgent(SurvivalAgent):
             proven = self._proven_ending(board if fast is None else fast, self_color, labels)
             if proven is not None:
                 return proven
-        if getattr(self.cfg, "victory_measure", "owner") == "enemy_king" and self.king_model is not None:
+        parts = measure_parts(getattr(self.cfg, "victory_measure", "owner"))
+        if parts == {"owner": 1.0}:
+            return self._owner_measure(board, self_color, fast)
+        return float(np.clip(sum(weight * self._measure_part(name, board, self_color, fast)
+                                 for name, weight in parts.items()), 0.0, 1.0))
+
+    def _measure_part(self, name, board, self_color, fast):
+        """One part of the owner's victory measure, in [0, 1] (see victory_measure)."""
+        if name == "owner":
+            return self._owner_measure(board, self_color, fast)
+        if name == "enemy_king":
+            if self.king_model is None:
+                return 0.5
             white, black = self.king_model.ks_both(board)
-            return float(np.clip(1.0 - (black if self_color else white), 0.0, 1.0))   # enemy king unsafe
+            return 1.0 - (black if self_color else white)
+        if name == "enemy_box":
+            # Squares next to the enemy king (on the board) that we do not control.
+            king = board.king(not self_color)
+            free = sum(1 for square in chess.SquareSet(chess.BB_KING_ATTACKS[king])
+                       if not board.is_attacked_by(self_color, square))
+            return 1.0 - free / 8.0
+        if name == "material":
+            # The same value for both sides: measured K/D values, else 1/3/3/5/9.
+            values = self.kd_values or {1: 1.0, 2: 3.0, 3: 3.0, 4: 5.0, 5: 9.0}
+            balance = sum(float(values[piece.piece_type]) * (1 if piece.color == self_color else -1)
+                          for piece in board.piece_map().values() if piece.piece_type != chess.KING)
+            return 0.5 + 0.5 * float(np.tanh(balance / 5.0))
+        raise ValueError(name)
+
+    def _owner_measure(self, board, self_color, fast):
+        """The owner's victory measure of an unfinished position: kings + pieces."""
         if self.context is None:
             self.observe(board, self_color)
         exact_pieces = None

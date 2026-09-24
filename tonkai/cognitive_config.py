@@ -4,6 +4,24 @@ from dataclasses import dataclass
 from .survival_config import SurvivalConfig
 
 
+
+MEASURE_PARTS = ("owner", "enemy_king", "enemy_box", "material")
+
+
+def measure_parts(text):
+    """victory_measure -> {part: weight}, weights summing to 1."""
+    parts = {}
+    for item in str(text).split(","):
+        name, _, weight = item.strip().partition(":")
+        if name not in MEASURE_PARTS:
+            raise ValueError(f"victory_measure part must be one of {MEASURE_PARTS}, not {name!r}")
+        parts[name] = parts.get(name, 0.0) + (float(weight) if weight else 1.0)
+    total = sum(parts.values())
+    if total <= 0 or any(w < 0 for w in parts.values()):
+        raise ValueError("victory_measure weights must be >= 0 with a positive sum")
+    return {name: weight / total for name, weight in parts.items()}
+
+
 @dataclass
 class CognitiveConfig(SurvivalConfig):
     compact_sequences: bool = False
@@ -55,10 +73,13 @@ class CognitiveConfig(SurvivalConfig):
     # objective="shaped": share of the owner's victory measure in the value
     # target (the rest is survival). Unused by the other objectives.
     victory_weight: float = 0.5
-    # The measure the shaped objective blends in: "owner" = the owner's victory
-    # measure (kings + pieces); "enemy_king" = 1 - KS of the enemy king (learned
-    # King Safety model), i.e. value = making the enemy king unsafe. Finished
-    # games, tablebase results and proven mates still override it.
+    # The measure the shaped objective blends in, one part or a weighted mix
+    # "part:weight,part:weight" (weights are normalized). Parts:
+    #   owner      - the owner's victory measure (kings + pieces)
+    #   enemy_king - 1 - KS of the enemy king (learned King Safety model)
+    #   enemy_box  - 1 - (squares next to the enemy king we do not control) / 8
+    #   material   - 0.5 + 0.5 tanh((own - enemy pieces) / 5), K/D values (else 1/3/3/5/9)
+    # Finished games, tablebase results and proven mates still override it.
     victory_measure: str = "owner"
     # Owner's "fast win" objective (shaped only): in a won game every position
     # also earns win_speed_gamma ** (half-moves until the win), blended into the
@@ -186,10 +207,9 @@ class CognitiveConfig(SurvivalConfig):
             raise ValueError("threat_explore must be in [0, 1], threat_moves positive, mate_labels >= 0")
         if not (0.0 <= self.win_speed_weight <= 1.0 and 0.0 < self.win_speed_gamma <= 1.0):
             raise ValueError("win_speed_weight must be in [0, 1] and win_speed_gamma in (0, 1]")
-        if self.victory_measure not in ("owner", "enemy_king"):
-            raise ValueError("victory_measure must be owner or enemy_king")
-        if self.victory_measure == "enemy_king" and not self.king_safety_model:
-            raise ValueError("victory_measure=enemy_king needs a king_safety_model")
+        parts = measure_parts(self.victory_measure)          # raises on an unknown part
+        if "enemy_king" in parts and not self.king_safety_model:
+            raise ValueError("victory_measure enemy_king needs a king_safety_model")
         if self.mate_search_moves < 0 or self.mate_defense_moves < 0 or self.mate_node_limit < 1:
             raise ValueError("mate_search_moves/mate_defense_moves must be >= 0 and mate_node_limit positive")
         if not (0.0 <= self.mate_attack_ks <= 1.0 and 0.0 <= self.mate_defense_ks <= 1.0):

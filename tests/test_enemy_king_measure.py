@@ -53,3 +53,20 @@ def test_settings_are_validated():
     with pytest.raises(ValueError):
         CognitiveConfig(victory_measure="enemy_king").validate()                 # needs a KS model
     CognitiveConfig(victory_measure="enemy_king", king_safety_model="ks.pt").validate()
+
+
+def test_enemy_box_counts_the_squares_we_control_around_the_enemy_king():
+    tonkai = measured(victory_measure="enemy_box")
+    assert tonkai.position_proxy(chess.Board(), chess.WHITE) == pytest.approx(1 - 5 / 8)     # e8: 5 free squares
+    centre = chess.Board("8/8/8/3k4/8/8/8/K6R w - - 0 1")
+    assert tonkai.position_proxy(centre, chess.WHITE) == pytest.approx(0.0)                 # all 8 free
+    boxed = chess.Board("k7/8/1Q6/8/8/8/8/4K3 w - - 0 1")                                   # a8: a7 b7 b8 covered
+    assert tonkai.position_proxy(boxed, chess.WHITE) == pytest.approx(1.0)
+
+
+def test_mixed_measure_is_the_weighted_sum_of_its_parts():
+    board = chess.Board("8/8/8/3k4/8/8/8/K6R w - - 0 1")                                    # box 0, enemy KS 0.3
+    mixed = measured(victory_measure="enemy_king:1,enemy_box:1")
+    assert mixed.position_proxy(board, chess.WHITE) == pytest.approx(0.5 * 0.7 + 0.5 * 0.0)
+    material = measured(victory_measure="material")
+    assert material.position_proxy(chess.Board(), chess.WHITE) == pytest.approx(0.5)        # equal material
