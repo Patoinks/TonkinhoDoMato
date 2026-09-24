@@ -23,7 +23,7 @@ ENGINE = ROOT / "engines/stockfish-11/stockfish-11-win/Windows/stockfish_2001180
 _state = {}
 
 
-def _init(checkpoint, settings, elo, move_time, engine=str(ENGINE)):
+def _init(checkpoint, settings, elo, move_time, engine=str(ENGINE), tiny=False, greedy=False):
     import torch
     torch.set_num_threads(1)
     from match_checkpoints import _load
@@ -38,7 +38,7 @@ def _init(checkpoint, settings, elo, move_time, engine=str(ENGINE)):
     # and is closed at exit (its thread would otherwise keep the worker alive).
     import atexit
     atexit.register(lambda: _state.get("engine") and _state["engine"].close())
-    _state.update(net=net, knowledge=knowledge, cfg=cfg, kd=kd,
+    _state.update(net=net, knowledge=knowledge, cfg=cfg, kd=kd, tiny=tiny, greedy=greedy,
                   engine=None, make_engine=lambda: UCIOpponent(engine, elo, move_time))
 
 
@@ -48,12 +48,18 @@ def _game(index, seed):
     from tonkai.cognitive_agent import CognitiveAgent
     from tonkai.survival_agent import play_episode
     s = _state
-    if s["engine"] is None:
-        s["engine"] = s["make_engine"]()
+    if s["tiny"]:
+        from tonkai.opponents import TinyOpponentAdapter
+        opponent = TinyOpponentAdapter(seed * 100_003 + index)      # seeded: the same games for every model
+    else:
+        if s["engine"] is None:
+            s["engine"] = s["make_engine"]()
+        opponent = s["engine"]
     colour = chess.WHITE if index % 2 == 0 else chess.BLACK
     agent = CognitiveAgent(s["net"], s["cfg"], s["knowledge"], kd_values=s["kd"])
-    _, board, colour, stats = play_episode(agent, s["engine"], s["cfg"], np.random.default_rng([seed, index]),
-                                           self_color=colour, opponent_name=s["engine"].description)
+    _, board, colour, stats = play_episode(agent, opponent, s["cfg"], np.random.default_rng([seed, index]),
+                                           self_color=colour, opponent_name=opponent.description,
+                                           explore=not s["greedy"], log_king_safety=False)
     if stats.get("stalled"):
         return "loss", "retardamento", len(board.move_stack)
     if stats.get("tablebase"):
@@ -75,6 +81,8 @@ def main():
     parser.add_argument("--set", action="append", default=[], dest="settings")
     parser.add_argument("--elo", type=int, default=1800)
     parser.add_argument("--engine", type=Path, default=ENGINE, help="UCI engine (Stockfish 11 by default)")
+    parser.add_argument("--tiny", action="store_true", help="play TinyOpponent (seeded per game) instead of a UCI engine")
+    parser.add_argument("--greedy", action="store_true", help="no exploration: always the best-valued move")
     parser.add_argument("--move-time", type=float, default=0.002)
     parser.add_argument("--games", type=int, default=50)
     parser.add_argument("--workers", type=int, default=6)
@@ -95,7 +103,8 @@ def main():
     if args.syzygy:
         settings.update(syzygy_path=str(args.syzygy.resolve()), tablebase_adjudicate=True)
     pool = ProcessPoolExecutor(args.workers, mp_context=get_context("spawn"), initializer=_init,
-                               initargs=(str(args.checkpoint), settings, args.elo, args.move_time, str(args.engine)))
+                               initargs=(str(args.checkpoint), settings, args.elo, args.move_time, str(args.engine),
+                                         args.tiny, args.greedy))
     rows = list(pool.map(_game, range(args.games), [args.seed] * args.games))
     counts = {k: sum(r[0] == k for r in rows) for k in ("win", "draw", "loss", "unfinished")}
     done = [r for r in rows if r[0] != "unfinished"]
@@ -103,7 +112,9 @@ def main():
     how = {}
     for result, reason, _ in rows:
         how[f"{result}: {reason}"] = how.get(f"{result}: {reason}", 0) + 1
-    report = {"checkpoint": str(args.checkpoint), "player": args.player, "engine_elo": args.elo,
+    report = {"checkpoint": str(args.checkpoint), "player": args.player,
+              "opponent": "TinyOpponent" if args.tiny else str(args.engine.name), "greedy": args.greedy,
+              "engine_elo": None if args.tiny else args.elo,
               "tablebase": bool(args.syzygy), **counts, "score": score, "how": how,
               "mean_plies": sum(r[2] for r in rows) / len(rows),
               "finished_utc": datetime.now(timezone.utc).isoformat(timespec="seconds")}
