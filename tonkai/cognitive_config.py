@@ -94,6 +94,16 @@ class CognitiveConfig(SurvivalConfig):
     mate_search_moves: int = 0
     mate_defense_moves: int = 0
     mate_node_limit: int = 20_000
+    # Mate searches only where the learned King Safety model (KS, 0 unsafe ..
+    # 1 safe) sees a king in danger; 0 = always search. Attack: the enemy KS
+    # after some candidate move is below mate_attack_ks. Defence: mate in 1 is
+    # always checked; the deeper search runs when the own KS after some
+    # candidate move is below mate_defense_ks.
+    mate_attack_ks: float = 0.0
+    mate_defense_ks: float = 0.0
+    # Owner's rule: never go back to a position already seen since the last
+    # capture/pawn move while another move exists (repetitions are broken).
+    break_repetitions: bool = False
     # Organic attack learning (off by default):
     # threat_explore - share of exploring decisions that TRY a move creating a
     #   mate threat (were the opponent to pass, mate within threat_moves), found
@@ -166,3 +176,5 @@ class CognitiveConfig(SurvivalConfig):
             raise ValueError("threat_explore must be in [0, 1], threat_moves positive, mate_labels >= 0")
         if self.mate_search_moves < 0 or self.mate_defense_moves < 0 or self.mate_node_limit < 1:
             raise ValueError("mate_search_moves/mate_defense_moves must be >= 0 and mate_node_limit positive")
+        if not (0.0 <= self.mate_attack_ks <= 1.0 and 0.0 <= self.mate_defense_ks <= 1.0):
+            raise ValueError("mate_attack_ks/mate_defense_ks must be in [0, 1]")

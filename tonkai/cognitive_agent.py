@@ -498,6 +498,7 @@ class CognitiveAgent(SurvivalAgent):
         if explore:
             scores += self.cfg.information_bonus * information
         safety, kings = [], []
+        ks_self = ks_enemy = None
         king_bonuses = np.zeros(len(moves))
         activity_bonuses = np.zeros(len(moves))
         exchange_values = self._exchange_values()
@@ -592,9 +593,15 @@ class CognitiveAgent(SurvivalAgent):
                 kings.append(senses)
             scores += king_bonuses
             self.diagnostics["king_safety_positions"] += len(moves)
+        repeated = self._repeated_moves(board, moves) if getattr(self.cfg, "break_repetitions", False) else set()
+        self._rank_below(scores, repeated)
         allows_mate = {}
         defence = int(getattr(self.cfg, "mate_defense_moves", 0) or 0)
         if defence > 0 and fast_rules.AVAILABLE:
+            gate = float(getattr(self.cfg, "mate_defense_ks", 0.0) or 0.0)
+            if gate > 0 and ks_self is not None and len(ks_self) and float(ks_self.min()) >= gate:
+                defence = 1                                   # own king safe per KS: mate in 1 only
+                self.diagnostics["mate_defence_shallow"] += 1
             allows_mate = self._moves_allowing_mate(board, self_color, moves, codes, fast, defence)
             self._rank_last(scores, allows_mate)
         order = np.argsort(scores)[::-1]
@@ -646,9 +653,13 @@ class CognitiveAgent(SurvivalAgent):
         margin = float(getattr(self.cfg, "avoid_repetition_margin", 0.0) or 0.0)
         if margin > 0 and drawn:
             self._avoid_repetition_when_ahead(board, self_color, moves, scores, drawn, margin)
+        if repeated:
+            self._rank_below(scores, repeated)
+            self.diagnostics["repetitions_broken"] += 1
         if allows_mate:
             self._rank_last(scores, allows_mate)
-        self._evaluation = {"keys": keys, "retrieved": retrieved, "uncertainty": uncertainty,
+        self._evaluation = {"ks_enemy_min": (float(ks_enemy.min()) if ks_enemy is not None and len(ks_enemy)
+                                             else None),"keys": keys, "retrieved": retrieved, "uncertainty": uncertainty,
                             "information": information, "gap": gap, "piece_safety": safety, "king_safety": kings,
                             "fast": fast, "codes": codes, "allows_mate": allows_mate, "exchange_nets": nets}
         return SurvivalChoice(moves, scores, mean, epistemic, aleatoric, information)
@@ -672,6 +683,45 @@ class CognitiveAgent(SurvivalAgent):
         if len(allows) < len(codes):                      # a safe move exists: these are avoided
             self.diagnostics["mate_moves_avoided"] += len(allows)
         return allows
+
+    @staticmethod
+    def _repeated_moves(board, moves):
+        """Indices of the moves that return to a position already on the board
+        since the last capture or pawn move."""
+        span = min(board.halfmove_clock, len(board.move_stack))
+        if span < 3:
+            return set()
+        seen, branch = set(), board.copy()
+        for _ in range(span + 1):
+            seen.add(branch._transposition_key())
+            if not branch.move_stack:
+                break
+            branch.pop()
+        repeated = set()
+        for index, move in enumerate(moves):
+            if board.is_zeroing(move):
+                continue
+            board.push(move)
+            if board._transposition_key() in seen:
+                repeated.add(index)
+            board.pop()
+        return repeated
+
+    @staticmethod
+    def _rank_below(scores, repeated):
+        """Owner's rule: a repeating move ranks under every other move the
+        planner compared (-1e9 marks the ones it left out)."""
+        if not repeated:
+            return
+        others = np.ones(len(scores), dtype=bool)
+        others[list(repeated)] = False
+        others &= scores > -1e8
+        if not others.any():
+            return
+        floor = float(scores[others].min()) - 1.0
+        for index in repeated:
+            if scores[index] > -1e8:
+                scores[index] = min(scores[index], floor)
 
     @staticmethod
     def _rank_last(scores, allows_mate):
@@ -849,6 +899,11 @@ class CognitiveAgent(SurvivalAgent):
                 if wins:
                     winning.append(index)
         attack = int(getattr(self.cfg, "mate_search_moves", 0) or 0)
+        gate = float(getattr(self.cfg, "mate_attack_ks", 0.0) or 0.0)
+        enemy_ks = self._evaluation.get("ks_enemy_min")
+        if gate > 0 and enemy_ks is not None and enemy_ks >= gate:
+            attack = 0                                        # enemy king safe per KS: no mate search
+            self.diagnostics["mate_attack_skipped"] += 1
         if not winning and attack > 0 and fast_rules.AVAILABLE:
             winning, choice.forced_mate = self._mating_line(board, self_color, choice.moves, attack)
         threat = None
