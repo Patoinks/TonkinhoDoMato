@@ -256,3 +256,17 @@ def test_attacker_explores_a_move_that_creates_a_mate_threat():
     visited, _ = attack_episode(fen, False, small_model(), cfg, np.random.default_rng(2), counts)
     played = next(m for m in board.legal_moves if (board.push(m), board.fen(), board.pop())[1] == visited[1])
     assert fast_rules.code(played) in allowed and counts.get("threat") == 1
+
+
+def test_series_rebuilt_afterwards_equals_the_per_ply_log():
+    import chess
+    from tonkai.king_safety_model import KingSafetyModel
+    model = KingSafetyModel()
+    board = chess.Board()
+    logged = [[round(v, 4) for v in model.ks_both(board)]]
+    for san in ("e4", "e5", "Nf3", "Nc6", "Bc4"):
+        board.push_san(san)
+        logged.append([round(v, 4) for v in model.ks_both(board)])
+    rebuilt = model.series(board.move_stack)
+    assert len(rebuilt) == len(logged)
+    assert all(abs(a - b) <= 1e-4 for row, other in zip(rebuilt, logged) for a, b in zip(row, other))

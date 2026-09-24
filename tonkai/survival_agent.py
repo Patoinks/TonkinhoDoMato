@@ -132,7 +132,7 @@ def _has_safe_ending(board, colour):
 
 
 def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
-                 opponent_name="external", resign=None):
+                 opponent_name="external", resign=None, log_king_safety=True):
     """Collect the complete ordered trajectory, including the initial state.
 
     ``resign`` is an optional ``ResignTracker`` (V3 only). It reads either the
@@ -158,7 +158,7 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
                and callable(getattr(agent, "position_proxy", None)))
     proxies = [agent.position_proxy(board, self_color)] if measure else None
     # v4: KS(white king), KS(black king) after every ply, when the agent has a model.
-    king_log = getattr(agent, "king_safety_values", None)
+    king_log = getattr(agent, "king_safety_values", None) if log_king_safety else None
     first_ks = king_log(board) if callable(king_log) else None
     king_safety = [[round(first_ks[0], 4), round(first_ks[1], 4)]] if first_ks is not None else None
     game_over = getattr(agent, "game_over", lambda b: b.is_game_over(claim_draw=True))

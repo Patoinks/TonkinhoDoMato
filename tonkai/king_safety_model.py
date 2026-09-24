@@ -70,6 +70,17 @@ class KingSafetyModel:
         values = self.ks_rows(np.stack([encode(board, chess.WHITE), encode(board, chess.BLACK)]))
         return float(values[0]), float(values[1])
 
+    def series(self, moves, initial_fen=None) -> list:
+        """[KS white, KS black] after every ply of a game (as play_episode logs
+        it), computed afterwards in one batch."""
+        board = chess.Board(initial_fen or chess.STARTING_FEN)
+        rows = [encode(board, chess.WHITE), encode(board, chess.BLACK)]
+        for move in moves:
+            board.push(move if isinstance(move, chess.Move) else chess.Move.from_uci(move))
+            rows += [encode(board, chess.WHITE), encode(board, chess.BLACK)]
+        values = self.ks_rows(np.stack(rows))
+        return [[round(float(values[i]), 4), round(float(values[i + 1]), 4)] for i in range(0, len(values), 2)]
+
     def advantage(self, board: chess.Board, colour: bool) -> float:
         """KS_self - KS_enemy for `colour`, in [-1, 1]."""
         white, black = self.ks_both(board)

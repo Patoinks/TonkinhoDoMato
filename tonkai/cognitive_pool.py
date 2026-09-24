@@ -130,7 +130,7 @@ def _play(payload, seed, game_number, resign_plan=None, kd_values=None, kind="ex
     opponent = _opponent(kind, state, seed, kd_values, rival)
     episode, board, colour, stats = play_episode(agent, opponent, state["cfg"],
         np.random.default_rng(seed), opponent_name=opponent.description,
-        resign=ResignTracker.from_plan(resign_plan))
+        resign=ResignTracker.from_plan(resign_plan), log_king_safety=False)   # rebuilt only when logged
     stats.update(actor_seconds=time.perf_counter() - started, cognitive=dict(agent.diagnostics),
                  game_number=game_number, opponent_kind=kind)
     if rival is not None:

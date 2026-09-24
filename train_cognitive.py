@@ -18,6 +18,7 @@ import uuid
 import numpy as np
 import torch
 
+from tonkai.king_safety_model import load_cached as load_king_safety
 from tonkai.captures import CaptureStats, parse_weights, replay_games
 
 # v3.1: opponent mixture, frozen self-play series, weighted opponent piece
@@ -503,11 +504,13 @@ def main(argv=None):
             if kind == "self" and "opponent_version" in stats:
                 by_version[stats["opponent_version"]][outcome] += 1
             # v4: how the learned KS of both kings moved through the game.
-            if "king_safety" in stats and (completed % max(1, cfg.king_safety_log_every) == 0
-                                           or (outcome == "win" and kind != "self")):
+            if cfg.king_safety_model and (completed % max(1, cfg.king_safety_log_every) == 0
+                                          or (outcome == "win" and kind != "self")):
+                # Only the logged games pay for the KS series, rebuilt here in one batch.
+                series = stats.get("king_safety") or load_king_safety(cfg.king_safety_model).series(board.move_stack)
                 record("king_safety", game=completed, total_games=trainer.games, opponent=stats["opponent"],
                        opponent_kind=kind, tonkai="white" if colour else "black", result=stats["result"],
-                       outcome=outcome, series=stats["king_safety"])
+                       outcome=outcome, series=series)
             if resign is not None:
                 for message in resign.update(resign_report, lost=episode.lost):
                     print(message, flush=True)
