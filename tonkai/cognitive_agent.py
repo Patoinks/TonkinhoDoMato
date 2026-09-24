@@ -252,25 +252,33 @@ class CognitiveAgent(SurvivalAgent):
                 return proven
         if self.context is None:
             self.observe(board, self_color)
-        value = self.piece_valuer(board, self_color, self.context)
-        if self.use_fast_rules:
-            king = (self.king_model.advantage(board, self_color) if self.king_model is not None
-                    else fast_rules.king_balance(fast, self_color))
-            own, enemy = self._fast_piece_risks(fast, self_color, self.context, value=value)
-            pieces = enemy - own
-        else:
-            king = (self.king_model.advantage(board, self_color) if self.king_model is not None
-                    else king_balance(king_senses(board), self_color))
-            senses = self.sense_pieces(board, self_color, self.context, value=value)
-            pieces = position_risk(senses, not self_color) - position_risk(senses, self_color)
+        exact_pieces = None
         exchange_values = self._exchange_values() if getattr(self.cfg, "exchange_labels", False) else None
         if exchange_values is not None:
             exact = fast if fast is not None else fast_rules.board(board)
             gain, complete, _ = exact.exchange_gain(exchange_values, int(self.cfg.exchange_depth),
                                                     int(getattr(self.cfg, "exchange_node_limit", 200_000)))
             if complete:
-                pieces = float(np.tanh(gain / 3.0)) * (1 if board.turn == self_color else -1)
+                exact_pieces = float(np.tanh(gain / 3.0)) * (1 if board.turn == self_color else -1)
                 self.diagnostics["exchange_labels"] += 1
+        # The per-piece values are needed only when the exact result is missing
+        # (or for the activity signal).
+        value = (self.piece_valuer(board, self_color, self.context)
+                 if exact_pieces is None or self.cfg.piece_activity_weight else None)
+        if self.use_fast_rules:
+            king = (self.king_model.advantage(board, self_color) if self.king_model is not None
+                    else fast_rules.king_balance(fast, self_color))
+        else:
+            king = (self.king_model.advantage(board, self_color) if self.king_model is not None
+                    else king_balance(king_senses(board), self_color))
+        if exact_pieces is not None:
+            pieces = exact_pieces
+        elif self.use_fast_rules:
+            own, enemy = self._fast_piece_risks(fast, self_color, self.context, value=value)
+            pieces = enemy - own
+        else:
+            senses = self.sense_pieces(board, self_color, self.context, value=value)
+            pieces = position_risk(senses, not self_color) - position_risk(senses, self_color)
         activity = 0.0
         if self.cfg.piece_activity_weight:
             own_pressure, enemy_pressure = position_pressure(board, value, self_color)
@@ -470,7 +478,14 @@ class CognitiveAgent(SurvivalAgent):
         exchange_values = self._exchange_values()
         nets = (self._exchange_nets(board, moves, codes, fast, exchange_values)
                 if exchange_values is not None and self.cfg.piece_safety_weight else None)
-        if self.cfg.piece_safety_weight or self.cfg.piece_activity_weight:
+        if nets is not None and not self.cfg.piece_activity_weight:
+            # The exact exchange result IS the piece-safety term: the per-piece
+            # learned values of every candidate position would go unused.
+            for index in range(len(moves)):
+                scores[index] += self.cfg.piece_safety_weight * float(np.tanh(nets[index] / 3.0))
+                safety.append({"own_risk": 0.0, "enemy_risk": 0.0, "exchange_net": nets[index]})
+            self.diagnostics["piece_safety_positions"] += len(moves)
+        elif self.cfg.piece_safety_weight or self.cfg.piece_activity_weight:
             branches, item_lists = [], []
             for index, move in enumerate(moves):
                 if fast is not None:
