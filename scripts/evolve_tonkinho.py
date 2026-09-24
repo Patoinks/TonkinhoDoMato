@@ -184,6 +184,7 @@ def main():
     parser.add_argument("--fixed", action="append", default=[],
                         help="a setting every player uses and nobody mutates, name=value (e.g. draw_value=0.4)")
     parser.add_argument("--start", help="evolution.json:ID - start from that player's settings as generation-1 champion")
+    parser.add_argument("--base-name", default="base", help="the base player's name in the tournament")
     args = parser.parse_args()
     rng = np.random.default_rng(args.seed)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -194,7 +195,7 @@ def main():
     from tonkai.cognitive_config import CognitiveConfig
     from match_checkpoints import _historical_config
     data = torch.load(args.base, map_location="cpu", weights_only=False)
-    base = {"id": "base", "genes": base_genes(_historical_config(data)), "parent": None}
+    base = {"id": args.base_name, "genes": base_genes(_historical_config(data)), "parent": None}
     del data
     log = {"base_file": str(args.base), "base_genes": base["genes"], "generations": []}
     champion, first = base, 1
