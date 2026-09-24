@@ -51,6 +51,11 @@ def episode_result(episode):
     return result
 
 
+def win_speed(won, remaining, gamma):
+    """Owner's fast-win value: gamma ** half-moves until the win, 0 without one."""
+    return float(gamma) ** max(0, remaining) if won else 0.0
+
+
 def observed_target(episode, ply, cfg):
     if cfg.objective == "victory":
         return episode_result(episode)
@@ -58,7 +63,13 @@ def observed_target(episode, ply, cfg):
     proxies = getattr(episode, "proxies", None)
     if cfg.objective == "shaped" and proxies is not None and 0 <= ply < len(proxies):
         weight = victory_weight(cfg)
-        return (1 - weight) * survival + weight * float(proxies[ply])
+        value = (1 - weight) * survival + weight * float(proxies[ply])
+        speed = float(getattr(cfg, "win_speed_weight", 0.0) or 0.0)
+        if speed > 0 and episode.terminated:
+            won = getattr(episode, "result_value", None) == 1.0
+            fast = win_speed(won, len(episode.actions) - ply, getattr(cfg, "win_speed_gamma", 0.99))
+            value = (1 - speed) * value + speed * fast
+        return value
     return survival
 
 

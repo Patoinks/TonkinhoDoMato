@@ -60,6 +60,11 @@ class CognitiveConfig(SurvivalConfig):
     # King Safety model), i.e. value = making the enemy king unsafe. Finished
     # games, tablebase results and proven mates still override it.
     victory_measure: str = "owner"
+    # Owner's "fast win" objective (shaped only): in a won game every position
+    # also earns win_speed_gamma ** (half-moves until the win), blended into the
+    # value target with this weight. Losses, draws: 0; unfinished: unchanged.
+    win_speed_weight: float = 0.0
+    win_speed_gamma: float = 0.99
     # Share of the pooled per-type K/D (both sides, pawn = 1) in the piece
     # values used for exchange/protection decisions; the rest is the network's
     # contextual value. Zero keeps the network values alone.
@@ -179,6 +184,8 @@ class CognitiveConfig(SurvivalConfig):
             raise ValueError("exchange_depth >= 0, exchange_node_limit positive, trade_explore in [0, 1]")
         if not 0 <= self.threat_explore <= 1 or self.threat_moves < 1 or self.mate_labels < 0:
             raise ValueError("threat_explore must be in [0, 1], threat_moves positive, mate_labels >= 0")
+        if not (0.0 <= self.win_speed_weight <= 1.0 and 0.0 < self.win_speed_gamma <= 1.0):
+            raise ValueError("win_speed_weight must be in [0, 1] and win_speed_gamma in (0, 1]")
         if self.victory_measure not in ("owner", "enemy_king"):
             raise ValueError("victory_measure must be owner or enemy_king")
         if self.victory_measure == "enemy_king" and not self.king_safety_model:

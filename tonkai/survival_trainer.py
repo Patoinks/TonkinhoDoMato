@@ -61,6 +61,15 @@ def _adapt_optimizer(state, added: int, dropped: int):
     return state
 
 
+def blend_win_speed(targets, won, terminated, remaining, weight, gamma):
+    """Owner's fast-win objective: finished games blend in gamma ** (half-moves
+    until the win) - 0 for a loss or a draw; unfinished games are unchanged."""
+    speed = torch.where(won, torch.pow(torch.as_tensor(gamma, device=remaining.device),
+                                       remaining.clamp_min(0).to(targets.dtype)),
+                        torch.zeros_like(targets))
+    return torch.where(terminated, (1 - weight) * targets + weight * speed, targets)
+
+
 def survival_targets(remaining, lost, terminated, gamma, bootstrap, steps):
     """Wins and draws deliberately share the same `lost=False` target.
 
@@ -326,6 +335,13 @@ class SurvivalTrainer:
                     proxies, has_proxy = self._proxy_targets(batch, offset, length)
                     weight = victory_weight(cfg)
                     targets = torch.where(has_proxy, (1 - weight) * targets + weight * proxies, targets)
+                    speed = float(getattr(cfg, "win_speed_weight", 0.0) or 0.0)
+                    if speed > 0:
+                        won = torch.tensor([getattr(e, "result_value", None) == 1.0 for e in batch["episodes"]],
+                                           device=self.device)[:, None]
+                        terminated = torch.as_tensor(batch["terminated"], device=self.device)[:, None]
+                        targets = blend_win_speed(targets, won, terminated, remaining, speed,
+                                                  getattr(cfg, "win_speed_gamma", 0.99))
             if getattr(cfg, "compact_sequences", False):
                 from .execution_fastpaths import compact_encode
                 future_targets = F.normalize(compact_encode(self.future_encoder, x, valid), dim=-1)
