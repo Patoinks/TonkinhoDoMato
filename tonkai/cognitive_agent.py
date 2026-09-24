@@ -112,9 +112,15 @@ class CognitiveAgent(SurvivalAgent):
             side_rows = layers[2].weight[:, None, None, :].expand(2, 6, 64, -1)
             table = torch.cat((type_rows, square_rows, side_rows), dim=-1).reshape(768, -1)
             self._piece_embedding_cache = (stamp, table)
-        indices = torch.tensor([int(p.color != self_color) * 384 + (p.piece_type - 1) * 64
-                                + (sq if self_color else sq ^ 56) for sq, p in items], device=self.device)
+        indices = torch.tensor([self._piece_index(p, sq, self_color) for sq, p in items], device=self.device)
         return self._piece_embedding_cache[1][indices]
+
+    def _piece_index(self, piece, square, self_color):
+        """Row of the (side, type, square) embedding table for one piece."""
+        side, relative = int(piece.color != self_color), (square if self_color else square ^ 56)
+        if side and getattr(self.cfg, "symmetric_piece_values", False):
+            side, relative = 0, relative ^ 56            # the enemy piece as its owner sees it
+        return side * 384 + (piece.piece_type - 1) * 64 + relative
 
     def adjudicated(self, board):
         """Tablebase adjudication: True/False = that colour won, None = draw,
@@ -227,10 +233,11 @@ class CognitiveAgent(SurvivalAgent):
                 return 10000.0  # King recaptures last; it is never a material victim.
             key = (piece.color, piece.piece_type, square)
             if key not in cache:  # Promotion value at its actual destination.
+                row = self._piece_index(piece, square, self_color)
                 predicted = float(self.net.piece_values(context,
-                    torch.tensor([piece.piece_type - 1], device=self.device),
-                    torch.tensor([square if self_color else square ^ 56], device=self.device),
-                    torch.tensor([int(piece.color != self_color)], device=self.device))[0])
+                    torch.tensor([(row % 384) // 64], device=self.device),
+                    torch.tensor([row % 64], device=self.device),
+                    torch.tensor([row // 384], device=self.device))[0])
                 learned = max(-12., min(12., predicted * (1 if piece.color == self_color else -1) / unit))
                 cache[key] = float(blend(piece, learned))
             return cache[key]

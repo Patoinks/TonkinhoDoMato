@@ -81,6 +81,10 @@ class CognitiveConfig(SurvivalConfig):
     #   material   - 0.5 + 0.5 tanh((own - enemy pieces) / 5), K/D values (else 1/3/3/5/9)
     # Finished games, tablebase results and proven mates still override it.
     victory_measure: str = "owner"
+    # Owner's rule: the network values an enemy piece exactly as it would the
+    # same piece of its own on the mirrored square (seen from its owner's side),
+    # so both sides are measured with one scale. False = separate side embedding.
+    symmetric_piece_values: bool = False
     # Owner's "fast win" objective (shaped only): in a won game every position
     # also earns win_speed_gamma ** (half-moves until the win), blended into the
     # value target with this weight. Losses, draws: 0; unfinished: unchanged.
