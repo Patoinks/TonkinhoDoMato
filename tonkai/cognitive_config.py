@@ -67,6 +67,10 @@ class CognitiveConfig(SurvivalConfig):
     # reward; it does not touch move selection. Zero keeps the model unchanged.
     capture_target_weight: float = 0.0
     capture_target_clip: float = 8.0
+    # Direct contextual piece-value target, opt-in.  In a real checkmate, each
+    # surviving attacking piece is credited by the fraction of the enemy king's
+    # final zone that it attacks.  Zero preserves old checkpoints exactly.
+    mate_control_weight: float = 0.0
     # Measurement only: a "hot" enemy piece had made this many captures in the
     # game before TonkAI took it; the report shows how such games end.
     hot_piece_kills: int = 2
@@ -245,7 +249,7 @@ class CognitiveConfig(SurvivalConfig):
         for name in ("memory_similarity", "memory_weight", "information_bonus", "planning_uncertainty",
                      "planning_gap", "robust_weight", "skill_bonus", "piece_safety_weight", "piece_exchange_tolerance",
                      "piece_activity_weight", "king_safety_weight",
-                     "capture_target_weight", "victory_weight", "kd_weight",
+                     "capture_target_weight", "mate_control_weight", "victory_weight", "kd_weight",
                      "mix_self", "mix_tiny", "mix_fairy"):
             if not 0 <= getattr(self, name) <= 1:
                 raise ValueError(f"{name} must be between zero and one")

@@ -178,6 +178,46 @@ def capture_targets(snapshots, capturer, owner_color: bool) -> np.ndarray:
     return out
 
 
+def mate_control_targets(snapshots, final_board: chess.Board, owner_color: bool) -> np.ndarray:
+    """(T, 64) float32: a piece's participation in the game's final checkmate.
+
+    A surviving non-king piece of the mating side receives the fraction of the
+    mated king's zone (its square plus adjacent board squares) that the piece
+    attacks in the final position.  The piece identity carries that target back
+    through every earlier state.  It is positive when the episode owner mates
+    and negative when the owner is mated.  Non-mates are all zero.
+
+    This is rules-derived credit for an observed consequence, not a per-type
+    value table: two bishops can receive different targets in the same game.
+    """
+    out = np.zeros((len(snapshots), 64), dtype=np.float32)
+    if not final_board.is_checkmate():
+        return out
+    loser, winner = final_board.turn, not final_board.turn
+    king = final_board.king(loser)
+    if king is None:
+        return out
+    zone = chess.BB_KING_ATTACKS[king] | chess.BB_SQUARES[king]
+    zone_size = chess.popcount(zone)
+    sign = 1.0 if winner == owner_color else -1.0
+    credit = {}
+    for square, pid in snapshots[-1].items():
+        piece = final_board.piece_at(square)
+        if piece is None or piece.color != winner or piece.piece_type == chess.KING:
+            continue
+        cut = chess.popcount(final_board.attacks_mask(square) & zone)
+        if cut:
+            credit[pid] = sign * cut / zone_size
+    if not credit:
+        return out
+    for state, pieces in enumerate(snapshots):
+        for square, pid in pieces.items():
+            value = credit.get(pid)
+            if value is not None:
+                out[state, square if owner_color else square ^ 56] = value
+    return out
+
+
 def episode_owner_color(episode) -> bool:
     board = chess.Board(episode.initial_fen or chess.STARTING_FEN)
     own_turn = unpack_many(episode.packed[:1])[0, OFF_STM] > .5
@@ -190,6 +230,14 @@ def episode_capture_targets(episode) -> np.ndarray | None:
         return None
     snapshots, capturer, _, _ = track(episode.actions, episode.initial_fen)
     return capture_targets(snapshots, capturer, episode_owner_color(episode))
+
+
+def episode_mate_control_targets(episode) -> np.ndarray | None:
+    """Checkmate-control targets aligned with ``episode.packed``."""
+    if not episode.actions or len(episode.actions) != len(episode.packed) - 1:
+        return None
+    snapshots, _, _, final_board = track(episode.actions, episode.initial_fen)
+    return mate_control_targets(snapshots, final_board, episode_owner_color(episode))
 
 
 def parse_weights(text):

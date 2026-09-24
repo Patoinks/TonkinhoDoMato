@@ -82,6 +82,8 @@ def main(argv=None):
     parser.add_argument("--stop-file", type=Path)
     parser.add_argument("--capture-target-weight", type=float,
                         help="auxiliary target: piece head predicts future captures (0 = off)")
+    parser.add_argument("--mate-control-weight", type=float,
+                        help="piece value credit for the fraction of the enemy king zone controlled at checkmate")
     parser.add_argument("--hot-piece-kills", type=int,
                         help="measurement: an enemy piece with this many kills is 'hot'")
     parser.add_argument("--objective", choices=["survival", "victory", "shaped"],
@@ -177,6 +179,7 @@ def main(argv=None):
                             ("experiments_every", "experiments_every"), ("planning_nodes", "planning_nodes"),
                             ("generalization_every", "generalization_every"), ("win_pgn_path", "win_pgn_path"),
                             ("log_every", "log_every"), ("capture_target_weight", "capture_target_weight"),
+                            ("mate_control_weight", "mate_control_weight"),
                             ("hot_piece_kills", "hot_piece_kills"), ("objective", "objective"),
                             ("victory_weight", "victory_weight"), ("kd_weight", "kd_weight"),
                             ("mix_self", "mix_self"), ("mix_tiny", "mix_tiny"), ("mix_fairy", "mix_fairy"),
@@ -426,7 +429,8 @@ def main(argv=None):
                       campaign_start_games=campaign_start, campaign_cap=campaign_cap,
                       opening_report=str(output.parent / "opening-report.json"),
                       opponent_mixture={"external": 1, "historical": 0, "current": 0},
-                      capture_target_weight=cfg.capture_target_weight, kd_weight=cfg.kd_weight,
+                      capture_target_weight=cfg.capture_target_weight,
+                      mate_control_weight=cfg.mate_control_weight, kd_weight=cfg.kd_weight,
                       victory_weight=cfg.victory_weight,
                       resign=resign.summary()["config"] if resign is not None else None)
         (run_dir / "launch.json").write_text(json.dumps(launch, indent=2), encoding="utf-8")

@@ -15,7 +15,7 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 
-from .captures import episode_capture_targets, episode_owner_color
+from .captures import episode_capture_targets, episode_mate_control_targets, episode_owner_color
 from . import fast_rules
 from .encoding import encode_after_moves, unpack_many
 from .sequence_replay import SequenceReplay
@@ -107,8 +107,11 @@ class SurvivalTrainer:
         self.steps = 0
         # Optional V3 auxiliary target; zero leaves every V2 code path untouched.
         self.capture_weight = float(getattr(cfg, "capture_target_weight", 0.0) or 0.0)
+        self.mate_control_weight = float(getattr(cfg, "mate_control_weight", 0.0) or 0.0)
         self.last_capture_loss = None
+        self.last_mate_control_target = None
         self._capture_tables = OrderedDict()
+        self._mate_control_tables = OrderedDict()
 
     def _unroll(self, net, x, valid, burn_in, learn_length, gradients=False, *, learner_window_only=False):
         """Preserve all burn-in and learned states; optionally omit unused outputs.
@@ -265,9 +268,35 @@ class SurvivalTrainer:
         index = torch.as_tensor(keep, device=predicted.device)
         return F.mse_loss(predicted[index], predicted.new_tensor(targets))
 
+    def _mate_control_table(self, episode_id, episode):
+        """Final-checkmate control targets for one episode, cached by id."""
+        table = self._mate_control_tables.get(episode_id)
+        if table is not None or episode_id in self._mate_control_tables:
+            self._mate_control_tables.move_to_end(episode_id)
+            return table
+        table = episode_mate_control_targets(episode)
+        self._mate_control_tables[episode_id] = table
+        if len(self._mate_control_tables) > CAPTURE_CACHE:
+            self._mate_control_tables.popitem(last=False)
+        return table
+
+    def _mate_control_values(self, rows, squares, batch, offset, length, reference):
+        """Target for each probed piece, aligned with the sampled replay states."""
+        targets = np.zeros(len(rows), dtype=np.float32)
+        for j, row in enumerate(rows.detach().cpu().numpy()):
+            i, t = divmod(int(row), length)
+            table = self._mate_control_table(int(batch["episode_id"][i]), batch["episodes"][i])
+            if table is None:
+                continue
+            state = int(batch["state_indices"][i, offset + t])
+            if 0 <= state < len(table):
+                targets[j] = table[state, squares[j]]
+        return reference.new_tensor(targets)
+
     def _piece_loss(self, x, context, prior_memory, valid, batch=None, offset=0):
         # Position-dependent counterfactual value in survival units, no material table.
         self.last_capture_loss = None
+        self.last_mate_control_target = None
         rows = torch.nonzero(valid.flatten(), as_tuple=False).flatten()
         if not len(rows) or self.cfg.piece_value_weight == 0:
             return x.new_zeros(())
@@ -299,6 +328,10 @@ class SurvivalTrainer:
             removed[torch.arange(len(rows), device=self.device), plane * 64 + square] = 0
             counterfactual, _ = self.net.observe(removed, prior_memory.flatten(0, 1)[rows])
             target = self.net.survival(current)[0].mean(-1) - self.net.survival(counterfactual)[0].mean(-1)
+            if self.mate_control_weight > 0 and batch is not None:
+                mate_control = self._mate_control_values(rows, squares, batch, offset, x.shape[1], target)
+                target = target + self.mate_control_weight * mate_control
+                self.last_mate_control_target = mate_control.abs().mean()
         if self.capture_weight > 0 and batch is not None and self.net.has_capture_head:
             predicted, captures = self.net.piece_values_and_captures(current, plane % 6, square, plane // 6)
             self.last_capture_loss = self._capture_loss(captures, rows, squares, batch, offset, x.shape[1])
@@ -424,6 +457,8 @@ class SurvivalTrainer:
                "learned_positions": int(mask.sum()), "gradient_norm": float(gradient)}
         if capture_loss is not None:
             out["capture_loss"] = float(capture_loss.detach())
+        if self.last_mate_control_target is not None:
+            out["mate_control_target"] = float(self.last_mate_control_target.detach())
         return out
 
     def state_dict(self):

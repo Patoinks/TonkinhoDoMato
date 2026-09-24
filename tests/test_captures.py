@@ -10,7 +10,8 @@ import pytest
 import torch
 
 from tonkai.captures import (CaptureStats, capture_targets, episode_capture_targets,
-                             episode_owner_color, track)
+                             episode_mate_control_targets, episode_owner_color,
+                             mate_control_targets, track)
 from tonkai.cognitive_config import CognitiveConfig
 from tonkai.encoding import encode, pack_many
 from tonkai.sequence_replay import SequenceEpisode
@@ -115,6 +116,32 @@ def test_episode_without_actions_has_no_targets():
     assert episode_capture_targets(ep) is None
 
 
+def test_mate_control_credits_each_piece_by_enemy_king_zone_squares():
+    moves = ucis("e4 e5 Qh5 Nc6 Bc4 Nf6 Qxf7#".split())
+    snapshots, _, _, board = track(moves)
+    assert board.is_checkmate()
+    white = mate_control_targets(snapshots, board, chess.WHITE)
+    # The final black-king zone has six board squares.  The white queen cuts
+    # four of them and the f1 bishop cuts f7, carrying that credit backwards.
+    assert white[0, chess.D1] == pytest.approx(4 / 6)
+    assert white[0, chess.F1] == pytest.approx(1 / 6)
+    assert white[-1, chess.F7] == pytest.approx(4 / 6)
+    assert np.count_nonzero(white[0]) == 2
+    black = mate_control_targets(snapshots, board, chess.BLACK)
+    assert black[0, chess.D1 ^ 56] == pytest.approx(-4 / 6)
+    assert black[0, chess.F1 ^ 56] == pytest.approx(-1 / 6)
+
+
+def test_non_mate_has_zero_control_and_episode_target_is_aligned():
+    nonmate = ucis("e4 e5 Nf3".split())
+    snapshots, _, _, board = track(nonmate)
+    assert not mate_control_targets(snapshots, board, chess.WHITE).any()
+    ep = episode("e4 e5 Qh5 Nc6 Bc4 Nf6 Qxf7#".split(), chess.WHITE)
+    table = episode_mate_control_targets(ep)
+    assert table.shape == (len(ep.packed), 64)
+    assert table[0, chess.D1] == pytest.approx(4 / 6)
+
+
 # ------------------------------------------------------------- measurement
 
 def test_hot_capture_is_measured_with_the_game_outcome():
@@ -192,6 +219,13 @@ def test_update_trains_the_capture_head():
 def test_capture_off_changes_nothing():
     trainer = trainer_with(cognitive())
     assert "capture_loss" not in trainer.update()
+
+
+def test_update_blends_mate_control_into_contextual_piece_target():
+    trainer = trainer_with(cognitive(mate_control_weight=0.2))
+    out = trainer.update()
+    assert "mate_control_target" in out
+    assert np.isfinite(out["mate_control_target"])
 
 
 @pytest.mark.parametrize("source_weight,target_weight", [(0.0, 0.1), (0.1, 0.0)])
