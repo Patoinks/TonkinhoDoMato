@@ -20,6 +20,17 @@ from .cognitive_config import measure_parts
 _BOOKS = {}   # opening book file -> (side, positions)
 
 
+def passed_pawn(board, square):
+    """True if the pawn on `square` has no enemy pawn ahead on its file or the adjacent ones."""
+    colour = board.color_at(square)
+    file, rank = chess.square_file(square), chess.square_rank(square)
+    for enemy in board.pieces(chess.PAWN, not colour):
+        if abs(chess.square_file(enemy) - file) <= 1 and (
+                chess.square_rank(enemy) > rank if colour == chess.WHITE else chess.square_rank(enemy) < rank):
+            return False
+    return True
+
+
 def terminal_draw_value(objective="survival", weight=0.5, draw=None):
     if draw is not None:                     # the owner's explicit value of a draw
         return float(draw)
@@ -632,6 +643,14 @@ class CognitiveAgent(SurvivalAgent):
                 kings.append(senses)
             scores += king_bonuses
             self.diagnostics["king_safety_positions"] += len(moves)
+        push = float(getattr(self.cfg, "passed_pawn_bonus", 0.0) or 0.0)
+        if push > 0:
+            for index, move in enumerate(moves):
+                if (board.piece_type_at(move.from_square) == chess.PAWN and not board.is_capture(move)
+                        and (nets is None or nets[index] >= -1e-9) and passed_pawn(board, move.from_square)):
+                    rank = chess.square_rank(move.to_square)
+                    scores[index] += push * (rank if self_color == chess.WHITE else 7 - rank) / 7
+                    self.diagnostics["passed_pawn_pushes"] += 1
         repeated = self._repeated_moves(board, moves) if getattr(self.cfg, "break_repetitions", False) else set()
         self._rank_below(scores, repeated)
         allows_mate = {}
@@ -722,7 +741,7 @@ class CognitiveAgent(SurvivalAgent):
         for index, code in enumerate(codes):
             fast.push(code)
             if (fast.terminal_strict() if self.cfg.strict_repetition else fast.terminal()) == fast_rules.NONE:
-                found = fast.forced_mate(not self_color, depth, limit)[0]
+                found = fast.forced_mate(not self_color, depth, limit, self._pawn_reach())[0]
                 if found:
                     allows[index] = found
             fast.pop()
@@ -730,6 +749,10 @@ class CognitiveAgent(SurvivalAgent):
         if len(allows) < len(codes):                      # a safe move exists: these are avoided
             self.diagnostics["mate_moves_avoided"] += len(allows)
         return allows
+
+    def _pawn_reach(self):
+        """Mate searches skip the attacker's pawns this far or farther from the enemy king (0 = none)."""
+        return int(getattr(self.cfg, "mate_pawn_reach", 0) or 0)
 
     @staticmethod
     def _repeated_moves(board, moves):
@@ -926,10 +949,10 @@ class CognitiveAgent(SurvivalAgent):
         within `depth` moves, 0 if the opponent does, else None."""
         fast = fast_rules.board(position) if isinstance(position, chess.Board) else position
         limit = int(getattr(self.cfg, "mate_node_limit", 20_000))
-        if fast.forced_mate(self_color, depth, limit)[0]:
+        if fast.forced_mate(self_color, depth, limit, self._pawn_reach())[0]:
             self.diagnostics["mate_labels_won"] += 1
             return 1.0
-        if fast.forced_mate(not self_color, depth, limit)[0]:
+        if fast.forced_mate(not self_color, depth, limit, self._pawn_reach())[0]:
             self.diagnostics["mate_labels_lost"] += 1
             return 0.0
         return None
@@ -980,7 +1003,7 @@ class CognitiveAgent(SurvivalAgent):
         codes = self._evaluation.get("codes")
         codes = [fast_rules.code(move) for move in moves] if codes is None else codes
         limit = int(getattr(self.cfg, "mate_node_limit", 20_000)) if limit is None else int(limit)
-        found = fast.forced_mate(self_color, depth, limit)[0]
+        found = fast.forced_mate(self_color, depth, limit, self._pawn_reach())[0]
         self.diagnostics["mate_attack_searches"] += 1
         line = []
         if found:
@@ -989,7 +1012,7 @@ class CognitiveAgent(SurvivalAgent):
                 fast.push(code)
                 ending = (fast.terminal_strict() if self.cfg.strict_repetition else fast.terminal())                  # a draw (e.g. a repetition) ends the line
                 if ending == mated or (ending == fast_rules.NONE and found > 1
-                                       and fast.forced_mate(self_color, found - 1, limit)[0]):
+                                       and fast.forced_mate(self_color, found - 1, limit, self._pawn_reach())[0]):
                     line.append(index)
                 fast.pop()
         if not line:

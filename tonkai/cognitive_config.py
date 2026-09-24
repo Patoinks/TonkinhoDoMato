@@ -176,6 +176,15 @@ class CognitiveConfig(SurvivalConfig):
     mate_search_moves: int = 0
     mate_defense_moves: int = 0
     mate_node_limit: int = 20_000
+    # > 0: mate searches do not move the attacker's pawns standing this many
+    # squares (king distance) or more from the enemy king - faster, but blind to
+    # mates that need such a pawn (promotions, pawn discoveries). 1 = no pawn
+    # moves at all (owner's choice: the search focuses on the pieces). 0 = off.
+    mate_pawn_reach: int = 0
+    # Owner's rule: a move pushing an own passed pawn gets this bonus x (the
+    # pawn's rank after the move / 7), when the exact exchange result says the
+    # push loses nothing. 0 = off.
+    passed_pawn_bonus: float = 0.0
     # Mate searches only where the learned King Safety model (KS, 0 unsafe ..
     # 1 safe) sees a king in danger; 0 = always search. Attack: the enemy KS
     # after some candidate move is below mate_attack_ks. Defence: mate in 1 is
@@ -256,6 +265,8 @@ class CognitiveConfig(SurvivalConfig):
             raise ValueError("exchange_depth >= 0, exchange_node_limit positive, trade_explore in [0, 1]")
         if not 0 <= self.threat_explore <= 1 or self.threat_moves < 1 or self.mate_labels < 0:
             raise ValueError("threat_explore must be in [0, 1], threat_moves positive, mate_labels >= 0")
+        if self.mate_pawn_reach < 0 or self.passed_pawn_bonus < 0:
+            raise ValueError("mate_pawn_reach and passed_pawn_bonus must be >= 0")
         if (self.tactic_candidates < 0 or self.tactic_depth < 0 or self.tactic_node_limit < 1
                 or self.endgame_pieces < 0 or self.endgame_mate_moves < 1
                 or self.endgame_node_limit < 1 or self.avoid_draws_ahead < 0):

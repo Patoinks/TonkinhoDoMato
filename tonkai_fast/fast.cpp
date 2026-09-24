@@ -710,12 +710,21 @@ int ks_status(const Pos& p, int defender) {
 struct MateSearch {
     long long nodes = 0, limit;
     bool aborted = false;
-    explicit MateSearch(long long limit_) : limit(limit_) {}
+    int pawn_reach = 0;     // > 0: the attacker's pawns this far or farther from the enemy king are not moved
+    explicit MateSearch(long long limit_, int pawn_reach_ = 0) : limit(limit_), pawn_reach(pawn_reach_) {}
 
     bool attack(const Pos& p, int n) {
         if (++nodes > limit) { aborted = true; return false; }
         std::vector<int> moves;
         p.legal_moves(moves);
+        int king = p.king(p.turn ^ 1);
+        if (pawn_reach > 0 && king >= 0) {
+            moves.erase(std::remove_if(moves.begin(), moves.end(), [&](int m) {
+                int from = mfrom(m);
+                int distance = std::max(std::abs((from & 7) - (king & 7)), std::abs((from >> 3) - (king >> 3)));
+                return (p.bb[PAWN] & bit(from)) && distance >= pawn_reach;
+            }), moves.end());
+        }
         std::vector<Pos> kids;
         kids.reserve(moves.size());
         std::vector<int> checking, quiet;
@@ -1213,12 +1222,13 @@ public:
     // mate within n of its moves (smallest n), else 0. proven = the largest n
     // searched completely without finding mate (an exact upper bound on
     // vulnerability). A node limit stops the search early (then proven < max).
-    std::tuple<int, int, long long> forced_mate(bool attacker_white, int max_moves, long long node_limit) const {
+    std::tuple<int, int, long long> forced_mate(bool attacker_white, int max_moves, long long node_limit,
+                                                int pawn_reach = 0) const {
         int attacker = attacker_white ? WHITE : BLACK;
         long long used = 0;
         int found = 0, proven = 0;
         for (int n = 1; n <= max_moves; ++n) {
-            MateSearch search(node_limit - used);
+            MateSearch search(node_limit - used, pawn_reach);
             bool mate = pos.turn == attacker ? search.attack(pos, n) : search.defend(pos, n);
             used += search.nodes;
             if (search.aborted) break;
@@ -1603,7 +1613,7 @@ PYBIND11_MODULE(tonkai_fast, m) {
         .def("encode_after", &Board::encode_after, py::arg("moves"), py::arg("self_color"))
         .def("encode_here", &Board::encode_here, py::arg("self_color"))
         .def("forced_mate", &Board::forced_mate, py::arg("attacker_white"), py::arg("max_moves"),
-             py::arg("node_limit"))
+             py::arg("node_limit"), py::arg("pawn_reach") = 0)
         .def("exchange_gain", &Board::exchange_gain, py::arg("values"), py::arg("max_depth"),
              py::arg("node_limit"))
         .def("exchange_after_moves", &Board::exchange_after_moves, py::arg("codes"), py::arg("values"),
