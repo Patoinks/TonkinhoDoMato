@@ -1126,6 +1126,62 @@ public:
         }
         return out;
     }
+    // Per candidate: what the opponent wins by force with ONE move of its own
+    // (a fork, a double attack, a piece left undefended...) when we then reply
+    // as well as we can, captures settled by the exact exchange search. At
+    // least the capture-only result of exchange_after_moves; that value alone
+    // when the node budget runs out. Rules only, no evaluation.
+    std::vector<double> tactic_after_moves(const std::vector<int>& codes, const std::vector<double>& values,
+                                           int max_depth, long long node_limit) const {
+        if (values.size() != 6 || max_depth < 0 || node_limit < 0)
+            throw std::invalid_argument("tactic_after_moves requires six values and non-negative limits");
+        std::vector<int> legal;
+        pos.legal_moves(legal);
+        std::vector<double> out;
+        out.reserve(codes.size());
+        for (int m : codes) {
+            if (std::find(legal.begin(), legal.end(), m) == legal.end())
+                throw std::invalid_argument("illegal move in tactic_after_moves");
+            Pos after = pos;
+            after.make(m);
+            ExchangeSearch search(values, node_limit);
+            const double inf = std::numeric_limits<double>::infinity();
+            double worst = search.search(after, max_depth, -inf, inf);   // captures only
+            if (search.aborted) throw std::runtime_error("tactic_after_moves exceeded node_limit");
+            std::vector<int> replies;
+            after.legal_moves(replies);
+            for (int r : replies) {
+                if (after.occ[after.turn ^ 1] & bit(after.captured_square(r))) continue;   // captures: done above
+                Pos threat = after;
+                threat.make(r);
+                std::vector<int> answers;
+                threat.legal_moves(answers);
+                double ours;
+                if (answers.empty()) {
+                    ours = threat.is_check() ? -ExchangeSearch::MATE : 0.0;
+                } else {
+                    // Captures first: the answers most likely to hold.
+                    std::stable_sort(answers.begin(), answers.end(), [&](int a, int b) {
+                        return search.move_gain(threat, a) > search.move_gain(threat, b);
+                    });
+                    ours = -inf;
+                    for (int s : answers) {
+                        double gain = search.move_gain(threat, s);
+                        Pos next = threat;
+                        next.make(s);
+                        double value = gain - search.search(next, max_depth, -inf, inf);
+                        if (search.aborted) break;
+                        if (value > ours) ours = value;
+                        if (ours >= -worst) break;           // this threat cannot beat the worst found
+                    }
+                }
+                if (search.aborted) break;
+                if (-ours > worst) worst = -ours;
+            }
+            out.push_back(worst);
+        }
+        return out;
+    }
     int ks_status_py(bool defender_white) const { return ks_status(pos, defender_white ? WHITE : BLACK); }
 
     // King safety (v4) exploration: for every legal move of the side to move
@@ -1362,6 +1418,8 @@ PYBIND11_MODULE(tonkai_fast, m) {
         .def("exchange_gain", &Board::exchange_gain, py::arg("values"), py::arg("max_depth"),
              py::arg("node_limit"))
         .def("exchange_after_moves", &Board::exchange_after_moves, py::arg("codes"), py::arg("values"),
+             py::arg("max_depth"), py::arg("node_limit"))
+        .def("tactic_after_moves", &Board::tactic_after_moves, py::arg("codes"), py::arg("values"),
              py::arg("max_depth"), py::arg("node_limit"))
         .def("ks_status", &Board::ks_status_py, py::arg("defender_white"))
         .def("threats", &Board::threats, py::arg("max_moves"), py::arg("node_limit"))

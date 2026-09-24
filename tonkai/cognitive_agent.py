@@ -305,11 +305,7 @@ class CognitiveAgent(SurvivalAgent):
                        if not board.is_attacked_by(self_color, square))
             return 1.0 - free / 8.0
         if name == "material":
-            # The same value for both sides: measured K/D values, else 1/3/3/5/9.
-            values = self.kd_values or {1: 1.0, 2: 3.0, 3: 3.0, 4: 5.0, 5: 9.0}
-            balance = sum(float(values[piece.piece_type]) * (1 if piece.color == self_color else -1)
-                          for piece in board.piece_map().values() if piece.piece_type != chess.KING)
-            return 0.5 + 0.5 * float(np.tanh(balance / 5.0))
+            return 0.5 + 0.5 * float(np.tanh(self._material_balance(board, self_color) / 5.0))
         if name == "simplify":
             return float(np.clip((32 - chess.popcount(board.occupied)) / (32 - tb.MAX_PIECES), 0.0, 1.0))
         raise ValueError(name)
@@ -645,6 +641,9 @@ class CognitiveAgent(SurvivalAgent):
                 self.diagnostics["mate_defence_shallow"] += 1
             allows_mate = self._moves_allowing_mate(board, self_color, moves, codes, fast, defence)
             self._rank_last(scores, allows_mate)
+        tactic = int(getattr(self.cfg, "tactic_candidates", 0) or 0)
+        if tactic > 0 and nets is not None and fast_rules.AVAILABLE:
+            self._tactic_check(board, moves, codes, fast, exchange_values, nets, scores, tactic)
         order = np.argsort(scores)[::-1]
         gap = float(scores[order[0]] - scores[order[1]]) if len(order) > 1 else 1.0
         danger = mean[order[0]] < .35 or board.is_check()
@@ -694,6 +693,10 @@ class CognitiveAgent(SurvivalAgent):
         margin = float(getattr(self.cfg, "avoid_repetition_margin", 0.0) or 0.0)
         if margin > 0 and drawn:
             self._avoid_repetition_when_ahead(board, self_color, moves, scores, drawn, margin)
+        ahead = float(getattr(self.cfg, "avoid_draws_ahead", 0.0) or 0.0)
+        if ahead > 0 and drawn and self._material_balance(board, self_color) >= ahead:
+            self._rank_below(scores, set(drawn))
+            self.diagnostics["draws_refused_ahead"] += 1
         if repeated:
             self._rank_below(scores, repeated)
             self.diagnostics["repetitions_broken"] += 1
@@ -806,6 +809,50 @@ class CognitiveAgent(SurvivalAgent):
         self.diagnostics["exchange_searches"] += len(moves)
         return nets
 
+    def _tactic_check(self, board, moves, codes, fast, values, nets, scores, k, rounds=4):
+        """One-move tactics for the best candidates: the exchange result becomes
+        what the opponent wins with one move of its own (fork, double attack)
+        after our best reply. The best move is re-checked until it is checked."""
+        fast = fast_rules.board(board) if fast is None else fast
+        codes = [fast_rules.code(move) for move in moves] if codes is None else codes
+        checked = set()
+        for round_ in range(rounds):
+            ranked = [int(i) for i in np.argsort(scores)[::-1] if scores[i] > -1e8]
+            batch = [i for i in ranked[:k] if i not in checked] if round_ == 0 else (
+                [ranked[0]] if ranked and ranked[0] not in checked else [])
+            if not batch:
+                return
+            try:
+                losses = fast.tactic_after_moves([codes[i] for i in batch], values, int(self.cfg.exchange_depth),
+                                                 int(getattr(self.cfg, "exchange_node_limit", 200_000)))
+            except RuntimeError:
+                self.diagnostics["tactic_aborted"] += 1
+                return
+            for index, loss in zip(batch, losses):
+                checked.add(index)
+                new = self._move_gain(board, moves[index], values) - loss
+                if new < nets[index] - 1e-9:
+                    scores[index] += self.cfg.piece_safety_weight * (float(np.tanh(new / 3.0))
+                                                                     - float(np.tanh(nets[index] / 3.0)))
+                    nets[index] = new
+                    self.diagnostics["tactics_found"] += 1
+            self.diagnostics["tactic_checks"] += len(batch)
+
+    @staticmethod
+    def _move_gain(board, move, values):
+        gain = 0.0
+        if board.is_capture(move):
+            gain = values[chess.PAWN if board.is_en_passant(move) else board.piece_type_at(move.to_square)]
+        if move.promotion:
+            gain += values[move.promotion] - values[chess.PAWN]
+        return gain
+
+    def _material_balance(self, board, self_color):
+        """Own minus enemy material, the same value for both sides (K/D, else 1/3/3/5/9)."""
+        values = self.kd_values or {1: 1.0, 2: 3.0, 3: 3.0, 4: 5.0, 5: 9.0}
+        return sum(float(values[piece.piece_type]) * (1 if piece.color == self_color else -1)
+                   for piece in board.piece_map().values() if piece.piece_type != chess.KING)
+
     def _proven_ending(self, position, self_color, depth):
         """Rules-only truth for the victory measure: 1 if TonkAI forces mate
         within `depth` moves, 0 if the opponent does, else None."""
@@ -857,14 +904,14 @@ class CognitiveAgent(SurvivalAgent):
         self.diagnostics["threat_moves_explored"] += 1
         return candidates[int(rng.choice(len(candidates), p=weights / weights.sum()))]
 
-    def _mating_line(self, board, self_color, moves, depth):
+    def _mating_line(self, board, self_color, moves, depth, limit=None):
         """Mate calculation, rules only: (indices of the moves on a shortest
         forced mate within `depth` own moves, its length), ([], 0) if none."""
         fast = self._evaluation.get("fast")
         fast = fast_rules.board(board) if fast is None else fast
         codes = self._evaluation.get("codes")
         codes = [fast_rules.code(move) for move in moves] if codes is None else codes
-        limit = int(getattr(self.cfg, "mate_node_limit", 20_000))
+        limit = int(getattr(self.cfg, "mate_node_limit", 20_000)) if limit is None else int(limit)
         found = fast.forced_mate(self_color, depth, limit)[0]
         self.diagnostics["mate_attack_searches"] += 1
         line = []
@@ -942,11 +989,18 @@ class CognitiveAgent(SurvivalAgent):
         attack = int(getattr(self.cfg, "mate_search_moves", 0) or 0)
         gate = float(getattr(self.cfg, "mate_attack_ks", 0.0) or 0.0)
         enemy_ks = self._evaluation.get("ks_enemy_min")
-        if gate > 0 and enemy_ks is not None and enemy_ks >= gate:
+        endgame = int(getattr(self.cfg, "endgame_pieces", 0) or 0)
+        limit = None
+        if endgame and chess.popcount(board.occupied) <= endgame:
+            # Few pieces: long mates are cheap to find and decide the game.
+            attack = max(attack, int(self.cfg.endgame_mate_moves))
+            limit = int(self.cfg.endgame_node_limit)
+            self.diagnostics["endgame_mate_searches"] += 1
+        elif gate > 0 and enemy_ks is not None and enemy_ks >= gate:
             attack = 0                                        # enemy king safe per KS: no mate search
             self.diagnostics["mate_attack_skipped"] += 1
         if not winning and attack > 0 and fast_rules.AVAILABLE:
-            winning, choice.forced_mate = self._mating_line(board, self_color, choice.moves, attack)
+            winning, choice.forced_mate = self._mating_line(board, self_color, choice.moves, attack, limit)
         threat = None
         share = float(getattr(self.cfg, "threat_explore", 0.0) or 0.0)
         if not winning and explore and share > 0 and fast_rules.AVAILABLE and rng.random() < share:

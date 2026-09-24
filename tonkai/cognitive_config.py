@@ -92,6 +92,22 @@ class CognitiveConfig(SurvivalConfig):
     # sooner), half of it bootstrapped from the target network there - the
     # measure then looks ahead instead of describing the current position.
     measure_lookahead: bool = False
+    # One-move tactics (exact, rules only): for the best `tactic_candidates`
+    # moves, the exchange result also counts what the opponent wins by force
+    # with ONE move of its own (forks, double attacks) after our best reply.
+    # 0 = captures only.
+    tactic_candidates: int = 0
+    # Endgame technique. With at most `endgame_pieces` pieces on the board
+    # (0 = off) the mate search looks `endgame_mate_moves` own moves deep with
+    # its own node budget, whatever the king safety model says.
+    endgame_pieces: int = 0
+    endgame_mate_moves: int = 5
+    endgame_node_limit: int = 1_000_000
+    # Ahead by at least this much material (pawns, same values for both sides),
+    # a move that ends the game in a draw (stalemate, repetition, 50 moves,
+    # insufficient material, drawn tablebase) ranks under every other move
+    # that does not allow mate. 0 = off.
+    avoid_draws_ahead: float = 0.0
     # Owner's "fast win" objective (shaped only): in a won game every position
     # also earns win_speed_gamma ** (half-moves until the win), blended into the
     # value target with this weight. Losses, draws: 0; unfinished: unchanged.
@@ -216,6 +232,9 @@ class CognitiveConfig(SurvivalConfig):
             raise ValueError("exchange_depth >= 0, exchange_node_limit positive, trade_explore in [0, 1]")
         if not 0 <= self.threat_explore <= 1 or self.threat_moves < 1 or self.mate_labels < 0:
             raise ValueError("threat_explore must be in [0, 1], threat_moves positive, mate_labels >= 0")
+        if (self.tactic_candidates < 0 or self.endgame_pieces < 0 or self.endgame_mate_moves < 1
+                or self.endgame_node_limit < 1 or self.avoid_draws_ahead < 0):
+            raise ValueError("tactic/endgame settings must be non-negative (mate moves and node limit >= 1)")
         if not (0.0 <= self.win_speed_weight <= 1.0 and 0.0 < self.win_speed_gamma <= 1.0):
             raise ValueError("win_speed_weight must be in [0, 1] and win_speed_gamma in (0, 1]")
         parts = measure_parts(self.victory_measure)          # raises on an unknown part

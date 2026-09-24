@@ -60,18 +60,21 @@ def _game(index, seed):
     _, board, colour, stats = play_episode(agent, opponent, s["cfg"], np.random.default_rng([seed, index]),
                                            self_color=colour, opponent_name=opponent.description,
                                            explore=not s["greedy"], log_king_safety=False)
+    def out(result, how):
+        return result, how, len(board.move_stack), {"game": index, "tonkai": "white" if colour else "black",
+                                                    "moves": [move.uci() for move in board.move_stack]}
     if stats.get("stalled"):
-        return "loss", "retardamento", len(board.move_stack)
+        return out("loss", "retardamento")
     if stats.get("tablebase"):
         result, how = stats["result"], "tabela de finais"
     else:
         outcome = board.outcome(claim_draw=True)
         if outcome is None:
-            return "unfinished", "limite de jogadas", len(board.move_stack)
+            return out("unfinished", "limite de jogadas")
         result, how = outcome.result(), outcome.termination.name.lower()
     if result == "1/2-1/2":
-        return "draw", how, len(board.move_stack)
-    return ("win" if (result == "1-0") == (colour == chess.WHITE) else "loss"), how, len(board.move_stack)
+        return out("draw", how)
+    return out("win" if (result == "1-0") == (colour == chess.WHITE) else "loss", how)
 
 
 def main():
@@ -110,7 +113,7 @@ def main():
     done = [r for r in rows if r[0] != "unfinished"]
     score = sum(1 if r[0] == "win" else .5 if r[0] == "draw" else 0 for r in done) / max(1, len(done))
     how = {}
-    for result, reason, _ in rows:
+    for result, reason, *_ in rows:
         how[f"{result}: {reason}"] = how.get(f"{result}: {reason}", 0) + 1
     report = {"checkpoint": str(args.checkpoint), "player": args.player,
               "opponent": "TinyOpponent" if args.tiny else str(args.engine.name), "greedy": args.greedy,
@@ -121,6 +124,8 @@ def main():
     (ROOT / "history/matches" / f"{args.label}.json").write_text(json.dumps(report, indent=2, ensure_ascii=False),
                                                               encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False), flush=True)
+    games = [{**record, "result": result, "how": how} for result, how, _, record in rows]
+    (ROOT / "history/matches" / f"{args.label}.games.json").write_text(json.dumps(games), encoding="utf-8")
     for process in list(pool._processes.values()):   # the report is saved: never wait on engine threads
         process.terminate()
     pool.shutdown(wait=False, cancel_futures=True)
