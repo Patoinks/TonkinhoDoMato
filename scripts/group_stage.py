@@ -31,6 +31,8 @@ def main():
     parser.add_argument("--seed", type=int, default=2028)
     parser.add_argument("--set", action="append", default=[], help="setting=value for every player (e.g. tactic_search=exact)")
     parser.add_argument("--only", nargs="+", help="play only these players")
+    parser.add_argument("--hybrid", nargs=3, action="append", default=[], metavar=("NAME", "WHITE", "BLACK"),
+                        help="a new player: WHITE's settings when it plays white, BLACK's when it plays black")
     parser.add_argument("--label", required=True)
     args = parser.parse_args()
     log = json.loads(args.evolution.read_text(encoding="utf-8"))
@@ -40,6 +42,8 @@ def main():
     for generation in log["generations"]:
         champion = next(p for p in generation["population"] if p["id"] == generation["champion"])
         players.setdefault(champion["id"], dict(champion["genes"]))
+    for name, white, black in args.hybrid:
+        players[name] = {"white": dict(players[white]), "black": dict(players[black])}
     if args.only:
         players = {name: players[name] for name in args.only}
     extra = {}
@@ -47,7 +51,8 @@ def main():
         key, _, raw = item.partition("=")
         extra[key] = raw
     for genes in players.values():
-        genes.update(extra)
+        for side in ((genes["white"], genes["black"]) if "white" in genes else (genes,)):
+            side.update(extra)
     table = {name: {"played": 0, "win": 0, "draw": 0, "loss": 0, "stalled": 0, "points": 0.0} for name in players}
     pairs, jobs = list(combinations(players, 2)), []
     with ProcessPoolExecutor(args.workers, mp_context=get_context("spawn"), initializer=_init,

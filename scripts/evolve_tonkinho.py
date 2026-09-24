@@ -95,6 +95,11 @@ def _config(genes):
     return cfg
 
 
+def side_genes(genes, colour):
+    """A player may keep different settings per colour: {"white": {...}, "black": {...}}."""
+    return genes[colour] if "white" in genes and "black" in genes else genes
+
+
 def _game(genes_white, genes_black, seed):
     """Points of the white side: 1, .5 or 0; -1 when the game stalled (both lose)."""
     import chess
@@ -103,7 +108,7 @@ def _game(genes_white, genes_black, seed):
     from tonkai.survival_agent import play_episode
 
     s = _state
-    white, black = _config(genes_white), _config(genes_black)
+    white, black = _config(side_genes(genes_white, "white")), _config(side_genes(genes_black, "black"))
     agent = CognitiveAgent(s["net"], white, s["knowledge"], kd_values=s["kd"])
     rival = CognitiveOpponent(CognitiveAgent(s["net"], black, s["knowledge"], kd_values=s["kd"]), black,
                               np.random.default_rng(sub(seed, 1)))
