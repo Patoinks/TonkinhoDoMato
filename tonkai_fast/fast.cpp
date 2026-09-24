@@ -30,6 +30,7 @@
 #include <stdexcept>
 #include <string>
 #include <tuple>
+#include <deque>
 #include <vector>
 
 namespace py = pybind11;
@@ -344,8 +345,8 @@ struct Pos {
         }
     }
     void legal_moves(std::vector<int>& out) const {
-        std::vector<int> all;
-        all.reserve(64);
+        thread_local std::vector<int> all;   // scratch: legal_moves never calls itself
+        all.clear();
         pseudo(all);
         for (int m : all)
             if (legal(m)) out.push_back(m);
@@ -772,6 +773,21 @@ struct ExchangeSearch {
 
     ExchangeSearch(const std::vector<double>& values_, long long limit_) : values(values_), limit(limit_) {}
 
+    // Move lists reused per recursion level (a deque keeps references valid).
+    std::deque<std::vector<int>> lists;
+    std::deque<std::vector<double>> keys;
+    int level = 0;
+    struct Level {
+        int& l;
+        explicit Level(int& x) : l(x) { ++l; }
+        ~Level() { --l; }
+    };
+    std::vector<int>& list_here() {
+        while (int(lists.size()) <= level) { lists.emplace_back(); keys.emplace_back(); }
+        lists[level].clear();
+        return lists[level];
+    }
+
     double move_gain(const Pos& p, int m) const {
         int victim = p.type_at(p.captured_square(m));
         double gain = victim >= PAWN && victim <= QUEEN ? values[victim] : 0.0;
@@ -782,7 +798,9 @@ struct ExchangeSearch {
     double search(const Pos& p, int depth, double alpha, double beta) {
         if (++nodes > limit) { aborted = true; return 0.0; }
         bool check = p.is_check();
-        std::vector<int> moves;
+        std::vector<int>& moves = list_here();
+        std::vector<double>& gains = keys[level];
+        Level guard(level);
         if (check || depth > 0) p.legal_moves(moves);
         if (check && moves.empty()) return -MATE;
         if (depth == 0) return 0.0;
@@ -792,19 +810,34 @@ struct ExchangeSearch {
                 return !(p.occ[p.turn ^ 1] & bit(p.captured_square(m)));
             }), moves.end());
         }
-        // MVV-LVA, with stable move order for equal scores.
-        std::stable_sort(moves.begin(), moves.end(), [&](int a, int b) {
-            double va = move_gain(p, a), vb = move_gain(p, b);
-            if (va != vb) return va > vb;
-            return values[std::min(p.type_at(mfrom(a)), int(QUEEN))] <
-                   values[std::min(p.type_at(mfrom(b)), int(QUEEN))];
-        });
+        // MVV-LVA, with stable move order for equal scores: an insertion sort
+        // gives exactly std::stable_sort's order without allocating.
+        gains.resize(2 * moves.size());
+        for (size_t i = 0; i < moves.size(); ++i) {
+            gains[2 * i] = move_gain(p, moves[i]);
+            gains[2 * i + 1] = values[std::min(p.type_at(mfrom(moves[i])), int(QUEEN))];
+        }
+        for (size_t i = 1; i < moves.size(); ++i) {
+            int m = moves[i];
+            double g = gains[2 * i], a = gains[2 * i + 1];
+            size_t j = i;
+            while (j > 0 && (g > gains[2 * (j - 1)] || (g == gains[2 * (j - 1)] && a < gains[2 * (j - 1) + 1]))) {
+                moves[j] = moves[j - 1];
+                gains[2 * j] = gains[2 * (j - 1)];
+                gains[2 * j + 1] = gains[2 * (j - 1) + 1];
+                --j;
+            }
+            moves[j] = m;
+            gains[2 * j] = g;
+            gains[2 * j + 1] = a;
+        }
 
         double best = check ? -std::numeric_limits<double>::infinity() : 0.0;
         if (best > alpha) alpha = best;
         if (alpha >= beta) return best;
-        for (int m : moves) {
-            double gain = move_gain(p, m);
+        for (size_t i = 0; i < moves.size(); ++i) {
+            int m = moves[i];
+            double gain = gains[2 * i];
             Pos next = p;
             next.make(m);
             double score = gain - search(next, depth - 1, gain - beta, gain - alpha);
@@ -852,9 +885,13 @@ struct DeepSearch {
     std::vector<Entry> table;
     int killers[128][2] = {};
     int history[2][64][64] = {};
+    std::deque<std::vector<int>> deep_lists;      // move lists reused per ply
+    std::deque<std::vector<double>> deep_scores;
 
-    DeepSearch(const std::vector<double>& values, long long limit, int qdepth_)
-        : q(values, limit), qdepth(qdepth_), table(size_t(1) << 17) {}
+    bool exact = false;   // true: no null move and no reductions - the same value as the full search
+
+    DeepSearch(const std::vector<double>& values, long long limit, int qdepth_, bool exact_ = false)
+        : q(values, limit), qdepth(qdepth_), table(size_t(1) << 16), exact(exact_) {}
 
     Entry& slot(U64 key) { return table[key & (table.size() - 1)]; }
 
@@ -876,12 +913,15 @@ struct DeepSearch {
                 if (e.flag == UPPER && e.value <= alpha) return e.value;
             }
         }
-        std::vector<int> moves;
+        while (int(deep_lists.size()) <= ply) { deep_lists.emplace_back(); deep_scores.emplace_back(); }
+        std::vector<int>& moves = deep_lists[ply];
+        std::vector<double>& ranks = deep_scores[ply];
+        moves.clear();
         p.legal_moves(moves);
         bool check = p.is_check();
         if (moves.empty()) return check ? -(ExchangeSearch::MATE - ply) : 0.0;
         const double eps = 1e-6;
-        if (allow_null && !check && depth >= 3 && has_pieces(p)) {
+        if (!exact && allow_null && !check && depth >= 3 && has_pieces(p)) {
             Pos null = p;
             null.turn ^= 1;
             null.ep = -1;
@@ -898,7 +938,16 @@ struct DeepSearch {
             if (m == killers[k][1]) return 8e5;
             return double(history[side][mfrom(m)][mto(m)]);
         };
-        std::stable_sort(moves.begin(), moves.end(), [&](int a, int b) { return order(a) > order(b); });
+        ranks.resize(moves.size());
+        for (size_t i = 0; i < moves.size(); ++i) ranks[i] = order(moves[i]);
+        for (size_t i = 1; i < moves.size(); ++i) {        // stable: same order as std::stable_sort
+            int m = moves[i];
+            double r = ranks[i];
+            size_t j = i;
+            while (j > 0 && r > ranks[j - 1]) { moves[j] = moves[j - 1]; ranks[j] = ranks[j - 1]; --j; }
+            moves[j] = m;
+            ranks[j] = r;
+        }
         double best = -std::numeric_limits<double>::infinity(), start = alpha;
         int best_move = moves[0];
         for (size_t i = 0; i < moves.size(); ++i) {
@@ -907,7 +956,7 @@ struct DeepSearch {
             Pos next = p;
             next.make(m);
             bool quiet = gain == 0.0 && !mpromo(m);
-            int reduction = (depth >= 3 && i >= 3 && quiet && !check && !next.is_check()) ? 1 : 0;
+            int reduction = (!exact && depth >= 3 && i >= 3 && quiet && !check && !next.is_check()) ? 1 : 0;
             double score;
             if (i == 0) {
                 score = gain - search(next, depth - 1, gain - beta, gain - alpha, ply + 1, true);
@@ -1354,7 +1403,7 @@ public:
     // NaN and an empty line when the node budget runs out.
     std::vector<std::pair<double, std::vector<int>>> deep_after_moves(
             const std::vector<int>& codes, const std::vector<double>& values, int plies, int max_depth,
-            long long node_limit) const {
+            long long node_limit, bool exact = false) const {
         if (values.size() != 6 || plies < 0 || max_depth < 0 || node_limit < 0)
             throw std::invalid_argument("deep_after_moves requires six values and non-negative limits");
         std::vector<int> legal;
@@ -1362,14 +1411,18 @@ public:
         std::vector<std::pair<double, std::vector<int>>> out;
         out.reserve(codes.size());
         const double inf = std::numeric_limits<double>::infinity();
+        DeepSearch search(values, node_limit, max_depth, exact);   // one table for every candidate
         for (int m : codes) {
             if (std::find(legal.begin(), legal.end(), m) == legal.end())
                 throw std::invalid_argument("illegal move in deep_after_moves");
             Pos after = pos;
             after.make(m);
-            DeepSearch search(values, node_limit, max_depth);
+            search.q.nodes = 0;
+            search.q.aborted = false;
             double value = 0.0;
-            for (int depth = 1; depth <= plies && !search.q.aborted; ++depth) {
+            // Exact mode goes straight to the full depth: at small depths the
+            // iterations cost more than the move ordering they buy.
+            for (int depth = exact ? plies : 1; depth <= plies && !search.q.aborted; ++depth) {
                 double found = search.search(after, depth, -inf, inf, 1, true);
                 if (!search.q.aborted) value = found;
             }
@@ -1619,7 +1672,7 @@ PYBIND11_MODULE(tonkai_fast, m) {
         .def("exchange_after_moves", &Board::exchange_after_moves, py::arg("codes"), py::arg("values"),
              py::arg("max_depth"), py::arg("node_limit"))
         .def("deep_after_moves", &Board::deep_after_moves, py::arg("codes"), py::arg("values"),
-             py::arg("plies"), py::arg("max_depth"), py::arg("node_limit"))
+             py::arg("plies"), py::arg("max_depth"), py::arg("node_limit"), py::arg("exact") = false)
         .def("search_after_moves", &Board::search_after_moves, py::arg("codes"), py::arg("values"),
              py::arg("plies"), py::arg("max_depth"), py::arg("node_limit"))
         .def("tactic_after_moves", &Board::tactic_after_moves, py::arg("codes"), py::arg("values"),

@@ -851,9 +851,11 @@ class CognitiveAgent(SurvivalAgent):
             depth = int(getattr(self.cfg, "tactic_depth", 0) or 0)
             lines = None
             try:
-                if depth > 0 and getattr(self.cfg, "tactic_search", "full") == "pruned":
+                search = getattr(self.cfg, "tactic_search", "full")
+                if depth > 0 and search in ("exact", "pruned"):
                     found = fast.deep_after_moves([codes[i] for i in batch], values, depth,
-                                                  int(self.cfg.exchange_depth), int(self.cfg.tactic_node_limit))
+                                                  int(self.cfg.exchange_depth), int(self.cfg.tactic_node_limit),
+                                                  search == "exact")
                     losses, lines = [loss for loss, _ in found], [line for _, line in found]
                 elif depth > 0:
                     losses = fast.search_after_moves([codes[i] for i in batch], values, depth,

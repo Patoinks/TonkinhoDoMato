@@ -113,10 +113,10 @@ class CognitiveConfig(SurvivalConfig):
     # exactly): 4 = a 5-half-move calculation. Node budget per candidate.
     tactic_depth: int = 0
     tactic_node_limit: int = 2_000_000
-    # "full": every move searched to tactic_depth; "pruned": the same search
-    # with iterative deepening, a transposition table, null move and late move
-    # reductions (much deeper for the same time), which also gives each
-    # candidate's main line.
+    # "full": every move searched to tactic_depth; "exact": the same values
+    # faster (transposition table shared by the candidates, move ordering);
+    # "pruned": plus null move and late move reductions - deeper for the same
+    # time but not always the same value. exact/pruned also give main lines.
     tactic_search: str = "full"
     # With the pruned search: share of the candidate's network value taken at
     # the END of its main line instead of right after the move (0 = off).
@@ -271,8 +271,8 @@ class CognitiveConfig(SurvivalConfig):
                 or self.endgame_pieces < 0 or self.endgame_mate_moves < 1
                 or self.endgame_node_limit < 1 or self.avoid_draws_ahead < 0):
             raise ValueError("tactic/endgame settings must be non-negative (mate moves and node limit >= 1)")
-        if self.tactic_search not in ("full", "pruned") or not 0.0 <= self.leaf_network <= 1.0:
-            raise ValueError("tactic_search must be full or pruned and leaf_network in [0, 1]")
+        if self.tactic_search not in ("full", "exact", "pruned") or not 0.0 <= self.leaf_network <= 1.0:
+            raise ValueError("tactic_search must be full, exact or pruned and leaf_network in [0, 1]")
         if not (0.0 <= self.win_speed_weight <= 1.0 and 0.0 < self.win_speed_gamma <= 1.0):
             raise ValueError("win_speed_weight must be in [0, 1] and win_speed_gamma in (0, 1]")
         parts = measure_parts(self.victory_measure)          # raises on an unknown part

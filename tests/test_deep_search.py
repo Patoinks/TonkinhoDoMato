@@ -21,8 +21,10 @@ def test_pruned_search_agrees_with_the_full_search():
         codes = [fast_rules.code(m) for m in board.legal_moves]
         full = fast.search_after_moves(codes, VALUES, 3, 5, 20_000_000)
         pruned = [loss for loss, _ in fast.deep_after_moves(codes, VALUES, 3, 5, 20_000_000)]
+        exact = [loss for loss, _ in fast.deep_after_moves(codes, VALUES, 3, 5, 20_000_000, True)]
         mate = lambda values: [np.sign(v) * 1000 if abs(v) >= 900 else v for v in values]   # prunings count mate distance
         assert mate(pruned) == pytest.approx(mate(full)), fen
+        assert mate(exact) == pytest.approx(mate(full)), fen
 
 
 def test_main_lines_are_legal_and_budget_gives_nan():
@@ -53,5 +55,6 @@ def test_agent_uses_the_pruned_search_and_the_leaf_value():
 def test_settings_are_validated():
     with pytest.raises(ValueError):
         CognitiveConfig(tactic_search="deep").validate()
+    CognitiveConfig(tactic_search="exact").validate()
     with pytest.raises(ValueError):
         CognitiveConfig(leaf_network=2.0).validate()
