@@ -33,6 +33,7 @@ def main():
     parser.add_argument("--eval-games", type=int, default=50)
     parser.add_argument("--seed", type=int, default=1818)
     parser.add_argument("--set", action="append", default=[], dest="settings", help="extra setting name=value")
+    parser.add_argument("--values-seed", type=Path, help="checkpoint whose stored games seed the piece values record")
     args = parser.parse_args()
     quality = [q for q in golden_ratio.QUALITY if not q.startswith("tactic_depth")] + [f"tactic_depth={args.depth}"]
     genes = [f"{k}={v}" for k, v in train_duel.genes_of("G5-M23").items()] + train_duel.RULES
@@ -50,6 +51,8 @@ def main():
            "--stop-file", f"history/obj-{args.label}.stop"]
     for item in genes:
         cmd += ["--set", item]
+    if args.values_seed:
+        cmd += ["--values-seed-checkpoint", str(args.values_seed)]
     with open(ROOT / f"history/obj-{args.label}.log", "w", encoding="utf-8") as log:
         subprocess.run(cmd, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, creationflags=FLAGS, check=True)
     checkpoint = ROOT / f"checkpoints/obj-{args.label}/latest.pt"

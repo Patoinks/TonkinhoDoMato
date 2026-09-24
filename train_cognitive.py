@@ -73,6 +73,8 @@ def main(argv=None):
     parser.add_argument("--generalization-every", type=int)
     parser.add_argument("--win-pgn-path", default=None)
     parser.add_argument("--wins-dir", type=Path, help="archive of every win (default: <history-dir>/wins)")
+    parser.add_argument("--values-seed-checkpoint", type=Path,
+                        help="also seed the piece_values_kind record from this checkpoint's stored games")
     parser.add_argument("--archive-wins", action="store_true",
                         help="record wins (archive, featured and longest game); off by the owner's choice")
     parser.add_argument("--planning-nodes", type=int)
@@ -277,7 +279,10 @@ def main(argv=None):
         from tonkai.captures import replay_kind
         elo = values_kind.partition("@")[2]
         seeded = 0
-        for row in state["replay"]["episodes"]:
+        episodes = list(state["replay"]["episodes"])
+        if args.values_seed_checkpoint:
+            episodes += torch.load(args.values_seed_checkpoint, map_location="cpu", weights_only=False)["replay"]["episodes"]
+        for row in episodes:
             if replay_kind(row["opponent"]) == "external" and f"Elo {elo};" in row["opponent"] and row["actions"]:
                 colour = episode_owner_color_row(row)
                 capture_stats.add_pairs(values_kind, list(row["actions"]), colour, row["initial_fen"] or None)
