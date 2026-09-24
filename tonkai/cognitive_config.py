@@ -55,6 +55,11 @@ class CognitiveConfig(SurvivalConfig):
     # objective="shaped": share of the owner's victory measure in the value
     # target (the rest is survival). Unused by the other objectives.
     victory_weight: float = 0.5
+    # The measure the shaped objective blends in: "owner" = the owner's victory
+    # measure (kings + pieces); "enemy_king" = 1 - KS of the enemy king (learned
+    # King Safety model), i.e. value = making the enemy king unsafe. Finished
+    # games, tablebase results and proven mates still override it.
+    victory_measure: str = "owner"
     # Share of the pooled per-type K/D (both sides, pawn = 1) in the piece
     # values used for exchange/protection decisions; the rest is the network's
     # contextual value. Zero keeps the network values alone.
@@ -174,6 +179,10 @@ class CognitiveConfig(SurvivalConfig):
             raise ValueError("exchange_depth >= 0, exchange_node_limit positive, trade_explore in [0, 1]")
         if not 0 <= self.threat_explore <= 1 or self.threat_moves < 1 or self.mate_labels < 0:
             raise ValueError("threat_explore must be in [0, 1], threat_moves positive, mate_labels >= 0")
+        if self.victory_measure not in ("owner", "enemy_king"):
+            raise ValueError("victory_measure must be owner or enemy_king")
+        if self.victory_measure == "enemy_king" and not self.king_safety_model:
+            raise ValueError("victory_measure=enemy_king needs a king_safety_model")
         if self.mate_search_moves < 0 or self.mate_defense_moves < 0 or self.mate_node_limit < 1:
             raise ValueError("mate_search_moves/mate_defense_moves must be >= 0 and mate_node_limit positive")
         if not (0.0 <= self.mate_attack_ks <= 1.0 and 0.0 <= self.mate_defense_ks <= 1.0):

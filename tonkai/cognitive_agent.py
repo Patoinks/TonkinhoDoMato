@@ -275,6 +275,9 @@ class CognitiveAgent(SurvivalAgent):
             proven = self._proven_ending(board if fast is None else fast, self_color, labels)
             if proven is not None:
                 return proven
+        if getattr(self.cfg, "victory_measure", "owner") == "enemy_king" and self.king_model is not None:
+            white, black = self.king_model.ks_both(board)
+            return float(np.clip(1.0 - (black if self_color else white), 0.0, 1.0))   # enemy king unsafe
         if self.context is None:
             self.observe(board, self_color)
         exact_pieces = None
