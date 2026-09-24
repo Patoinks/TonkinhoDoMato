@@ -123,6 +123,11 @@ class CognitiveConfig(SurvivalConfig):
     # Owner's anti-stalling rule: this many half-moves in a row without a
     # capture end the game as a LOSS FOR BOTH sides (0 = off; 30 = 15 moves each).
     stall_limit: int = 0
+    # Endgame tablebases (Syzygy 3-4-5, rules-only truth). With a path, a move
+    # entering a tablebase ending is valued at its exact result; with
+    # tablebase_adjudicate, training/match games end there with that result.
+    syzygy_path: str = ""
+    tablebase_adjudicate: bool = False
     exchange_node_limit: int = 200_000
     exchange_labels: bool = False
     trade_explore: float = 0.0

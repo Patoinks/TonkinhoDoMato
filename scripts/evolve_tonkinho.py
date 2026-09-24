@@ -110,6 +110,8 @@ def _game(genes_white, genes_black, seed):
     _, board, _, stats = play_episode(agent, rival, white, np.random.default_rng(sub(seed, 0)), self_color=chess.WHITE)
     if stats.get("stalled"):
         return -1.0
+    if stats.get("tablebase"):
+        return {"1-0": 1.0, "0-1": 0.0}.get(stats["result"], 0.5)
     outcome = board.outcome(claim_draw=True)
     if outcome is None or outcome.winner is None:
         return 0.5

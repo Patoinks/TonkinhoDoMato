@@ -200,10 +200,15 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
     resigned = resign is not None and resign.resigned
     outcome = board.outcome(claim_draw=True)
     stalled = callable(getattr(agent, "stalled", None)) and agent.stalled(board)
+    adjudicated = getattr(agent, "adjudicated", lambda b: "")(board) if not resigned else ""
     if stalled and not resigned:                   # owner's anti-stalling rule: both sides lose
         lost, terminated, result_value, result = True, True, 0.0, "0-0"
         if measure:
             proxies[-1] = 0.0
+    elif adjudicated != "":                        # ended at a tablebase ending, with its exact result
+        lost, terminated = adjudicated is not None and adjudicated != self_color, True
+        result_value = 0.5 if adjudicated is None else float(adjudicated == self_color)
+        result = "1/2-1/2" if adjudicated is None else "1-0" if adjudicated else "0-1"
     elif resigned:
         lost, terminated, result_value = True, True, 0.0
         result = "0-1" if self_color == chess.WHITE else "1-0"
@@ -221,6 +226,7 @@ def play_episode(agent, opponent, cfg, rng, *, self_color=None, explore=True,
         proxies=np.asarray(proxies, dtype=np.float32) if measure else None)
     stats = {
         "plies": len(board.move_stack), "lost": lost, "terminated": terminated, "stalled": bool(stalled),
+        "tablebase": adjudicated != "",
         "result": result, "opponent": opponent_name,
         "epistemic_mean": float(np.mean(uncertainties)) if uncertainties else 0.0,
         "surprise_mean": float(np.mean(surprises)),

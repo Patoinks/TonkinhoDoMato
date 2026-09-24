@@ -487,7 +487,8 @@ def main(argv=None):
                     counts["resigned"] += 1
             elif stats["result"] == "1/2-1/2":
                 counts["draws"] += 1
-                reasons[board.outcome(claim_draw=True).termination.name.lower()] += 1
+                reasons["tablebase" if stats.get("tablebase") else
+                        board.outcome(claim_draw=True).termination.name.lower()] += 1
             else:
                 counts["wins"] += 1
             if kind != "self":
@@ -518,7 +519,8 @@ def main(argv=None):
             # A win over itself is no win: only external opponents enter the history.
             if episode.terminated and not resigned and not stats.get("stalled") and kind != "self":
                 try:
-                    termination = board.outcome(claim_draw=True).termination.name.lower()
+                    termination = ("tablebase" if stats.get("tablebase") else
+                                   board.outcome(claim_draw=True).termination.name.lower())
                     recorder.consider(board, colour, stats["opponent"], stats["result"], termination)
                     if archive.add(board, colour, stats["opponent"], stats["result"], termination,
                                    run_id=run_id, game=trainer.games, objective=cfg.objective):
@@ -530,7 +532,7 @@ def main(argv=None):
             # The site's single history game: longest vs the strongest opponent, any result.
             if episode.terminated and kind != "self":
                 try:
-                    termination = ("resignation" if resigned else
+                    termination = ("resignation" if resigned else "tablebase" if stats.get("tablebase") else
                                    board.outcome(claim_draw=True).termination.name.lower())
                     elo = strength.get(kind, 0)
                     name = f"{stats['opponent']} · {elo} Elo" if kind != "tiny" else stats["opponent"]

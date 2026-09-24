@@ -14,6 +14,7 @@ from .piece_safety import (favorable_attack, legal_mobility, piece_senses, pawn_
 from .king_safety import king_senses, king_balance
 from .objective import outcome_value, continuation_value, victory_weight
 from .king_safety_model import load_cached as load_king_safety
+from . import tablebase as tb
 
 
 def terminal_draw_value(objective="survival", weight=0.5, draw=None):
@@ -114,13 +115,34 @@ class CognitiveAgent(SurvivalAgent):
                                 + (sq if self_color else sq ^ 56) for sq, p in items], device=self.device)
         return self._piece_embedding_cache[1][indices]
 
+    def adjudicated(self, board):
+        """Tablebase adjudication: True/False = that colour won, None = draw,
+        "" = the game goes on (not in the tables, or adjudication off)."""
+        if not getattr(self.cfg, "tablebase_adjudicate", False):
+            return ""
+        return tb.verdict(board, getattr(self.cfg, "syzygy_path", ""))
+
+    def _tablebase_value(self, board, move, colour):
+        """Exact value for `colour` of the position after `move` when it is in
+        the tables, else None."""
+        path = getattr(self.cfg, "syzygy_path", "")
+        if not path or not tb.enters_tables(board, move):
+            return None
+        after = board.copy(stack=False)
+        after.push(move)
+        found = tb.verdict(after, path)
+        if found == "":
+            return None
+        return (terminal_draw_value(self.cfg.objective, victory_weight(self.cfg), draw=self.cfg.draw_value)
+                if found is None else float(found == colour))
+
     def stalled(self, board):
         """Owner's rule: stall_limit half-moves without a capture - both lose."""
         limit = int(getattr(self.cfg, "stall_limit", 0) or 0)
         return limit > 0 and quiet_plies(board, limit) >= limit
 
     def game_over(self, board):
-        if self.stalled(board):
+        if self.stalled(board) or self.adjudicated(board) != "":
             return True
         if getattr(self.cfg, "strict_repetition", False):
             if self.use_fast_rules:
@@ -231,6 +253,9 @@ class CognitiveAgent(SurvivalAgent):
         """
         if self.stalled(board):
             return 0.0                                        # stalling: both lose
+        known = tb.verdict(board, getattr(self.cfg, "syzygy_path", ""))
+        if known != "":
+            return 0.5 if known is None else float(known == self_color)
         fast = fast_rules.board(board) if self.use_fast_rules else None
         if fast is not None:
             ending = fast_rules.terminal_value(fast, self_color, "victory", strict=self.cfg.strict_repetition)
@@ -612,6 +637,8 @@ class CognitiveAgent(SurvivalAgent):
                                                 strict=self.cfg.strict_repetition)
             if ending is None and stall and not board.is_capture(move) and quiet + 1 >= stall:
                 ending = 0.0                                  # stalling: both lose
+            if ending is None:
+                ending = self._tablebase_value(board, move, self_color)
             if ending is not None:
                 scores[index] = ending
                 if ending == draw_value:

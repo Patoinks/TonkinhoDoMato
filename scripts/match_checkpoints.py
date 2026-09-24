@@ -115,6 +115,9 @@ def _game(index, seed):
     outcome = board.outcome(claim_draw=True)
     if stats.get("stalled"):
         key = "loss"                                   # stalling: both sides lose
+    elif stats.get("tablebase"):
+        key = ("draw" if stats["result"] == "1/2-1/2" else
+               "win" if (stats["result"] == "1-0") == (colour == chess.WHITE) else "loss")
     elif not episode.terminated or outcome is None:
         key = "unfinished"
     elif outcome.winner is None:
