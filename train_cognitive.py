@@ -522,8 +522,10 @@ def main(argv=None):
                 for message in resign.update(resign_report, lost=episode.lost):
                     print(message, flush=True)
                     record("resign", game=completed, message=message, **resign.summary())
-            # A win over itself is no win: only external opponents enter the history.
-            if episode.terminated and not resigned and not stats.get("stalled") and kind != "self":
+            # A win over itself is no win, and TinyOpponent is only a sparring partner:
+            # only real engines enter the win history and the site.
+            archived = kind not in ("self", "tiny")
+            if episode.terminated and not resigned and not stats.get("stalled") and archived:
                 try:
                     termination = ("tablebase" if stats.get("tablebase") else
                                    board.outcome(claim_draw=True).termination.name.lower())
@@ -536,7 +538,7 @@ def main(argv=None):
                     record("warning", component="win_history", error=str(error))
                 publish_archive()
             # The site's single history game: longest vs the strongest opponent, any result.
-            if episode.terminated and kind != "self":
+            if episode.terminated and archived:
                 try:
                     termination = ("resignation" if resigned else "tablebase" if stats.get("tablebase") else
                                    board.outcome(claim_draw=True).termination.name.lower())
