@@ -2,6 +2,7 @@
 from concurrent.futures import ProcessPoolExecutor, wait, FIRST_COMPLETED
 from multiprocessing import get_context
 import time
+from copy import copy
 
 import numpy as np
 import torch
@@ -96,10 +97,15 @@ def _opponent(kind, state, seed, kd_values, rival=None):
         if rival is None:        # no snapshots: the current weights
             net, knowledge, name = state["net"], state["knowledge"], None
         else:
-            version, net, knowledge = _rival(state, *rival)
-            name = f"Tonkinho congelado (jogo {version})"
-        twin = CognitiveAgent(net, state["cfg"], knowledge, kd_values=kd_values)
-        opponent = CognitiveOpponent(twin, state["cfg"], np.random.default_rng([seed, 1]))
+            version, net, knowledge = _rival(state, *rival[:2])
+            name = (rival[3] if len(rival) > 3 and rival[3] else f"Tonkinho congelado (jogo {version})")
+        cfg = state["cfg"]
+        if rival is not None and len(rival) > 2 and rival[2]:
+            cfg = copy(cfg)                  # the rival plays with its own decision settings
+            for key, value in rival[2].items():
+                setattr(cfg, key, value)
+        twin = CognitiveAgent(net, cfg, knowledge, kd_values=kd_values)
+        opponent = CognitiveOpponent(twin, cfg, np.random.default_rng([seed, 1]))
         if name:
             opponent.description = name
         return opponent

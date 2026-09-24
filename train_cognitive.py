@@ -95,6 +95,11 @@ def main(argv=None):
     parser.add_argument("--threat-explore", type=float,
                         help="share of exploring decisions that try a move creating a mate threat")
     parser.add_argument("--threat-moves", type=int, help="mate threat = forced mate within N moves after a pass")
+    parser.add_argument("--rival-dir", type=Path,
+                        help="duel: every game against the newest snapshot another campaign writes here")
+    parser.add_argument("--rival-set", action="append", default=[], dest="rival_settings",
+                        help="duel: the rival's decision setting name=value (repeatable)")
+    parser.add_argument("--rival-name", help="duel: the rival's display name")
     parser.add_argument("--set", action="append", default=[], dest="settings",
                         help="any decision setting name=value (repeatable), e.g. from a tournament player")
     parser.add_argument("--exchange-depth", type=int, help="exact capture search depth for piece safety (0 = off)")
@@ -178,13 +183,21 @@ def main(argv=None):
             setattr(cfg, field, str(value) if isinstance(value, Path) else value)
     if args.exchange_labels is not None:
         cfg.exchange_labels = bool(args.exchange_labels)
-    for item in args.settings:
-        key, _, raw = item.partition("=")
-        if not hasattr(cfg, key):
-            parser.error(f"unknown setting {key}")
-        current = getattr(CognitiveConfig(), key)
-        kind = type(current) if current is not None else float
-        setattr(cfg, key, (raw.lower() in ("1", "true")) if kind is bool else kind(raw))
+    def parse_settings(items):
+        out = {}
+        for item in items:
+            key, _, raw = item.partition("=")
+            if not hasattr(cfg, key):
+                parser.error(f"unknown setting {key}")
+            current = getattr(CognitiveConfig(), key)
+            kind = type(current) if current is not None else float
+            out[key] = (raw.lower() in ("1", "true")) if kind is bool else kind(raw)
+        return out
+    for key, value in parse_settings(args.settings).items():
+        setattr(cfg, key, value)
+    rival_settings = parse_settings(args.rival_settings)
+    if args.rival_dir is not None:
+        cfg.mix_self, cfg.mix_tiny, cfg.mix_fairy = 1.0, 0.0, 0.0     # a duel: every game is against the rival
     cfg.validate()
     output = (Path(cfg.checkpoint_dir) / "latest.pt").resolve()
     if args.new_campaign and (not args.resume or state.get("status") not in ("completed", "stopped")
@@ -398,6 +411,25 @@ def main(argv=None):
         if rival['version'] is not None:
             print(f"Self-play rival: Tonkinho congelado (jogo {rival['version']}), novo a cada "
                   f"{cfg.self_snapshot_every} jogos", flush=True)
+        other = {"version": None, "payload": None, "file": None}
+
+        def refresh_other():
+            """Duel: the newest snapshot the other campaign has written."""
+            files = sorted(args.rival_dir.glob("tonkinho-jogo-*.pt"), key=lambda p: int(p.stem.rsplit("-", 1)[1]))
+            if files and files[-1].name != other["file"]:
+                snapshot = torch.load(files[-1], map_location="cpu", weights_only=False)
+                other.update(version=snapshot["version"], payload=snapshot["payload"], file=files[-1].name)
+                record("duel_rival", version=other["version"], file=other["file"])
+                print(f"[duel] rival = {args.rival_name or 'rival'} (jogo {other['version']})", flush=True)
+
+        if args.rival_dir is not None:
+            for _ in range(600):                              # the other campaign may still be starting
+                refresh_other()
+                if other["payload"] is not None:
+                    break
+                time.sleep(1)
+            if other["payload"] is None:
+                raise RuntimeError(f"no rival snapshot in {args.rival_dir}")
         pool = (CognitivePool(cfg, cfg.opponent_path, dedicated=True) if args.dedicate_learner_core
                 else CognitivePool(cfg, cfg.opponent_path))
         while completed < args.games:
@@ -412,12 +444,18 @@ def main(argv=None):
                 kd_values = capture_stats.piece_values()
                 if kd_values is not None:
                     extras["kd_values"] = kd_values
-                if rival["remaining"] > 0 and rival["payload"] is not None:
+                if args.rival_dir is not None:
+                    if submitted % 25 == 0:
+                        refresh_other()
+                    extras["kind"] = "self"
+                    extras["rival"] = (other["version"], other["payload"], rival_settings,
+                                       f"{args.rival_name or 'Rival'} (jogo {other['version']})")
+                elif rival["remaining"] > 0 and rival["payload"] is not None:
                     extras["kind"] = "self"          # the series against the newest frozen TonkAI
                     rival["remaining"] -= 1
                 elif opponents.uses_mixture(cfg):
                     extras["kind"] = opponents.choose_kind(cfg, rng)
-                if "kind" in extras:
+                if "kind" in extras and "rival" not in extras:
                     if extras["kind"] == "self" and rival["payload"] is not None:
                         extras["rival"] = (rival["version"], rival["payload"])
                 pool.submit(trainer.net, trainer.knowledge, seed, game_number, **extras)
