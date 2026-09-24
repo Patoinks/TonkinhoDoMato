@@ -102,6 +102,10 @@ class CognitiveConfig(SurvivalConfig):
     # against the external engine at that nominal Elo. Falls back to "self"
     # while that record has too few deaths.
     piece_values_kind: str = "self"
+    # Owner's choice (not organic): opening books, comma-separated JSON files
+    # from scripts/make_book.py. In a book position of the book's side the
+    # book move is played. Empty = no book.
+    opening_book: str = ""
     # > 0: those candidates are searched instead over every move for this many
     # half-moves after ours (material and mate only, captures then settled
     # exactly): 4 = a 5-half-move calculation. Node budget per candidate.

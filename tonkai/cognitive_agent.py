@@ -17,6 +17,8 @@ from .king_safety_model import load_cached as load_king_safety
 from . import tablebase as tb
 from .cognitive_config import measure_parts
 
+_BOOKS = {}   # opening book file -> (side, positions)
+
 
 def terminal_draw_value(objective="survival", weight=0.5, draw=None):
     if draw is not None:                     # the owner's explicit value of a draw
@@ -852,6 +854,26 @@ class CognitiveAgent(SurvivalAgent):
                     self.diagnostics["tactics_found"] += 1
             self.diagnostics["tactic_checks"] += len(batch)
 
+    def _book_move(self, board, self_color, moves):
+        """Index of the opening book's move here, or None (no book / out of book)."""
+        paths = [path.strip() for path in str(getattr(self.cfg, "opening_book", "") or "").split(",") if path.strip()]
+        if not paths:
+            return None
+        key = " ".join(board.fen().split(" ")[:4])
+        for path in paths:
+            book = _BOOKS.get(path)
+            if book is None:
+                import json
+                from pathlib import Path
+                data = json.loads(Path(path).read_text(encoding="utf-8"))
+                book = _BOOKS[path] = (chess.WHITE if data["side"] == "white" else chess.BLACK, data["positions"])
+            side, positions = book
+            if side == self_color and key in positions:
+                move = chess.Move.from_uci(positions[key][0]["move"])
+                if move in moves:
+                    return moves.index(move)
+        return None
+
     @staticmethod
     def _move_gain(board, move, values):
         gain = 0.0
@@ -1023,8 +1045,12 @@ class CognitiveAgent(SurvivalAgent):
         trade_share = float(getattr(self.cfg, "trade_explore", 0.0) or 0.0)
         if not winning and threat is None and explore and trade_share > 0 and rng.random() < trade_share:
             trade = self._trade_move(board, choice, rng)
+        book = self._book_move(board, self_color, choice.moves)
         if winning:
             choice.index = winning[0]
+        elif book is not None:
+            choice.index = book
+            self.diagnostics["book_moves"] += 1
         elif threat is not None:
             choice.index = threat
         elif trade is not None:
