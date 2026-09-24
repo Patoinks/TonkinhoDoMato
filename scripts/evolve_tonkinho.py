@@ -176,6 +176,11 @@ def main():
     parser.add_argument("--out", type=Path, default=ROOT / "history/evolution")
     parser.add_argument("--resume", type=Path, help="an evolution folder: continue after its last generation")
     parser.add_argument("--series", type=int, default=3, help="games per series (3 = best-of-3)")
+    parser.add_argument("--mutation-rate", type=float, default=0.5, help="share of genes changed per child")
+    parser.add_argument("--mutation-strength", type=float, default=0.25,
+                        help="step size as a share of each gene's range (1.0 = wild mutations)")
+    parser.add_argument("--fixed", action="append", default=[],
+                        help="a setting every player uses and nobody mutates, name=value (e.g. draw_value=0.4)")
     parser.add_argument("--start", help="evolution.json:ID - start from that player's settings as generation-1 champion")
     args = parser.parse_args()
     rng = np.random.default_rng(args.seed)
@@ -199,6 +204,18 @@ def main():
         for name in GENES:                                   # genes added after that run keep the base value
             champion["genes"].setdefault(name, base["genes"][name])
         log["start"] = {"from": source, "player": player}
+        base = {"id": player, "genes": dict(champion["genes"]), "parent": None}   # the final is against it
+    if args.fixed:
+        from tonkai.cognitive_config import CognitiveConfig
+        defaults = CognitiveConfig()
+        fixed = {}
+        for item in args.fixed:
+            key, _, raw = item.partition("=")
+            kind = type(getattr(defaults, key)) if getattr(defaults, key) is not None else float
+            fixed[key] = (raw.lower() in ("1", "true")) if kind is bool else kind(raw)
+        for player in (champion, base):
+            player["genes"].update(fixed)
+        log["fixed"] = fixed
     if args.resume:
         log = json.loads((out / "evolution.json").read_text(encoding="utf-8"))
         base = {"id": "base", "genes": log["base_genes"], "parent": None}
@@ -226,8 +243,7 @@ def main():
         for generation in range(first, args.generations + 1):
             population = [dict(champion)] + [
                 {"id": f"G{generation}-M{i + 1}", "parent": champion["id"],
-                 "genes": mutate(champion["genes"], rng, rate=.7 if generation == 1 else .5,
-                                 strength=.35 if generation == 1 else .25)}
+                 "genes": mutate(champion["genes"], rng, rate=args.mutation_rate, strength=args.mutation_strength)}
                 for i in range(args.population - 1)]
             champion, rounds = knockout(pool, population, generation)
             log["generations"].append({"generation": generation, "population": population, "rounds": rounds,
