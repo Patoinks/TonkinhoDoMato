@@ -645,7 +645,8 @@ class CognitiveAgent(SurvivalAgent):
             self._rank_last(scores, allows_mate)
         tactic = int(getattr(self.cfg, "tactic_candidates", 0) or 0)
         if tactic > 0 and nets is not None and fast_rules.AVAILABLE:
-            self._tactic_check(board, moves, codes, fast, exchange_values, nets, scores, tactic)
+            self._tactic_check(board, moves, codes, fast, exchange_values, nets, scores, tactic,
+                               self_color=self_color, mean=mean)
         order = np.argsort(scores)[::-1]
         gap = float(scores[order[0]] - scores[order[1]]) if len(order) > 1 else 1.0
         danger = mean[order[0]] < .35 or board.is_check()
@@ -811,7 +812,7 @@ class CognitiveAgent(SurvivalAgent):
         self.diagnostics["exchange_searches"] += len(moves)
         return nets
 
-    def _tactic_check(self, board, moves, codes, fast, values, nets, scores, k, rounds=4):
+    def _tactic_check(self, board, moves, codes, fast, values, nets, scores, k, rounds=4, self_color=None, mean=None):
         """One-move tactics for the best candidates: the exchange result becomes
         what the opponent wins with one move of its own (fork, double attack)
         after our best reply. The best move is re-checked until it is checked."""
@@ -825,8 +826,13 @@ class CognitiveAgent(SurvivalAgent):
             if not batch:
                 return
             depth = int(getattr(self.cfg, "tactic_depth", 0) or 0)
+            lines = None
             try:
-                if depth > 0:
+                if depth > 0 and getattr(self.cfg, "tactic_search", "full") == "pruned":
+                    found = fast.deep_after_moves([codes[i] for i in batch], values, depth,
+                                                  int(self.cfg.exchange_depth), int(self.cfg.tactic_node_limit))
+                    losses, lines = [loss for loss, _ in found], [line for _, line in found]
+                elif depth > 0:
                     losses = fast.search_after_moves([codes[i] for i in batch], values, depth,
                                                      int(self.cfg.exchange_depth), int(self.cfg.tactic_node_limit))
                 else:
@@ -853,6 +859,15 @@ class CognitiveAgent(SurvivalAgent):
                     nets[index] = new
                     self.diagnostics["tactics_found"] += 1
             self.diagnostics["tactic_checks"] += len(batch)
+            leaf = float(getattr(self.cfg, "leaf_network", 0.0) or 0.0)
+            if leaf > 0 and lines is not None and mean is not None:
+                searched = [(index, line) for index, line, loss in zip(batch, lines, losses) if loss == loss]
+                if searched:
+                    ends = self._leaf_values(fast, [codes[i] for i, _ in searched], [line for _, line in searched],
+                                             self_color)
+                    for (index, _), value in zip(searched, ends):
+                        scores[index] += leaf * (float(value) - float(mean[index]))
+                    self.diagnostics["leaf_evaluations"] += len(searched)
 
     def _book_move(self, board, self_color, moves):
         """Index of the opening book's move here, or None (no book / out of book)."""
@@ -873,6 +888,23 @@ class CognitiveAgent(SurvivalAgent):
                 if move in moves:
                     return moves.index(move)
         return None
+
+    @torch.inference_mode()
+    def _leaf_values(self, fast, root_codes, lines, self_color):
+        """The network's value of the position at the end of each main line."""
+        rows = []
+        for code, line in zip(root_codes, lines):
+            fast.push(code)
+            for step in line:
+                fast.push(step)
+            rows.append(np.asarray(fast.encode_here(self_color)))
+            for _ in range(len(line) + 1):
+                fast.pop()
+        x = torch.from_numpy(np.stack(rows)).to(self.device)
+        latent = self.net.encode(x)
+        memories = self.net.memory_cell(latent, self.net._memory_for_batch(self.memory, len(x)))
+        heads, _ = self.net.survival(self.net.context_from_latent(latent, memories))
+        return heads.mean(-1).cpu().numpy()
 
     @staticmethod
     def _move_gain(board, move, values):

@@ -831,6 +831,117 @@ static double material_search(const Pos& p, int plies, double alpha, double beta
     return best;
 }
 
+// Deep material search with the classic prunings: iterative deepening, a
+// transposition table (also the source of the main line), principal variation
+// search, null move, late move reductions, killer and history move ordering.
+// Leaves are settled by the exact exchange search. Material and mate only.
+struct DeepSearch {
+    struct Entry { U64 key = 0; double value = 0.0; int depth = -1; int flag = 0; int move = 0; };
+    enum { EXACT = 0, LOWER = 1, UPPER = 2 };
+    ExchangeSearch q;
+    int qdepth;
+    std::vector<Entry> table;
+    int killers[128][2] = {};
+    int history[2][64][64] = {};
+
+    DeepSearch(const std::vector<double>& values, long long limit, int qdepth_)
+        : q(values, limit), qdepth(qdepth_), table(size_t(1) << 17) {}
+
+    Entry& slot(U64 key) { return table[key & (table.size() - 1)]; }
+
+    static bool has_pieces(const Pos& p) {   // null move is unsafe with king and pawns only
+        return (p.occ[p.turn] & (p.bb[KNIGHT] | p.bb[BISHOP] | p.bb[ROOK] | p.bb[QUEEN])) != 0;
+    }
+
+    double search(const Pos& p, int depth, double alpha, double beta, int ply, bool allow_null) {
+        if (++q.nodes > q.limit) { q.aborted = true; return 0.0; }
+        if (depth <= 0) return q.search(p, qdepth, alpha, beta);
+        U64 key = key_of(p).hash();
+        Entry& e = slot(key);
+        int tt_move = 0;
+        if (e.key == key) {
+            tt_move = e.move;
+            if (e.depth >= depth) {
+                if (e.flag == EXACT) return e.value;
+                if (e.flag == LOWER && e.value >= beta) return e.value;
+                if (e.flag == UPPER && e.value <= alpha) return e.value;
+            }
+        }
+        std::vector<int> moves;
+        p.legal_moves(moves);
+        bool check = p.is_check();
+        if (moves.empty()) return check ? -(ExchangeSearch::MATE - ply) : 0.0;
+        const double eps = 1e-6;
+        if (allow_null && !check && depth >= 3 && has_pieces(p)) {
+            Pos null = p;
+            null.turn ^= 1;
+            null.ep = -1;
+            double score = -search(null, depth - 3, -beta, -beta + eps, ply + 1, false);
+            if (q.aborted) return 0.0;
+            if (score >= beta) return score;
+        }
+        int k = std::min(ply, 127), side = p.turn;
+        auto order = [&](int m) {
+            if (m == tt_move) return 1e9;
+            double gain = q.move_gain(p, m);
+            if (gain > 0) return 1e6 + 1000.0 * gain - q.values[std::min(p.type_at(mfrom(m)), int(QUEEN))];
+            if (m == killers[k][0]) return 9e5;
+            if (m == killers[k][1]) return 8e5;
+            return double(history[side][mfrom(m)][mto(m)]);
+        };
+        std::stable_sort(moves.begin(), moves.end(), [&](int a, int b) { return order(a) > order(b); });
+        double best = -std::numeric_limits<double>::infinity(), start = alpha;
+        int best_move = moves[0];
+        for (size_t i = 0; i < moves.size(); ++i) {
+            int m = moves[i];
+            double gain = q.move_gain(p, m);
+            Pos next = p;
+            next.make(m);
+            bool quiet = gain == 0.0 && !mpromo(m);
+            int reduction = (depth >= 3 && i >= 3 && quiet && !check && !next.is_check()) ? 1 : 0;
+            double score;
+            if (i == 0) {
+                score = gain - search(next, depth - 1, gain - beta, gain - alpha, ply + 1, true);
+            } else {
+                score = gain - search(next, depth - 1 - reduction, gain - alpha - eps, gain - alpha, ply + 1, true);
+                if (!q.aborted && score > alpha && (reduction || score < beta))
+                    score = gain - search(next, depth - 1, gain - beta, gain - alpha, ply + 1, true);
+            }
+            if (q.aborted) return best > -1e300 ? best : 0.0;
+            if (score > best) { best = score; best_move = m; }
+            if (best > alpha) alpha = best;
+            if (alpha >= beta) {
+                if (quiet) {
+                    if (killers[k][0] != m) { killers[k][1] = killers[k][0]; killers[k][0] = m; }
+                    history[side][mfrom(m)][mto(m)] += depth * depth;
+                }
+                break;
+            }
+        }
+        e.key = key;
+        e.value = best;
+        e.depth = depth;
+        e.move = best_move;
+        e.flag = best <= start ? UPPER : best >= beta ? LOWER : EXACT;
+        return best;
+    }
+
+    // The main line from `p`, read back from the table.
+    std::vector<int> line(Pos p, int max_len) {
+        std::vector<int> out;
+        std::vector<int> legal;
+        for (int i = 0; i < max_len; ++i) {
+            Entry& e = slot(key_of(p).hash());
+            if (e.key != key_of(p).hash() || !e.move) break;
+            p.legal_moves(legal);
+            if (std::find(legal.begin(), legal.end(), e.move) == legal.end()) break;
+            out.push_back(e.move);
+            p.make(e.move);
+        }
+        return out;
+    }
+};
+
 // ------------------------------------------------------------------ board
 
 class Board {
@@ -1228,6 +1339,38 @@ public:
         }
         return out;
     }
+    // Per candidate: (what the opponent wins by force within `plies`
+    // half-moves after ours, with prunings; the main line after our move).
+    // NaN and an empty line when the node budget runs out.
+    std::vector<std::pair<double, std::vector<int>>> deep_after_moves(
+            const std::vector<int>& codes, const std::vector<double>& values, int plies, int max_depth,
+            long long node_limit) const {
+        if (values.size() != 6 || plies < 0 || max_depth < 0 || node_limit < 0)
+            throw std::invalid_argument("deep_after_moves requires six values and non-negative limits");
+        std::vector<int> legal;
+        pos.legal_moves(legal);
+        std::vector<std::pair<double, std::vector<int>>> out;
+        out.reserve(codes.size());
+        const double inf = std::numeric_limits<double>::infinity();
+        for (int m : codes) {
+            if (std::find(legal.begin(), legal.end(), m) == legal.end())
+                throw std::invalid_argument("illegal move in deep_after_moves");
+            Pos after = pos;
+            after.make(m);
+            DeepSearch search(values, node_limit, max_depth);
+            double value = 0.0;
+            for (int depth = 1; depth <= plies && !search.q.aborted; ++depth) {
+                double found = search.search(after, depth, -inf, inf, 1, true);
+                if (!search.q.aborted) value = found;
+            }
+            if (search.q.aborted && plies > 0) {
+                out.push_back({std::numeric_limits<double>::quiet_NaN(), {}});
+                continue;
+            }
+            out.push_back({value, search.line(after, plies)});
+        }
+        return out;
+    }
     int ks_status_py(bool defender_white) const { return ks_status(pos, defender_white ? WHITE : BLACK); }
 
     // King safety (v4) exploration: for every legal move of the side to move
@@ -1465,6 +1608,8 @@ PYBIND11_MODULE(tonkai_fast, m) {
              py::arg("node_limit"))
         .def("exchange_after_moves", &Board::exchange_after_moves, py::arg("codes"), py::arg("values"),
              py::arg("max_depth"), py::arg("node_limit"))
+        .def("deep_after_moves", &Board::deep_after_moves, py::arg("codes"), py::arg("values"),
+             py::arg("plies"), py::arg("max_depth"), py::arg("node_limit"))
         .def("search_after_moves", &Board::search_after_moves, py::arg("codes"), py::arg("values"),
              py::arg("plies"), py::arg("max_depth"), py::arg("node_limit"))
         .def("tactic_after_moves", &Board::tactic_after_moves, py::arg("codes"), py::arg("values"),
