@@ -18,7 +18,19 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "scripts")]
 ENGINE = ROOT / "engines/stockfish-11/stockfish-11-win/Windows/stockfish_20011801_x64_bmi2.exe"
 # tactic_depth 0 = one-move tactics only; N = our move + N half-moves.
-DEPTHS = {"1 lance (táticas)": 0, "3 meios-lances": 2, "4 meios-lances": 3, "5 meios-lances": 4, "6 meios-lances": 5}
+PRESETS = {
+    "depth": {label: {"tactic_depth": depth} for label, depth in
+              {"1 lance (táticas)": 0, "3 meios-lances": 2, "4 meios-lances": 3, "5 meios-lances": 4,
+               "6 meios-lances": 5}.items()},
+    "deep": {
+        "4 completo (hoje)": {"tactic_depth": 3},
+        "6 com poda": {"tactic_depth": 5, "tactic_search": "pruned"},
+        "8 com poda": {"tactic_depth": 7, "tactic_search": "pruned"},
+        "6 com poda + rede no fim": {"tactic_depth": 5, "tactic_search": "pruned", "leaf_network": 1.0},
+        "8 com poda + rede no fim": {"tactic_depth": 7, "tactic_search": "pruned", "leaf_network": 1.0},
+        "10 com poda + rede no fim": {"tactic_depth": 9, "tactic_search": "pruned", "leaf_network": 1.0},
+    },
+}
 
 
 def main():
@@ -29,6 +41,8 @@ def main():
     parser.add_argument("--every", type=int, default=3, help="decide at every Nth own move")
     parser.add_argument("--judge-depth", type=int, default=12)
     parser.add_argument("--cap", type=int, default=1000)
+    parser.add_argument("--preset", choices=sorted(PRESETS), default="depth")
+    parser.add_argument("--out", type=Path, default=ROOT / "history/depth-ratio.json")
     args = parser.parse_args()
     import chess
     import chess.engine
@@ -38,10 +52,12 @@ def main():
     from tonkai.cognitive_agent import CognitiveAgent
     name, net, knowledge, base, kd = _load(str(args.checkpoint))
     agents = {}
-    for label, depth in DEPTHS.items():
+    variants = PRESETS[args.preset]
+    for label, settings in variants.items():
         cfg = copy(base)
-        for key, value in dict(tactic_candidates=4, tactic_depth=depth, avoid_draws_ahead=3.0, endgame_pieces=10,
-                               mate_attack_ks=0.0, mate_defense_ks=0.0, threat_explore=0.0, trade_explore=0.0).items():
+        for key, value in dict(tactic_candidates=4, avoid_draws_ahead=3.0, endgame_pieces=10, tactic_node_limit=20_000_000,
+                               mate_attack_ks=0.0, mate_defense_ks=0.0, threat_explore=0.0, trade_explore=0.0,
+                               **settings).items():
             setattr(cfg, key, value)
         agents[label] = CognitiveAgent(net, cfg, knowledge, kd_values=kd)
     judge = chess.engine.SimpleEngine.popen_uci(str(ENGINE))
@@ -51,7 +67,7 @@ def main():
     def value(board, colour):
         return judge.analyse(board, limit)["score"].pov(colour).score(mate_score=10_000)
 
-    stats = {label: {"loss": [], "ms": []} for label in DEPTHS}
+    stats = {label: {"loss": [], "ms": []} for label in variants}
     games = json.loads(args.games.read_text(encoding="utf-8"))
     done = 0
     for game in games:
@@ -90,7 +106,7 @@ def main():
                          "blunders": sum(loss >= 200 for loss in losses), "ms_per_decision": sum(ms) / len(ms)}
         print(f"{label:18s} perda média {report[label]['mean_loss_cp']:6.1f} cp   erros graves {report[label]['blunders']:3d}"
               f"   {report[label]['ms_per_decision']:7.1f} ms/decisão", flush=True)
-    (ROOT / "history/depth-ratio.json").write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+    args.out.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
 if __name__ == "__main__":
