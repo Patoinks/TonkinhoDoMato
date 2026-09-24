@@ -22,7 +22,7 @@ def atomic(path, data):
     temp.replace(path)
 
 
-def publish(checkpoint, config_path, allow_stopped=False):
+def publish(checkpoint, config_path, allow_stopped=False, settings=()):
     config = json.loads(Path(config_path).read_text(encoding="utf-8-sig"))
     site = Path(config["site_directory"]).resolve(strict=True)
     checkpoint = Path(checkpoint).resolve(strict=True)
@@ -33,6 +33,7 @@ def publish(checkpoint, config_path, allow_stopped=False):
              *sorted((site / 'src').rglob('*.ts')), *sorted((site / 'src').rglob('*.tsx'))]
     for file in files:
         implementation.update(str(file).encode()); implementation.update(file.read_bytes())
+    implementation.update(json.dumps(sorted(settings)).encode())   # other settings = another player
     implementation_hash = implementation.hexdigest()
     history = ROOT / "history/web-publications"
     history.mkdir(parents=True, exist_ok=True)
@@ -86,7 +87,9 @@ def publish(checkpoint, config_path, allow_stopped=False):
         candidate = directory / "candidate"
         exporter = "export_temporal_web.py" if kind in ("tonkai-cognitive-v3", "tonkai-survival-v2") else "export_web.py"
         del state
-        step([sys.executable, str(ROOT / exporter), "--checkpoint", str(snapshot), "--out", str(candidate)], ROOT)
+        extra = [part for item in settings for part in ("--set", item)] if exporter == "export_temporal_web.py" else []
+        step([sys.executable, str(ROOT / exporter), "--checkpoint", str(snapshot), "--out", str(candidate), *extra], ROOT)
+        record["settings"] = list(settings)
         manifest = json.loads((candidate / "tonkai.json").read_text())
         # Legacy exports also receive immutable URLs; keep tonkai.bin for tools.
         versioned_binary = f"tonkai-{manifest['sha256']}.bin"
@@ -160,7 +163,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--config", default=str(ROOT / "web_publish.local.json"))
+    parser.add_argument("--set", action="append", default=[], dest="settings",
+                        help="decision setting name=value for the published player (e.g. a tournament winner)")
     parser.add_argument("--allow-stopped", action="store_true",
                         help="owner's explicit request: publish a cleanly stopped campaign checkpoint")
     arguments = parser.parse_args()
-    publish(arguments.checkpoint, arguments.config, arguments.allow_stopped)
+    publish(arguments.checkpoint, arguments.config, arguments.allow_stopped, arguments.settings)
