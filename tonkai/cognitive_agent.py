@@ -310,6 +310,8 @@ class CognitiveAgent(SurvivalAgent):
             balance = sum(float(values[piece.piece_type]) * (1 if piece.color == self_color else -1)
                           for piece in board.piece_map().values() if piece.piece_type != chess.KING)
             return 0.5 + 0.5 * float(np.tanh(balance / 5.0))
+        if name == "simplify":
+            return float(np.clip((32 - chess.popcount(board.occupied)) / (32 - tb.MAX_PIECES), 0.0, 1.0))
         raise ValueError(name)
 
     def _owner_measure(self, board, self_color, fast):

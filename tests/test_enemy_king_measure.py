@@ -70,3 +70,14 @@ def test_mixed_measure_is_the_weighted_sum_of_its_parts():
     assert mixed.position_proxy(board, chess.WHITE) == pytest.approx(0.5 * 0.7 + 0.5 * 0.0)
     material = measured(victory_measure="material")
     assert material.position_proxy(chess.Board(), chess.WHITE) == pytest.approx(0.5)        # equal material
+
+
+def test_simplify_rewards_equal_trades_and_punishes_bad_ones():
+    tonkai = measured(victory_measure="simplify:1,material:1")
+    start = tonkai.position_proxy(chess.Board(), chess.WHITE)
+    knights_off = chess.Board("r1bqkb1r/pppppppp/8/8/8/8/PPPPPPPP/R1BQKB1R w KQkq - 0 1")   # N for N
+    knight_for_pawn = chess.Board("rnbqkbnr/ppppppp1/8/8/8/8/PPPPPPPP/R1BQKBNR w KQkq - 0 1")
+    assert tonkai.position_proxy(knights_off, chess.WHITE) > start
+    assert tonkai.position_proxy(knight_for_pawn, chess.WHITE) < start
+    five = chess.Board("8/8/8/4k3/8/8/2P5/2R1K3 w - - 0 1")                               # 4 pieces
+    assert measured(victory_measure="simplify").position_proxy(five, chess.WHITE) == 1.0

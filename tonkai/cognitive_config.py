@@ -5,7 +5,7 @@ from .survival_config import SurvivalConfig
 
 
 
-MEASURE_PARTS = ("owner", "enemy_king", "enemy_box", "material")
+MEASURE_PARTS = ("owner", "enemy_king", "enemy_box", "material", "simplify")
 
 
 def measure_parts(text):
@@ -79,6 +79,8 @@ class CognitiveConfig(SurvivalConfig):
     #   enemy_king - 1 - KS of the enemy king (learned King Safety model)
     #   enemy_box  - 1 - (squares next to the enemy king we do not control) / 8
     #   material   - 0.5 + 0.5 tanh((own - enemy pieces) / 5), K/D values (else 1/3/3/5/9)
+    #   simplify   - (32 - pieces on the board) / 27: 1 at 5 pieces, where the
+    #                tablebase decides the game
     # Finished games, tablebase results and proven mates still override it.
     victory_measure: str = "owner"
     # Owner's rule: the network values an enemy piece exactly as it would the
