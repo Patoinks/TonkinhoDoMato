@@ -45,6 +45,13 @@ ROOT = Path(__file__).resolve().parent
 ENGINE = ROOT / "engines/stockfish-11/stockfish-11-win/Windows/stockfish_20011801_x64.exe"
 
 
+def episode_owner_color_row(row):
+    """TonkAI's colour in a stored replay row."""
+    from types import SimpleNamespace
+    from tonkai.captures import episode_owner_color
+    return episode_owner_color(SimpleNamespace(packed=row["packed"], initial_fen=row["initial_fen"]))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     source = parser.add_mutually_exclusive_group(required=True)
@@ -264,6 +271,19 @@ def main(argv=None):
     # campaign keeps them (without them the exact exchange search is off).
     if state.get("capture_stats") and state["capture_stats"].get("hot_kills") == cfg.hot_piece_kills:
         capture_stats.load_state_dict(state["capture_stats"])
+    values_kind = getattr(cfg, "piece_values_kind", "self")
+    if values_kind != "self" and values_kind not in capture_stats.by_kind and state.get("replay"):
+        # The chosen record starts from the stored real games of that kind.
+        from tonkai.captures import replay_kind
+        elo = values_kind.partition("@")[2]
+        seeded = 0
+        for row in state["replay"]["episodes"]:
+            if replay_kind(row["opponent"]) == "external" and f"Elo {elo};" in row["opponent"] and row["actions"]:
+                colour = episode_owner_color_row(row)
+                capture_stats.add_pairs(values_kind, list(row["actions"]), colour, row["initial_fen"] or None)
+                seeded += 1
+        print(f"[piece values] {values_kind}: seeded from {seeded} stored games -> "
+              f"{capture_stats.piece_values(values_kind)}", flush=True)
     if capture_stats.needs_seed() and state.get("replay"):
         # Piece values v2: the new measures start from the stored real games.
         seeded = capture_stats.seed_new_measures(replay_games(state["replay"]["episodes"]))
@@ -452,7 +472,8 @@ def main(argv=None):
                     extras["resign_plan"] = resign.plan()
                 # Always measured values: kd_weight only sets their share in the blend,
                 # it must not switch off the exact exchange search.
-                kd_values = capture_stats.piece_values()
+                kd_values = (capture_stats.piece_values(getattr(cfg, "piece_values_kind", "self"))
+                             or capture_stats.piece_values())
                 if kd_values is not None:
                     extras["kd_values"] = kd_values
                 if args.rival_dir is not None:
@@ -510,7 +531,8 @@ def main(argv=None):
                 outcome = ("loss" if episode.lost else "draw" if stats["result"] == "1/2-1/2" else "win")
             else:
                 outcome = "unfinished"
-            capture_stats.add(board.move_stack, colour, outcome, opponent_kind=kind)
+            capture_stats.add(board.move_stack, colour, outcome, opponent_kind=kind,
+                              detail_kind=f"external@{cfg.opponent_elo}" if kind == "external" else None)
             by_kind[kind][outcome] += 1
             if kind == "self" and "opponent_version" in stats:
                 by_version[stats["opponent_version"]][outcome] += 1

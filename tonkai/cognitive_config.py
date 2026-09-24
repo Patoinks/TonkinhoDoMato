@@ -97,6 +97,11 @@ class CognitiveConfig(SurvivalConfig):
     # with ONE move of its own (forks, double attacks) after our best reply.
     # 0 = captures only.
     tactic_candidates: int = 0
+    # Which games measure the piece values (the same level-weighted K/D rule):
+    # "self" = self-play (the owner's rule); "external@1800" = only the games
+    # against the external engine at that nominal Elo. Falls back to "self"
+    # while that record has too few deaths.
+    piece_values_kind: str = "self"
     # > 0: those candidates are searched instead over every move for this many
     # half-moves after ours (material and mate only, captures then settled
     # exactly): 4 = a 5-half-move calculation. Node budget per candidate.

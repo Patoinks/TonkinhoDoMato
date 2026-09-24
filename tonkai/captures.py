@@ -277,9 +277,22 @@ class CaptureStats:
                 mine["pairs"][killer][pair] += 1
         return events
 
-    def add(self, moves, self_color: bool, outcome: str, initial_fen: str | None = None, opponent_kind=None):
+    def add_pairs(self, kind, moves, self_color: bool, initial_fen: str | None = None):
+        """Only the who-killed-whom record of one game, kept under `kind` (e.g.
+        "external@1800"): the piece values can be measured on those games alone."""
+        row = self._kind(kind)
+        row["games"] += 1
+        row["pair_games"] += 1
+        for event in track(moves, initial_fen)[2]:
+            killer = "self" if event["capturer_color"] == self_color else "opponent"
+            row["pairs"][killer][f'{PIECE_NAMES[event["capturer_type"] - 1]}>{PIECE_NAMES[event["victim_type"] - 1]}'] += 1
+
+    def add(self, moves, self_color: bool, outcome: str, initial_fen: str | None = None, opponent_kind=None,
+            detail_kind=None):
         if outcome not in OUTCOMES:
             raise ValueError(f"unknown outcome {outcome!r}")
+        if detail_kind:
+            self.add_pairs(detail_kind, moves, self_color, initial_fen)
         self.games += 1
         mine = self._kind(opponent_kind) if opponent_kind else None
         if mine is not None:
@@ -467,12 +480,14 @@ class CaptureStats:
     def value_source(self) -> str:
         return "weighted" if all(value is not None for value in self._measures(True).values()) else "pooled"
 
-    def piece_scores(self, min_deaths: int = 50) -> dict[int, float] | None:
+    def piece_scores(self, min_deaths: int = 50, kind: str = "self") -> dict[int, float] | None:
         """Owner's rule (2026-09-23): a piece's score is 3 x its K/D in
         self-play games (TonkAI against a frozen TonkAI, both sides), where a
         kill counts the victim's level in pawn units - so the pawn gets a score
-        too. None until every type has ``min_deaths`` self-play deaths."""
-        row = self.by_kind.get("self")
+        too. None until every type has ``min_deaths`` self-play deaths.
+        `kind`: the games measured - "self" (the owner's rule) or another
+        record, e.g. "external@1800" (only the games against Stockfish 1800)."""
+        row = self.by_kind.get(kind)
         if not row:
             return None
         pairs = Counter()
@@ -498,10 +513,10 @@ class CaptureStats:
         return {kind: 3.0 * self._level_kills(pairs, PIECE_NAMES[kind - 1], level) / deaths[kind]
                 for kind in range(1, 6)}
 
-    def piece_values(self) -> dict[int, float] | None:
+    def piece_values(self, kind: str = "self") -> dict[int, float] | None:
         """The piece scores relative to the pawn's own score (pawn = 1): the
         unit every value in TonkAI's decisions is expressed in."""
-        scores = self.piece_scores()
+        scores = self.piece_scores(kind=kind)
         if scores is None or scores[chess.PAWN] <= 0:
             return None
         return {kind: score / scores[chess.PAWN] for kind, score in scores.items()}
