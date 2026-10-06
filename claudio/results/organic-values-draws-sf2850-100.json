@@ -1,0 +1,30 @@
+{
+  "scope": "draws only",
+  "opponent": "Stockfish nominal 2850",
+  "training_games": 100,
+  "results": {
+    "win": 0,
+    "draw": 2,
+    "loss": 98
+  },
+  "draw_games": [
+    {"game": 15, "colour": "white", "plies": 101},
+    {"game": 91, "colour": "white", "plies": 71}
+  ],
+  "capture_counts": {
+    "pawn": {"kills": 11, "deaths": 12},
+    "knight": {"kills": 4, "deaths": 7},
+    "bishop": {"kills": 7, "deaths": 6},
+    "rook": {"kills": 2, "deaths": 4},
+    "queen": {"kills": 5, "deaths": 0}
+  },
+  "organic_values_relative_to_pawn": {
+    "pawn": 1.0,
+    "knight": 0.5341190588189678,
+    "bishop": 0.8283917330610946,
+    "rook": 0.5570014320278978,
+    "queen": null
+  },
+  "method": "The same iterative victim-level-weighted kill/death calculation used by CaptureStats.piece_scores, restricted to piece types with at least one death. Pawn is normalized to 1.",
+  "limitation": "Only two games were draws. No queen died, so the queen value is undefined and the official five-piece calculation correctly returns no complete value table."
+}

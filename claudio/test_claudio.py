@@ -1,0 +1,91 @@
+"""Claudio's rules: legal moves, its own mates, never a move that allows mate,
+no free pieces, and a memory that sees each real position exactly once.
+
+    python -m pytest claudio/test_claudio.py -q
+"""
+import sys
+from pathlib import Path
+
+import chess
+import numpy as np
+import pytest
+import torch
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import paths  # noqa: E402,F401
+
+from tonkai import fast_rules  # noqa: E402
+from tonkai.encoding import encode  # noqa: E402
+from tonkai.temporal_model import SurvivalNet  # noqa: E402
+from claudio_agent import Claudio, ClaudioConfig, move_of  # noqa: E402
+
+pytestmark = pytest.mark.skipif(not fast_rules.AVAILABLE, reason="tonkai_fast is not built")
+VALUES = {1: 1.0, 2: 3.0, 3: 3.0, 4: 5.0, 5: 9.0}
+
+
+def player(**settings):
+    torch.manual_seed(0)
+    cfg = ClaudioConfig.with_settings([f"{k}={v}" for k, v in settings.items()])
+    return Claudio(SurvivalNet(None), VALUES, cfg, rng=np.random.default_rng(0))
+
+
+def test_rules_moves_are_the_legal_moves():
+    rng = np.random.default_rng(1)
+    for _ in range(30):
+        board = chess.Board()
+        for _ in range(int(rng.integers(0, 80))):
+            moves = list(board.legal_moves)
+            if not moves:
+                break
+            board.push(moves[int(rng.integers(len(moves)))])
+        fast = fast_rules.board(board)
+        assert {move_of(code) for code in fast.legal_moves()} == set(board.legal_moves)
+
+
+def test_takes_its_own_mate():
+    board = chess.Board("6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1")
+    assert player().choose(board) == chess.Move.from_uci("a1a8")
+
+
+def test_never_plays_a_move_that_allows_mate():
+    # Black threatens ...Qxg2# (queen g5? no: bishop b7 + queen g2 battery); only moves covering g2 hold.
+    board = chess.Board("6k1/1b3ppp/8/8/8/6q1/5PP1/5RK1 w - - 0 1")
+    tonkai = player(mate_attack=0)
+    move = tonkai.choose(board)
+    board.push(move)
+    fast = fast_rules.board(board)
+    assert fast.forced_mate(False, 1, 20_000)[0] == 0
+
+
+def test_does_not_leave_its_queen_to_a_pawn():
+    board = chess.Board("4k3/8/8/8/2p5/3Q4/8/4K3 w - - 0 1")      # ...c4 attacks the queen on d3
+    move = player(mate_attack=0).choose(board)
+    fast = fast_rules.board(board)
+    loss = fast.exchange_after_moves([fast_rules.code(move)], [0, 1, 3, 3, 5, 9], 5, 200_000)[0]
+    gain = 1.0 if board.is_capture(move) else 0.0
+    assert gain - loss >= 0
+
+
+def test_memory_sees_each_real_position_once():
+    net = SurvivalNet(None).eval()
+    board = chess.Board()
+    incremental = Claudio(net, VALUES, ClaudioConfig(), rng=np.random.default_rng(0))
+    for uci in ("e2e4", "e7e5", "g1f3", "b8c6", "f1b5", "a7a6"):
+        if board.turn == chess.WHITE:
+            incremental.choose(board)
+        board.push_uci(uci)
+    incremental.choose(board)
+    x = torch.from_numpy(np.stack([encode(b, chess.WHITE) for b in _positions(board)]))
+    with torch.inference_mode():
+        latent, memory = net.encode(x), net.initial_memory(1)
+        for row in range(len(x)):
+            memory = net.memory_cell(latent[row:row + 1], memory)
+    assert torch.allclose(incremental.memory, memory)
+
+
+def _positions(board):
+    replay, out = board.root(), [board.root()]
+    for move in board.move_stack:
+        replay.push(move)
+        out.append(replay.copy())
+    return out

@@ -1,0 +1,36 @@
+{
+ "label": "smoke-pawn1-sf2850-2",
+ "player": "claudio",
+ "checkpoint": "claudio\\claudio-matecontrol-50-pawn1.pt",
+ "elo": 2850,
+ "games": 2,
+ "win": 0,
+ "draw": 1,
+ "loss": 1,
+ "winrate": 0.0,
+ "s_per_game": 0.18845905000671337,
+ "ms_per_move": 6.498587931265979,
+ "finished_utc": "2026-09-24T22:39:34+00:00",
+ "list": [
+  {
+   "game": 0,
+   "white": true,
+   "result": "draw",
+   "plies": 45,
+   "end": "THREEFOLD_REPETITION",
+   "seconds": 0.14812399999937043,
+   "decisions": 23,
+   "moves": "a2a3 g8f6 g2g4 f6e4 b1c3 d7d5 f1h3 h7h5 g4g5 e7e6 c3e4 d5e4 d2d3 f8c5 d1d2 e4e3 f2e3 d8g5 g1f3 g5h6 a1b1 g7g5 d2a5 b8d7 a5c7 g5g4 h3g4 h5g4 f3e5 c5b6 c7d6 h6h4 e1d1 b6c5 d6c7 c5b6 c7d6 h8h5 e5c4 h4f2 c4b6 d7b6 d6f4 f2h4 f4d6 h4f2 d6f4 f2h4 f4d6"
+  },
+  {
+   "game": 1,
+   "white": false,
+   "result": "loss",
+   "plies": 71,
+   "end": "CHECKMATE",
+   "seconds": 0.2287941000140563,
+   "decisions": 35,
+   "moves": "a2a3 g8f6 g2g4 f6e4 d2d3 e4d6 e2e4 a7a6 f2f4 b8c6 h2h4 g7g6 h4h5 f8g7 h5h6 g7f6 g1f3 c6d4 e4e5 f6e5 f4e5 d6b5 c2c3 d4c6 a3a4 b5a7 h1g1 d7d6 e5d6 c7d6 d3d4 c8d7 d1b3 d8c7 f1c4 e7e6 d4d5 e6d5 c4d5 f7f6 g4g5 f6f5 b1a3 a7c8 c1e3 c8e7 d5f7 e8f8 e3b6 c7b8 f7e6 d7e6 b3e6 f8e8 a3c4 c6d4 c3d4 b8d8 f3e5 d6e5 e6e5 a8c8 e5h8 e8f7 b6d8 c8d8 c4e5 f7e6 h8d8 e7d5 d8c8 e6e7 c8d7 e7f8 d7f7"
+  }
+ ]
+}

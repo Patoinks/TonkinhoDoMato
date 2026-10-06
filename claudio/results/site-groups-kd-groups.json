@@ -1,0 +1,2650 @@
+{
+ "label": "kd-groups",
+ "players": {
+  "site 17/83": 0.17304461792996828,
+  "inversa 83/17": 0.82695538207,
+  "50/50": 0.5,
+  "100/0": 1.0,
+  "0/100": 0.0
+ },
+ "games_per_pair": 20,
+ "table": {
+  "site 17/83": {
+   "played": 80,
+   "win": 4,
+   "draw": 72,
+   "loss": 4,
+   "seconds": 43.769273399939266
+  },
+  "inversa 83/17": {
+   "played": 80,
+   "win": 4,
+   "draw": 72,
+   "loss": 4,
+   "seconds": 41.92421900003319
+  },
+  "50/50": {
+   "played": 80,
+   "win": 4,
+   "draw": 72,
+   "loss": 4,
+   "seconds": 43.87068970004111
+  },
+  "100/0": {
+   "played": 80,
+   "win": 4,
+   "draw": 72,
+   "loss": 4,
+   "seconds": 41.78870319995622
+  },
+  "0/100": {
+   "played": 80,
+   "win": 4,
+   "draw": 72,
+   "loss": 4,
+   "seconds": 42.192342099922826
+  }
+ },
+ "list": [
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 0,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "site 17/83": 0.5590423000066949,
+    "inversa 83/17": 0.4764551000043866
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 1,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "site 17/83": 0.49479719999362715,
+    "inversa 83/17": 0.5547417000016139
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 2,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "site 17/83": 0.356880800001818,
+    "inversa 83/17": 0.45015790000616107
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 3,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "site 17/83": 0.3456406999939645,
+    "inversa 83/17": 0.47123130001637037
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 4,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "site 17/83": 0.6828543999945396,
+    "inversa 83/17": 0.6785316000095918
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 5,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "site 17/83": 0.654572300001746,
+    "inversa 83/17": 0.6399748999938311
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 6,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "site 17/83": 0.6228469000016048,
+    "inversa 83/17": 0.7056141000030038
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 7,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "site 17/83": 0.7316766000112693,
+    "inversa 83/17": 0.5929011999978684
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 8,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "site 17/83": 0.6523390000111249,
+    "inversa 83/17": 0.6712091000008513
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 9,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "site 17/83": 0.6989497000067786,
+    "inversa 83/17": 0.645126600004005
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 10,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "site 17/83": 0.44065129999580677,
+    "inversa 83/17": 0.383503799992468
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 11,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "site 17/83": 0.41395219999321853,
+    "inversa 83/17": 0.40372479999496136
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 12,
+   "white": "site 17/83",
+   "winner": "inversa 83/17",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "site 17/83": 0.9806841999998142,
+    "inversa 83/17": 1.095893400026398
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 13,
+   "white": "inversa 83/17",
+   "winner": "site 17/83",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "site 17/83": 1.0946710000025632,
+    "inversa 83/17": 1.0073737999809964
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 14,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "site 17/83": 0.42724299999827053,
+    "inversa 83/17": 0.5861264000086521
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 15,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "site 17/83": 0.5572552000048745,
+    "inversa 83/17": 0.4473504999987199
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 16,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "site 17/83": 0.4020612999847799,
+    "inversa 83/17": 0.3891687999894202
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 17,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "site 17/83": 0.38707769999382435,
+    "inversa 83/17": 0.38471649998245994
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 18,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "site 17/83": 0.3002245999923616,
+    "inversa 83/17": 0.36559730000590207
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "inversa 83/17",
+   "game": 19,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "site 17/83": 0.39100390000021434,
+    "inversa 83/17": 0.2813403000072867
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 0,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "site 17/83": 0.6688667000089481,
+    "50/50": 0.6861361999981455
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 1,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "site 17/83": 0.6577367999962007,
+    "50/50": 0.6389199000004737
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 2,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "site 17/83": 0.5035847000071954,
+    "50/50": 0.6443336000120325
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 3,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "site 17/83": 0.6492034000111744,
+    "50/50": 0.5059019999971497
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 4,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "site 17/83": 0.7029776999988826,
+    "50/50": 0.9696312999949441
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 5,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "site 17/83": 0.8372836999951687,
+    "50/50": 0.8139741999839316
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 6,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "site 17/83": 0.6972449000095367,
+    "50/50": 0.8299622999984422
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 7,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "site 17/83": 0.8680515999985801,
+    "50/50": 0.6640751000122691
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 8,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "site 17/83": 0.67363910000131,
+    "50/50": 0.7551893000090786
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 9,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "site 17/83": 0.7273483999997552,
+    "50/50": 0.6780749000026844
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 10,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "site 17/83": 0.407631299993227,
+    "50/50": 0.4300956000079168
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 11,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "site 17/83": 0.37940749999688705,
+    "50/50": 0.43795289999980014
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 12,
+   "white": "site 17/83",
+   "winner": "50/50",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "site 17/83": 1.0408707999777107,
+    "50/50": 1.0818744000061997
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 13,
+   "white": "50/50",
+   "winner": "site 17/83",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "site 17/83": 1.0662784999949508,
+    "50/50": 1.018399500004307
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 14,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "site 17/83": 0.38025819999165833,
+    "50/50": 0.5623501000009128
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 15,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "site 17/83": 0.5838663999966229,
+    "50/50": 0.3844635999921593
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 16,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "site 17/83": 0.34851700000217534,
+    "50/50": 0.38594020000164164
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 17,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "site 17/83": 0.3857643999836,
+    "50/50": 0.3536876999933156
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 18,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "site 17/83": 0.37523720000172034,
+    "50/50": 0.423128500009625
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "50/50",
+   "game": 19,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "site 17/83": 0.4569776999996975,
+    "50/50": 0.3661899999897287
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 0,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "site 17/83": 0.5019203000010748,
+    "100/0": 0.7293807000060042
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 1,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "site 17/83": 0.6479472000064561,
+    "100/0": 0.5525113999974565
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 2,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "site 17/83": 0.34372469998925226,
+    "100/0": 0.3880266000123811
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 3,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "site 17/83": 0.41618979999111616,
+    "100/0": 0.33982839999589487
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 4,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "site 17/83": 0.5642775999949663,
+    "100/0": 0.7562932999899203
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 5,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "site 17/83": 0.6461775000097987,
+    "100/0": 0.6515484999945329
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 6,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "site 17/83": 0.5518774000047415,
+    "100/0": 0.6627207999845268
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 7,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "site 17/83": 0.673330800003896,
+    "100/0": 0.5464516999927582
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 8,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "site 17/83": 0.6228215000119235,
+    "100/0": 0.5704461999885098
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 9,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "site 17/83": 0.6089592999960587,
+    "100/0": 0.5375650999958452
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 10,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "site 17/83": 0.362645799999882,
+    "100/0": 0.3284280999978364
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 11,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "site 17/83": 0.321384399994713,
+    "100/0": 0.36855270000887685
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 12,
+   "white": "site 17/83",
+   "winner": "100/0",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "site 17/83": 0.8776846999826375,
+    "100/0": 0.8139097999883234
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 13,
+   "white": "100/0",
+   "winner": "site 17/83",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "site 17/83": 0.8221407999881194,
+    "100/0": 0.8778258000129426
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 14,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "site 17/83": 0.33781400000953,
+    "100/0": 0.595570100012992
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 15,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "site 17/83": 0.581004399995436,
+    "100/0": 0.34488979999514413
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 16,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "site 17/83": 0.30107150000549154,
+    "100/0": 0.3912681999936467
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 17,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "site 17/83": 0.3834584999931394,
+    "100/0": 0.30691500000830274
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 18,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "site 17/83": 0.2724473999951442,
+    "100/0": 0.26874339998539654
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "100/0",
+   "game": 19,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "site 17/83": 0.26474040001630783,
+    "100/0": 0.26182400000470807
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 0,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "site 17/83": 0.4182520999929693,
+    "0/100": 0.4654998000005435
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 1,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "site 17/83": 0.47419169999920996,
+    "0/100": 0.43397619999814196
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 2,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "site 17/83": 0.3222505999947316,
+    "0/100": 0.3795042000019748
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 3,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "site 17/83": 0.38556820001031156,
+    "0/100": 0.33015769999838085
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 4,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "site 17/83": 0.5716775000182679,
+    "0/100": 0.6636972999949649
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 5,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "site 17/83": 0.6734970000034082,
+    "0/100": 0.5769136999988405
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 6,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "site 17/83": 0.5480556000075012,
+    "0/100": 0.6986813000039547
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 7,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "site 17/83": 0.6501236999938556,
+    "0/100": 0.5712640999845462
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 8,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "site 17/83": 0.6152543999996851,
+    "0/100": 0.6529995000018971
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 9,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "site 17/83": 0.6667312999888964,
+    "0/100": 0.5693642000151158
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 10,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "site 17/83": 0.40705289999823435,
+    "0/100": 0.36861700000372366
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 11,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "site 17/83": 0.4093842000111181,
+    "0/100": 0.37301869999282644
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 12,
+   "white": "site 17/83",
+   "winner": "0/100",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "site 17/83": 0.9556348999940383,
+    "0/100": 0.8315131000053952
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 13,
+   "white": "0/100",
+   "winner": "site 17/83",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "site 17/83": 0.8687091000065266,
+    "0/100": 0.9024867000007362
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 14,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "site 17/83": 0.36212030001115636,
+    "0/100": 0.5710107000013522
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 15,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "site 17/83": 0.545245299985254,
+    "0/100": 0.372186700002203
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 16,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "site 17/83": 0.316631799993047,
+    "0/100": 0.3871553999997559
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 17,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "site 17/83": 0.3398862999965786,
+    "0/100": 0.38098559999707504
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 18,
+   "white": "site 17/83",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "site 17/83": 0.27418399999078247,
+    "0/100": 0.2727743999930681
+   }
+  },
+  {
+   "a": "site 17/83",
+   "b": "0/100",
+   "game": 19,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "site 17/83": 0.258034200000111,
+    "0/100": 0.2865920000040205
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 0,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "inversa 83/17": 0.4133522000047378,
+    "50/50": 0.47903480000968557
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 1,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "inversa 83/17": 0.4506899000007252,
+    "50/50": 0.4491456999894581
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 2,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "inversa 83/17": 0.3618916999985231,
+    "50/50": 0.43913679999968736
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 3,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "inversa 83/17": 0.38188780000200495,
+    "50/50": 0.4279893999992055
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 4,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "inversa 83/17": 0.6613464999973075,
+    "50/50": 0.6504382000020996
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 5,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "inversa 83/17": 0.6763881999831938,
+    "50/50": 0.6233733999979449
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 6,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "inversa 83/17": 0.602516499999183,
+    "50/50": 0.6834641000023112
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 7,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "inversa 83/17": 0.7577665999888268,
+    "50/50": 0.5544138999939605
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 8,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "inversa 83/17": 0.5462417000053392,
+    "50/50": 0.5733519000095839
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 9,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "inversa 83/17": 0.5501270999957342,
+    "50/50": 0.5744227999857685
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 10,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "inversa 83/17": 0.33504359999642475,
+    "50/50": 0.3179289999898174
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 11,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "inversa 83/17": 0.3324523000046611,
+    "50/50": 0.34996249999676365
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 12,
+   "white": "inversa 83/17",
+   "winner": "50/50",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "inversa 83/17": 0.8152031999998144,
+    "50/50": 0.8133834000182105
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 13,
+   "white": "50/50",
+   "winner": "inversa 83/17",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "inversa 83/17": 0.8398824000068998,
+    "50/50": 0.7863234000178636
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 14,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "inversa 83/17": 0.33976419999817153,
+    "50/50": 0.5333926000093925
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 15,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "inversa 83/17": 0.529297700006282,
+    "50/50": 0.34069279998220736
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 16,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "inversa 83/17": 0.2966458000082639,
+    "50/50": 0.3824293000034231
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 17,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "inversa 83/17": 0.318219599997974,
+    "50/50": 0.3606402999976126
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 18,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "inversa 83/17": 0.24492500000269501,
+    "50/50": 0.2691513000027044
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "50/50",
+   "game": 19,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "inversa 83/17": 0.26653299999816227,
+    "50/50": 0.2387132000112615
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 0,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "inversa 83/17": 0.436462700006814,
+    "100/0": 0.478765799991379
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 1,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "inversa 83/17": 0.4864036999970267,
+    "100/0": 0.44054110000433866
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 2,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "inversa 83/17": 0.3616543000061938,
+    "100/0": 0.3838428999952157
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 3,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "inversa 83/17": 0.41346470000280533,
+    "100/0": 0.3195540000015171
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 4,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "inversa 83/17": 0.5852829999930691,
+    "100/0": 0.675693199988018
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 5,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "inversa 83/17": 0.6625750999955926,
+    "100/0": 0.5667076000027009
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 6,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "inversa 83/17": 0.5521593999947072,
+    "100/0": 0.6811136000069382
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 7,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "inversa 83/17": 0.6959395999947446,
+    "100/0": 0.5711518000025535
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 8,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "inversa 83/17": 0.5789073000123608,
+    "100/0": 0.6065455999778351
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 9,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "inversa 83/17": 0.6561717999866232,
+    "100/0": 0.5794177999996464
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 10,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "inversa 83/17": 0.40500779999638326,
+    "100/0": 0.38127540000277804
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 11,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "inversa 83/17": 0.39959530000487575,
+    "100/0": 0.3985521000176959
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 12,
+   "white": "inversa 83/17",
+   "winner": "100/0",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "inversa 83/17": 0.9143449999937729,
+    "100/0": 0.9547350999891933
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 13,
+   "white": "100/0",
+   "winner": "inversa 83/17",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "inversa 83/17": 0.9460175000021991,
+    "100/0": 0.9298126999747183
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 14,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "inversa 83/17": 0.419596099993214,
+    "100/0": 0.5440429000191216
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 15,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "inversa 83/17": 0.5473053999958211,
+    "100/0": 0.40930979999757255
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 16,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "inversa 83/17": 0.3624826000086614,
+    "100/0": 0.36755050000647316
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 17,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "inversa 83/17": 0.36664540000856505,
+    "100/0": 0.3488311000110116
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 18,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "inversa 83/17": 0.2900880999986839,
+    "100/0": 0.34062160000030417
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "100/0",
+   "game": 19,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "inversa 83/17": 0.3674289999980829,
+    "100/0": 0.28386130000217236
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 0,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "inversa 83/17": 0.4751857999981439,
+    "0/100": 0.570666399991751
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 1,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "inversa 83/17": 0.5313326999967103,
+    "0/100": 0.4934143000100448
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 2,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "inversa 83/17": 0.3380342000091332,
+    "0/100": 0.3910805999985314
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 3,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "inversa 83/17": 0.40306139998938306,
+    "0/100": 0.3254545999952825
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 4,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "inversa 83/17": 0.645175299996481,
+    "0/100": 0.6792287000025681
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 5,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "inversa 83/17": 0.6931040999952529,
+    "0/100": 0.6446698999934597
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 6,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "inversa 83/17": 0.629582699999446,
+    "0/100": 0.7274571999951149
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 7,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "inversa 83/17": 0.7277572000020882,
+    "0/100": 0.6254505999932007
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 8,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "inversa 83/17": 0.6473214999969059,
+    "0/100": 0.706467199994222
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 9,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "inversa 83/17": 0.7137890999983938,
+    "0/100": 0.6283256999959121
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 10,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "inversa 83/17": 0.4227337000120315,
+    "0/100": 0.3866553000116255
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 11,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "inversa 83/17": 0.37833199999658973,
+    "0/100": 0.41387679999752436
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 12,
+   "white": "inversa 83/17",
+   "winner": "0/100",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "inversa 83/17": 0.8651320000062697,
+    "0/100": 0.8605447999943863
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 13,
+   "white": "0/100",
+   "winner": "inversa 83/17",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "inversa 83/17": 0.8422449999961827,
+    "0/100": 0.8798553999877186
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 14,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "inversa 83/17": 0.3982401999965077,
+    "0/100": 0.560896800019691
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 15,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "inversa 83/17": 0.5348027000036382,
+    "0/100": 0.41493419999824255
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 16,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "inversa 83/17": 0.37835000000632135,
+    "0/100": 0.37080939999214024
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 17,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "inversa 83/17": 0.37174310000773403,
+    "0/100": 0.3411449999875913
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 18,
+   "white": "inversa 83/17",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "inversa 83/17": 0.25659420000374666,
+    "0/100": 0.27110719999836874
+   }
+  },
+  {
+   "a": "inversa 83/17",
+   "b": "0/100",
+   "game": 19,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "inversa 83/17": 0.27325420001216116,
+    "0/100": 0.24644860000626068
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 0,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "50/50": 0.45028990000719205,
+    "100/0": 0.5860499999944295
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 1,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "50/50": 0.566533300003357,
+    "100/0": 0.47458880000340287
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 2,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "50/50": 0.3145987999996578,
+    "100/0": 0.48506320001615677
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 3,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "50/50": 0.421419500009506,
+    "100/0": 0.3742982000076154
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 4,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "50/50": 0.6129917000143905,
+    "100/0": 0.6795573999952467
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 5,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "50/50": 0.6867276999983005,
+    "100/0": 0.6061317000021518
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 6,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "50/50": 0.572640099999262,
+    "100/0": 0.644156500002282
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 7,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "50/50": 0.6799670999971568,
+    "100/0": 0.5167881000052148
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 8,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "50/50": 0.5355028999911156,
+    "100/0": 0.6286345999869809
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 9,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "50/50": 0.5746862999840232,
+    "100/0": 0.6274511000156053
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 10,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "50/50": 0.4051900999947975,
+    "100/0": 0.32179860000906046
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 11,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "50/50": 0.33286609999777284,
+    "100/0": 0.4089674999995623
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 12,
+   "white": "50/50",
+   "winner": "100/0",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "50/50": 0.8881322999841359,
+    "100/0": 0.9903240000057849
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 13,
+   "white": "100/0",
+   "winner": "50/50",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "50/50": 0.9356608000052802,
+    "100/0": 0.955368599978101
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 14,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "50/50": 0.4073339999995369,
+    "100/0": 0.5239758000097936
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 15,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "50/50": 0.5562463999995089,
+    "100/0": 0.4048419999926409
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 16,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "50/50": 0.31215109999175183,
+    "100/0": 0.37264049999430426
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 17,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "50/50": 0.3485161999888078,
+    "100/0": 0.34979470000689616
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 18,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "50/50": 0.3033791000088968,
+    "100/0": 0.42775060000712983
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "100/0",
+   "game": 19,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "50/50": 0.37996940000448376,
+    "100/0": 0.32406129999435507
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 0,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "50/50": 0.5770506999906502,
+    "0/100": 0.5496989000021131
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 1,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "50/50": 0.6133193999958166,
+    "0/100": 0.4794034999977157
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 2,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "50/50": 0.3198738999926718,
+    "0/100": 0.38493399999060784
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 3,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "50/50": 0.38454660000206786,
+    "0/100": 0.3245978000086325
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 4,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "50/50": 0.631524399992486,
+    "0/100": 0.7577437000036298
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 5,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "50/50": 0.7185725999879651,
+    "0/100": 0.6730839000083506
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 6,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "50/50": 0.6555489000093075,
+    "0/100": 0.767982800003665
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 7,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "50/50": 0.7991980000078911,
+    "0/100": 0.6231131000022287
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 8,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "50/50": 0.7160240999910457,
+    "0/100": 0.7285566000027757
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 9,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "50/50": 0.7199810000056459,
+    "0/100": 0.7081361999880755
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 10,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "50/50": 0.4137216000017361,
+    "0/100": 0.4744788999851153
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 11,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "50/50": 0.41981390000364627,
+    "0/100": 0.4506673000032606
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 12,
+   "white": "50/50",
+   "winner": "0/100",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "50/50": 0.9441250999989279,
+    "0/100": 0.9383507000056852
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 13,
+   "white": "0/100",
+   "winner": "50/50",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "50/50": 0.911176700003125,
+    "0/100": 0.9562013000104344
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 14,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "50/50": 0.4254059000122652,
+    "0/100": 0.5521282999907271
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 15,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "50/50": 0.555655200019828,
+    "0/100": 0.4175608000041393
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 16,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "50/50": 0.34693660000993987,
+    "0/100": 0.3807353999982297
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 17,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "50/50": 0.3816506999937701,
+    "0/100": 0.3513896000040404
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 18,
+   "white": "50/50",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "50/50": 0.2781122000014875,
+    "0/100": 0.3033551999833435
+   }
+  },
+  {
+   "a": "50/50",
+   "b": "0/100",
+   "game": 19,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "50/50": 0.2959793000081845,
+    "0/100": 0.2908031999904779
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 0,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "100/0": 0.5012358999993012,
+    "0/100": 0.5108868999959668
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 1,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 55,
+   "time": {
+    "100/0": 0.5366401999781374,
+    "0/100": 0.5197456999994756
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 2,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "100/0": 0.3717463999928441,
+    "0/100": 0.4406860000017332
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 3,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 68,
+   "time": {
+    "100/0": 0.46431879999727244,
+    "0/100": 0.3506747000174073
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 4,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "100/0": 0.6672455999942031,
+    "0/100": 0.6847958999933326
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 5,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 66,
+   "time": {
+    "100/0": 0.7119851000134076,
+    "0/100": 0.6726976000099967
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 6,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "100/0": 0.6594117999884475,
+    "0/100": 0.7170963000062329
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 7,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 51,
+   "time": {
+    "100/0": 0.7058534999960102,
+    "0/100": 0.6089719999945373
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 8,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "100/0": 0.6003022000004421,
+    "0/100": 0.6510631999954057
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 9,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 72,
+   "time": {
+    "100/0": 0.6625483000170789,
+    "0/100": 0.5860190999992483
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 10,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "100/0": 0.3806741000080365,
+    "0/100": 0.36603370000011637
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 11,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 45,
+   "time": {
+    "100/0": 0.36280649999753223,
+    "0/100": 0.384386000016093
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 12,
+   "white": "100/0",
+   "winner": "0/100",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "100/0": 0.8684332999764592,
+    "0/100": 0.8722378999918874
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 13,
+   "white": "0/100",
+   "winner": "100/0",
+   "end": "CHECKMATE",
+   "plies": 136,
+   "time": {
+    "100/0": 0.8427671000245027,
+    "0/100": 0.8956155000050785
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 14,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "100/0": 0.38821530000132043,
+    "0/100": 0.5360040999912599
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 15,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 61,
+   "time": {
+    "100/0": 0.5366416999968351,
+    "0/100": 0.38633809999373625
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 16,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "100/0": 0.34773009999480564,
+    "0/100": 0.3657924999970419
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 17,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 40,
+   "time": {
+    "100/0": 0.3673246000071231,
+    "0/100": 0.3291608999898017
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 18,
+   "white": "100/0",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "100/0": 0.25366479998774594,
+    "0/100": 0.3132232999851112
+   }
+  },
+  {
+   "a": "100/0",
+   "b": "0/100",
+   "game": 19,
+   "white": "0/100",
+   "winner": null,
+   "end": "THREEFOLD_REPETITION",
+   "plies": 37,
+   "time": {
+    "100/0": 0.30228920000081416,
+    "0/100": 0.26110449999396224
+   }
+  }
+ ]
+}

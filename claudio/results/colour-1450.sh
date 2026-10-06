@@ -1,0 +1,3 @@
+cd /c/Users/Martim/Desktop/Github/TonkAI
+python claudio/train_grande.py --start claudio/claudio-grande-g0.pt --out-dir claudio/train-brancas --colour white --learn review --opponent fairy1450 --max-games 1000 --eval-every 1000 --eval-games 100 --eval-opponent fairy1450 --lr 1e-4 --set value_scaling=true --save-every 500 --hours 3 > claudio/train-brancas.out 2>&1
+python claudio/train_grande.py --start claudio/claudio-grande-g0.pt --out-dir claudio/train-pretas --colour black --learn review --opponent fairy1450 --max-games 1000 --eval-every 1000 --eval-games 100 --eval-opponent fairy1450 --lr 1e-4 --set value_scaling=true --save-every 500 --hours 3 > claudio/train-pretas.out 2>&1

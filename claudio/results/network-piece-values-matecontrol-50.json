@@ -1,0 +1,40 @@
+{
+  "source": "raw contextual piece head after 50/50 experiment; no pawn normalization",
+  "pieces": {
+    "1": {
+      "samples": 84051,
+      "raw_mean": 0.002306735181570003,
+      "raw_median": 0.008257603272795677,
+      "magnitude_mean": 0.013152816890067994,
+      "magnitude_median": 0.012628084048628807
+    },
+    "2": {
+      "samples": 9589,
+      "raw_mean": 0.004803784686746867,
+      "raw_median": 0.017751414328813553,
+      "magnitude_mean": 0.02746176079132377,
+      "magnitude_median": 0.026809552684426308
+    },
+    "3": {
+      "samples": 12819,
+      "raw_mean": 0.004706667994304286,
+      "raw_median": 0.004795195534825325,
+      "magnitude_mean": 0.020317607715610236,
+      "magnitude_median": 0.018669793382287025
+    },
+    "4": {
+      "samples": 21507,
+      "raw_mean": -0.0003740910980501434,
+      "raw_median": 0.003302939236164093,
+      "magnitude_mean": 0.03281607118613137,
+      "magnitude_median": 0.02688147872686386
+    },
+    "5": {
+      "samples": 7388,
+      "raw_mean": -0.03785231527363106,
+      "raw_median": -0.04551799222826958,
+      "magnitude_mean": 0.054399253579530245,
+      "magnitude_median": 0.050480544567108154
+    }
+  }
+}

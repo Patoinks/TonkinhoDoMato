@@ -1,0 +1,10 @@
+2658 decisions from 40 games
+ref             12.74 ms/decision   differs from ref   0.0%
+v0               7.73 ms/decision   differs from ref   6.4%
+mate2            5.66 ms/decision   differs from ref   6.4%
+depth2           5.84 ms/decision   differs from ref  11.8%
+depth1           4.92 ms/decision   differs from ref  15.5%
+no_tactic        4.10 ms/decision   differs from ref  17.0%
+mate2_depth2     3.47 ms/decision   differs from ref  11.8%
+rounds1          6.78 ms/decision   differs from ref  11.5%
+no_memory        7.05 ms/decision   differs from ref  37.3%

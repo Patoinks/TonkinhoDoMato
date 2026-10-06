@@ -1,0 +1,365 @@
+{
+ "label": "gepeto-shallow-greedy-vs-claudio-20",
+ "games": 20,
+ "draws": 0,
+ "table": {
+  "GepetoShallowGreedy": {
+   "wins": 0,
+   "winrate": 0.0,
+   "s_per_game": 0.1501300099996115,
+   "ms_per_move": 5.304947349809594
+  },
+  "Claudio": {
+   "wins": 20,
+   "winrate": 1.0,
+   "s_per_game": 0.16763847499969414,
+   "ms_per_move": 5.820780381933825
+  }
+ },
+ "random_plies": 4,
+ "max_plies": 240,
+ "GepetoShallowGreedy_faster_by": 0.1044418054990931,
+ "finished_utc": "2026-09-24T20:28:25+00:00",
+ "list": [
+  {
+   "game": 1,
+   "white": "GepetoShallowGreedy",
+   "start": "rnbqkb1r/pppp1ppp/7n/4p3/8/7P/PPPPPPPR/RNBQKBN1 w Qkq - 2 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 60,
+   "seconds": {
+    "GepetoShallowGreedy": 0.16736480000145093,
+    "Claudio": 0.22804120000364492
+   },
+   "moves": {
+    "GepetoShallowGreedy": 30,
+    "Claudio": 30
+   },
+   "uci": "h2h1 a7a6 b1a3 e5e4 g1f3 e4f3 e2f3 h6f5 f1a6 b7a6 e1e2 d8h4 d1e1 b8c6 e2d1 f5e7 e1e3 c8b7 d1e2 a8b8 h1e1 h4a4 c2c4 g7g6 d2d3 f8g7 c1d2 g7d4 a3b5 d4e3 d2e3 a6b5 e3f4 b5c4 d3c4 a4c4 e2d1 c4f4 d1c2 c6d4 c2d1 b8c8 a1c1 d4f3 e1e7 e8e7 g2f3 b7f3 d1c2 f3e4 c2d1 f4f2 c1c3 c8b8 c3b3 b8b3 a2b3 h8a8 h3h4 a8a1"
+  },
+  {
+   "game": 2,
+   "white": "Claudio",
+   "start": "rnbqkb1r/pppp1ppp/7n/4p3/8/7P/PPPPPPPR/RNBQKBN1 w Qkq - 2 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 45,
+   "seconds": {
+    "GepetoShallowGreedy": 0.11744489999728103,
+    "Claudio": 0.11943649999011541
+   },
+   "moves": {
+    "GepetoShallowGreedy": 22,
+    "Claudio": 23
+   },
+   "uci": "a2a3 h6f5 g2g3 f8a3 b2a3 b8a6 f1g2 e8e7 g2d5 h8e8 b1c3 a6c5 a1b1 e5e4 c3e4 a7a6 e4c5 a8b8 g1f3 h7h6 f3e5 d7d6 c5b7 c8b7 e5c6 e7f8 c6d8 b7d5 b1b8 f8e7 c1b2 d5e4 d2d3 d6d5 d3e4 a6a5 e4f5 e7d6 b2g7 e8d8 b8d8 d6e7 d1d5 a5a4 d5d7"
+  },
+  {
+   "game": 3,
+   "white": "GepetoShallowGreedy",
+   "start": "rnbqkb1r/pppppp1p/5n2/6p1/4P3/1P6/P1PP1PPP/RNBQKBNR w KQkq - 1 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 68,
+   "seconds": {
+    "GepetoShallowGreedy": 0.17944030000217026,
+    "Claudio": 0.17088999999941734
+   },
+   "moves": {
+    "GepetoShallowGreedy": 34,
+    "Claudio": 34
+   },
+   "uci": "g1f3 f6e4 f3g5 e4g5 c1b2 h8g8 b2e5 a7a6 f1a6 b7a6 e1e2 h7h6 b1c3 b8c6 c3b5 c6e5 b5d4 e5g4 b3b4 g5e4 d1e1 a8b8 a2a3 f8g7 h2h3 g7d4 a3a4 d4a1 e1a1 b8b4 e2d1 c8b7 h1f1 e4d2 f1h1 b4b1 a1b1 d2b1 h3g4 b1c3 d1c1 g8g4 c1b2 c3a4 b2c1 g4g2 h1e1 g2f2 c1d1 f2g2 d1c1 d8c8 e1h1 g2c2 c1c2 b7h1 c2d1 c7c6 d1c1 c8b7 c1d2 b7b1 d2e3 b1f1 e3d4 f1f3 d4e5 f3e4"
+  },
+  {
+   "game": 4,
+   "white": "Claudio",
+   "start": "rnbqkb1r/pppppp1p/5n2/6p1/4P3/1P6/P1PP1PPP/RNBQKBNR w KQkq - 1 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 51,
+   "seconds": {
+    "GepetoShallowGreedy": 0.13518170000133978,
+    "Claudio": 0.12703620000684168
+   },
+   "moves": {
+    "GepetoShallowGreedy": 25,
+    "Claudio": 26
+   },
+   "uci": "e4e5 g5g4 e5f6 e7f6 d1g4 b8a6 a2a3 f8a3 c1a3 d7d6 g4d4 c8f5 d4c3 d6d5 f1a6 f5e4 a6b5 c7c6 b5c6 b7c6 c3c6 d8d7 c6a8 d7d8 a8d8 e8d8 a3b2 f6f5 b2h8 f5f4 a1a7 e4g6 b1a3 g6e4 f2f3 e4g6 a7b7 g6e4 f3e4 f7f6 e4d5 f6f5 b7h7 f4f3 h8f6 d8e8 g1f3 e8f8 f3e5 f8e8 h7h8"
+  },
+  {
+   "game": 5,
+   "white": "GepetoShallowGreedy",
+   "start": "rnbqkb1r/pppp1ppp/5n2/4p3/4P3/8/PPPPKPPP/RNBQ1BNR w kq - 0 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 58,
+   "seconds": {
+    "GepetoShallowGreedy": 0.17692389999865554,
+    "Claudio": 0.35643780000646075
+   },
+   "moves": {
+    "GepetoShallowGreedy": 29,
+    "Claudio": 29
+   },
+   "uci": "g1f3 f6g4 b1a3 a7a6 a3c4 b8c6 c2c3 a8a7 f3g5 d8g5 d2d3 g5h4 c1e3 a7a8 d3d4 e5d4 c3d4 a8b8 e4e5 f7f6 d1a4 f6e5 a4c6 b7c6 h2h3 e5d4 e3d4 c8b7 c4d2 f8d6 e2d1 d6f4 f1a6 b7a6 h1e1 e8d8 d2f3 g4f2 d1c2 h4g3 c2c3 f2g4 e1e4 g3g2 a1b1 g2f3 e4e3 f4e3 d4e3 f3h3 a2a3 h3e3 c3c2 e3e2 c2c1 e2e1 c1c2 g4e3"
+  },
+  {
+   "game": 6,
+   "white": "Claudio",
+   "start": "rnbqkb1r/pppp1ppp/5n2/4p3/4P3/8/PPPPKPPP/RNBQ1BNR w kq - 0 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 61,
+   "seconds": {
+    "GepetoShallowGreedy": 0.18048049999924842,
+    "Claudio": 0.20790279999891936
+   },
+   "moves": {
+    "GepetoShallowGreedy": 30,
+    "Claudio": 31
+   },
+   "uci": "e2e1 e8e7 d1e2 b8a6 a2a3 d7d5 e4d5 d8d5 e2e3 d5e6 b1c3 f6d5 c3d5 e6d5 a1b1 d5e6 f1a6 b7a6 g1e2 c8b7 e3c3 a8c8 c3b4 e7e8 b4b7 f8a3 b2a3 e8e7 b7a7 e5e4 a7e3 c8e8 e3c3 e6d7 c1b2 e8b8 e2d4 b8e8 e1e2 e8a8 d4c6 e7e8 c3g7 d7c6 g7h8 e8d7 h8h7 d7d8 h7f7 a6a5 f7g8 d8d7 g8g7 d7e8 b2e5 a8d8 e5c7 d8d6 b1b8 d6d8 b8d8"
+  },
+  {
+   "game": 7,
+   "white": "GepetoShallowGreedy",
+   "start": "r1bqkbnr/p1pppppp/1pn5/8/8/3P1P2/PPP1P1PP/RNBQKBNR w KQkq - 1 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 84,
+   "seconds": {
+    "GepetoShallowGreedy": 0.2180936000040674,
+    "Claudio": 0.25571810000474215
+   },
+   "moves": {
+    "GepetoShallowGreedy": 42,
+    "Claudio": 42
+   },
+   "uci": "d1d2 a7a6 b1c3 a8b8 c3e4 g7g6 a2a3 c8b7 e4g5 g8f6 d2c3 d7d6 c1d2 d8d7 c3c6 d7c6 g2g3 c6c2 f1g2 c2b2 d3d4 b2a1 e1f2 a1d4 d2e3 d4c3 e3f4 f6d5 g1h3 d5f4 h3f4 f8h6 h1b1 h6g5 b1b5 a6b5 h2h3 g5f4 g3f4 c3c2 f4f5 c2f5 g2f1 f5c2 h3h4 h7h5 f3f4 b7e4 f1g2 c2c5 f2f1 c5c1 f1f2 c1f4 g2f3 e4f3 e2f3 f4h4 f2f1 h4f4 f1f2 h5h4 a3a4 b5a4 f2e2 h4h3 e2f2 e7e6 f2e2 b8c8 e2f2 c7c5 f2e2 c8c7 e2f2 h8h7 f2e2 h7h5 e2f2 f4d2 f2g3 c7c6 g3g4 d2g5"
+  },
+  {
+   "game": 8,
+   "white": "Claudio",
+   "start": "r1bqkbnr/p1pppppp/1pn5/8/8/3P1P2/PPP1P1PP/RNBQKBNR w KQkq - 1 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 57,
+   "seconds": {
+    "GepetoShallowGreedy": 0.1641040000013163,
+    "Claudio": 0.20459850000042934
+   },
+   "moves": {
+    "GepetoShallowGreedy": 28,
+    "Claudio": 29
+   },
+   "uci": "c1e3 g8f6 d1d2 c8b7 a2a3 a7a6 b1c3 b6b5 g2g3 c6e5 f1h3 b7e4 f3e4 g7g6 g1f3 f8g7 f3e5 d7d6 e5c6 e7e6 c6d8 e8d8 a1b1 d8e7 d2d1 h8b8 d1d2 g7h8 e3d4 h8g7 d2f4 b8c8 d4e3 c8b8 e4e5 b8h8 e5f6 g7f6 f4h6 f6c3 b2c3 e7d7 e3d4 a8b8 d4h8 b8h8 d3d4 h8a8 d4d5 c7c6 d5e6 f7e6 h6g7 d7c8 h1f1 a8b8 f1f8"
+  },
+  {
+   "game": 9,
+   "white": "GepetoShallowGreedy",
+   "start": "rnbqk1nr/pppppp1p/7b/6p1/4P3/6P1/PPPP1P1P/RNBQKBNR w KQkq - 1 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 108,
+   "seconds": {
+    "GepetoShallowGreedy": 0.2515475999953196,
+    "Claudio": 0.2799435999986599
+   },
+   "moves": {
+    "GepetoShallowGreedy": 54,
+    "Claudio": 54
+   },
+   "uci": "f1g2 a7a6 g1f3 d7d6 b1c3 g5g4 e4e5 g4f3 g2f3 d8d7 a2a3 d6e5 c3b5 d7b5 d2d3 c8e6 c1h6 g8h6 e1e2 b5b2 e2e1 h6g4 f3c6 b8c6 a3a4 b2c3 d1d2 c3a1 d2d1 a1d1 e1d1 g4f2 d1c1 f2h1 c1b2 c6d4 c2c3 d4f3 d3d4 e5d4 c3d4 f3d4 g3g4 e6g4 a4a5 a8b8 b2c1 g4h3 c1d1 d4f3 d1c2 f7f6 c2d1 h7h6 d1c1 e8d8 c1d1 h8h7 d1c1 h3f1 c1b2 f1d3 b2b3 f6f5 h2h3 d8e8 h3h4 b8d8 b3c3 f3h4 c3b2 d8c8 b2b3 h6h5 b3b2 h4f3 b2b3 h5h4 b3b2 h7h5 b2b3 h5g5 b3b2 g5g1 b2b3 e8f8 b3c3 c8d8 c3b3 g1c1 b3b2 c1c4 b2b3 c4e4 b3c3 d8d4 c3b3 d4c4 b3b2 h4h3 b2b3 d3c2 b3b2 h1f2 b2a1 f2d1 a1a2 c4a4"
+  },
+  {
+   "game": 10,
+   "white": "Claudio",
+   "start": "rnbqk1nr/pppppp1p/7b/6p1/4P3/6P1/PPPP1P1P/RNBQKBNR w KQkq - 1 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 31,
+   "seconds": {
+    "GepetoShallowGreedy": 0.07158569999592146,
+    "Claudio": 0.09136079999916547
+   },
+   "moves": {
+    "GepetoShallowGreedy": 15,
+    "Claudio": 16
+   },
+   "uci": "a2a3 g5g4 d1g4 b8c6 b1c3 g8f6 g4e2 h6g7 e4e5 c6e5 e2e5 a7a6 f1h3 f6g4 e5g7 d7d6 g7h8 e8d7 h3g4 e7e6 h8h7 d7e8 g4h5 d8d7 h7g8 e8e7 g8f7 e7d8 f7f8 d7e8 f8e8"
+  },
+  {
+   "game": 11,
+   "white": "GepetoShallowGreedy",
+   "start": "rnbqkbr1/pppppppp/7n/8/7P/6P1/PPPPPP2/RNBQKBNR w KQq - 1 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 42,
+   "seconds": {
+    "GepetoShallowGreedy": 0.12581829999726324,
+    "Claudio": 0.111903800001528
+   },
+   "moves": {
+    "GepetoShallowGreedy": 21,
+    "Claudio": 21
+   },
+   "uci": "h4h5 a7a6 b1a3 h6g4 h1h3 b8c6 f1g2 g8h8 a3b5 a6b5 g2f3 d7d6 f3c6 b7c6 d2d4 c8e6 c1f4 d8d7 g1f3 g7g6 f4d6 c7d6 f3g5 g4e3 f2e3 e6h3 d1d2 f8h6 a2a3 h6g5 a3a4 b5a4 d2c3 g6h5 c3c6 d7c6 e3e4 c6e4 e1f2 e4g2 f2e1 g2f1"
+  },
+  {
+   "game": 12,
+   "white": "Claudio",
+   "start": "rnbqkbr1/pppppppp/7n/8/7P/6P1/PPPPPP2/RNBQKBNR w KQq - 1 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 83,
+   "seconds": {
+    "GepetoShallowGreedy": 0.20170990000042366,
+    "Claudio": 0.1643281999968167
+   },
+   "moves": {
+    "GepetoShallowGreedy": 41,
+    "Claudio": 42
+   },
+   "uci": "a2a3 h6g4 a1a2 g8h8 b1c3 b8c6 f1h3 c6e5 d2d3 a7a6 d1d2 g7g6 a2a1 f8g7 a1b1 g7f6 d2f4 e5c4 d3c4 f6c3 b2c3 d7d6 h3g4 c8f5 g4f5 g6f5 f4h6 d8d7 c4c5 d6c5 c1g5 d7c6 h6c6 b7c6 h1h3 a6a5 f2f3 h7h6 g5e3 f5f4 e3f4 e8d8 b1b7 h8e8 f4e3 e8h8 e3c5 f7f6 c5d4 h8e8 h4h5 f6f5 d4e5 c6c5 b7c7 f5f4 c7c5 e8h8 c5d5 d8e8 e5h8 e8f7 h8e5 f7e8 g3f4 e7e6 d5d6 e8e7 h3g3 a8b8 g3g6 b8a8 g6h6 a8b8 h6h7 e7e8 h7h8 e8e7 h8b8 a5a4 e1d1 e7f7 d6d7"
+  },
+  {
+   "game": 13,
+   "white": "GepetoShallowGreedy",
+   "start": "rnbqkb1r/p1pppppp/1p5n/8/8/1P4P1/P1PPPP1P/RNBQKBNR w KQkq - 1 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 50,
+   "seconds": {
+    "GepetoShallowGreedy": 0.1365516999940155,
+    "Claudio": 0.14500479999878735
+   },
+   "moves": {
+    "GepetoShallowGreedy": 25,
+    "Claudio": 25
+   },
+   "uci": "c1b2 a7a6 g1f3 h6g4 b1a3 b8c6 a3c4 c8b7 f1g2 a8b8 f3g5 b7a8 g2c6 a8c6 d2d4 c6h1 g5h7 h8h7 d1d2 h7h5 d2c3 h1a8 c4e5 g4e5 d4e5 g7g6 a2a3 a8e4 a3a4 f8h6 h2h3 h5h3 e2e3 h3h1 e1e2 h1a1 b2a1 b6b5 a1b2 b5a4 c3c6 d7c6 f2f3 e4c2 e3e4 d8d2 e2f1 h6e3 b2c3 c2d3"
+  },
+  {
+   "game": 14,
+   "white": "Claudio",
+   "start": "rnbqkb1r/p1pppppp/1p5n/8/8/1P4P1/P1PPPP1P/RNBQKBNR w KQkq - 1 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 63,
+   "seconds": {
+    "GepetoShallowGreedy": 0.15769900000668713,
+    "Claudio": 0.15499980000276992
+   },
+   "moves": {
+    "GepetoShallowGreedy": 31,
+    "Claudio": 32
+   },
+   "uci": "a2a3 h6f5 b1c3 b8a6 c1b2 c8b7 g1f3 a6c5 a1b1 c5a6 f1g2 b7e4 c3e4 b6b5 b2e5 a6b4 a3b4 a7a6 f3g5 d7d6 e4d6 c7d6 g2c6 d8d7 c6d7 e8d7 e5b2 d7e8 h2h3 d6d5 d2d3 a8b8 b2e5 b8a8 e5c7 a6a5 b4a5 b5b4 d1d2 g7g6 d2b4 f8g7 b4b7 g7c3 e1d1 f7f6 b7a8 e8d7 a8h8 d7c7 h8h7 c7b7 g5e6 c3d4 e6d4 f5g3 h7e7 b7c8 d4b5 c8b8 b5d6 g3h5 e7b7"
+  },
+  {
+   "game": 15,
+   "white": "GepetoShallowGreedy",
+   "start": "rnbqkbnr/pp1p1ppp/2p1p3/8/8/3P3N/PPP1PPPP/RNBQKB1R w KQkq - 0 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 60,
+   "seconds": {
+    "GepetoShallowGreedy": 0.15824339999562653,
+    "Claudio": 0.16926399999283603
+   },
+   "moves": {
+    "GepetoShallowGreedy": 30,
+    "Claudio": 30
+   },
+   "uci": "h3f4 d8h4 b1a3 a7a6 d3d4 d7d6 d1d2 b8d7 d2e3 d7f6 c1d2 f6d5 f4d5 c6d5 a3c4 d5c4 e1d1 a8b8 a2a3 f7f6 h2h3 g7g6 a3a4 f8h6 e3h6 g8h6 d2h6 h4h6 a4a5 h6f4 e2e3 f4f2 f1c4 f2e3 c4a6 b7a6 a1b1 e3d4 d1c1 d4a4 h1e1 h7h6 c2c3 c8d7 c1d2 e6e5 e1e3 b8b3 e3d3 d7f5 d3d4 e5d4 b1e1 e8d8 c3d4 b3b2 d2e3 a4a3 e3f4 b2f2"
+  },
+  {
+   "game": 16,
+   "white": "Claudio",
+   "start": "rnbqkbnr/pp1p1ppp/2p1p3/8/8/3P3N/PPP1PPPP/RNBQKB1R w KQkq - 0 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 39,
+   "seconds": {
+    "GepetoShallowGreedy": 0.10897219999787922,
+    "Claudio": 0.15421469999819237
+   },
+   "moves": {
+    "GepetoShallowGreedy": 19,
+    "Claudio": 20
+   },
+   "uci": "a2a3 g8e7 h3f4 b8a6 d1d2 e7f5 b1c3 d8h4 c3e4 f8a3 b2a3 e8d8 d2a5 a6c7 a1b1 h8e8 g2g3 h4f4 c1f4 d7d6 f4d6 f5d6 e4d6 c8d7 d6e8 d8e8 b1b7 c7d5 f1h3 d5f6 h3g2 e8e7 g2c6 a8e8 a5b4 e7d8 b4d6 e8e7 b7b8"
+  },
+  {
+   "game": 17,
+   "white": "GepetoShallowGreedy",
+   "start": "rnbqkb1r/1ppppppp/p6n/6N1/8/8/PPPPPPPP/RNBQKB1R w KQkq - 0 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 40,
+   "seconds": {
+    "GepetoShallowGreedy": 0.10565680000217981,
+    "Claudio": 0.12703879999389756
+   },
+   "moves": {
+    "GepetoShallowGreedy": 20,
+    "Claudio": 20
+   },
+   "uci": "b1a3 h6g4 a3b5 a6b5 a2a3 c7c6 d2d3 d7d6 c1d2 d8d7 d3d4 b8a6 d2f4 g7g6 f4d6 e7d6 d1d2 a8b8 d2c3 d7f5 g5e4 f5e4 a3a4 f8g7 a4b5 g7d4 c3d4 e4d4 b5a6 b7a6 e2e3 d4b2 f1a6 b2c3 e1e2 c3c2 e2f3 c2f2 f3e4 f2e3"
+  },
+  {
+   "game": 18,
+   "white": "Claudio",
+   "start": "rnbqkb1r/1ppppppp/p6n/6N1/8/8/PPPPPPPP/RNBQKB1R w KQkq - 0 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 45,
+   "seconds": {
+    "GepetoShallowGreedy": 0.11941919999844686,
+    "Claudio": 0.11989169999833393
+   },
+   "moves": {
+    "GepetoShallowGreedy": 22,
+    "Claudio": 23
+   },
+   "uci": "a2a3 h6g4 b1c3 b8c6 a1b1 c6e5 g2g3 e5g6 f1h3 g6e5 c3d5 e5c4 h3g4 d7d6 h2h3 c8g4 h3g4 g7g6 d2d3 f8g7 d3c4 g7c3 d5c3 a6a5 c1e3 f7f6 g5h7 h8h7 h1h7 d8d7 h7h8 e8f7 h8a8 d7g4 a8a5 g4h3 d1d5 f7e8 d5b7 e8d8 a5a8 d8d7 b7c8 d7c6 a8a6"
+  },
+  {
+   "game": 19,
+   "white": "GepetoShallowGreedy",
+   "start": "rnbqkbr1/pppppppp/5n2/8/5P2/6P1/PPPPP2P/RNBQKBNR w KQq - 1 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 54,
+   "seconds": {
+    "GepetoShallowGreedy": 0.12245280000388448,
+    "Claudio": 0.07358200000271609
+   },
+   "moves": {
+    "GepetoShallowGreedy": 27,
+    "Claudio": 27
+   },
+   "uci": "b1a3 a7a6 g1f3 f6g4 f1g2 b8c6 h1f1 g8h8 f3g5 g7g6 g2c6 b7c6 a3b5 c6b5 a2a3 c8b7 f4f5 g4h2 f5g6 f7g6 f1f8 h8f8 e2e3 f8f1 e1e2 a8b8 d1f1 h2f1 e2f2 f1g3 d2d4 g3e4 g5e4 b7e4 c1d2 e4c2 a1h1 g6g5 h1h3 c2e4 f2e2 b8c8 h3h6 d7d6 h6h3 d8d7 a3a4 d7h3 e2f2 h3g2 f2e1 e4f3 d2b4 g2e2"
+  },
+  {
+   "game": 20,
+   "white": "Claudio",
+   "start": "rnbqkbr1/pppppppp/5n2/8/5P2/6P1/PPPPP2P/RNBQKBNR w KQq - 1 3",
+   "winner": "Claudio",
+   "end": "CHECKMATE",
+   "plies": 43,
+   "seconds": {
+    "GepetoShallowGreedy": 0.10390989999905287,
+    "Claudio": 0.0911761999996088
+   },
+   "moves": {
+    "GepetoShallowGreedy": 21,
+    "Claudio": 22
+   },
+   "uci": "a2a4 b8a6 a1a2 d7d5 f1h3 g8h8 b1c3 c8h3 g1h3 a6b4 a2a3 f6g4 h3g5 a7a6 a3b3 d8d7 b3b4 d7c6 b4d4 c6c3 d2c3 h7h6 f4f5 h6g5 d4g4 h8h6 d1d5 g7g6 d5b7 g6f5 b7a8 e8d7 a8f8 f5g4 f8h6 d7d8 c1g5 c7c6 h6c6 f7f6 e1f2 f6f5 h1d1"
+  }
+ ]
+}

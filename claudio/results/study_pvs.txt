@@ -1,0 +1,7 @@
+2658 decisions from 40 games
+ref              8.08 ms/decision   differs from ref   0.0%
+top4_pvs         5.40 ms/decision   differs from ref   2.0%
+top4_pvs_mate2   4.06 ms/decision   differs from ref   2.0%
+top6_pvs_mate2   4.42 ms/decision   differs from ref   2.4%
+top4_pvs_mate2_d2   2.27 ms/decision   differs from ref  10.8%
+v0_mate2         3.38 ms/decision   differs from ref   6.4%

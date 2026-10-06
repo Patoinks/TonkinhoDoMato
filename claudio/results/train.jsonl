@@ -1,0 +1,14 @@
+{"game": 1, "colour": "white", "result": "win", "plies": 175, "updates": 6, "minutes": 0.15564846999999038, "seconds": {"play": 2.8, "labels": 0.1, "learn": 0.4}, "totals": {"win": 1, "draw": 0, "loss": 0}}
+{"game": 2, "colour": "black", "result": "loss", "plies": 203, "updates": 12, "minutes": 0.3002893033333445, "seconds": {"play": 11.0, "labels": 0.3, "learn": 0.8}, "totals": {"win": 1, "draw": 0, "loss": 1}}
+{"game": 3, "colour": "white", "result": "win", "plies": 213, "updates": 18, "minutes": 0.40359983333334337, "seconds": {"play": 16.7, "labels": 0.4, "learn": 1.1}, "totals": {"win": 2, "draw": 0, "loss": 1}}
+{"game": 4, "colour": "black", "result": "draw", "plies": 292, "updates": 24, "minutes": 0.5135548183333413, "seconds": {"play": 22.8, "labels": 0.5, "learn": 1.5}, "totals": {"win": 2, "draw": 1, "loss": 1}}
+{"game": 5, "colour": "white", "result": "draw", "plies": 194, "updates": 30, "minutes": 0.6592099366666541, "seconds": {"play": 31.0, "labels": 0.7, "learn": 1.9}, "totals": {"win": 2, "draw": 2, "loss": 1}}
+{"game": 6, "colour": "black", "result": "win", "plies": 92, "updates": 36, "minutes": 0.7160869466666554, "seconds": {"play": 34.0, "labels": 0.7, "learn": 2.3}, "totals": {"win": 3, "draw": 2, "loss": 1}}
+{"game": 7, "colour": "white", "result": "loss", "plies": 162, "updates": 42, "minutes": 0.7590484083333346, "seconds": {"play": 36.1, "labels": 0.8, "learn": 2.6}, "totals": {"win": 3, "draw": 2, "loss": 2}}
+{"game": 8, "colour": "black", "result": "draw", "plies": 300, "updates": 48, "minutes": 0.8063494749999942, "seconds": {"play": 38.3, "labels": 1.0, "learn": 3.0}, "totals": {"win": 3, "draw": 3, "loss": 2}}
+{"game": 9, "colour": "white", "result": "win", "plies": 241, "updates": 54, "minutes": 0.948151999999997, "seconds": {"play": 46.3, "labels": 1.2, "learn": 3.4}, "totals": {"win": 4, "draw": 3, "loss": 2}}
+{"game": 10, "colour": "black", "result": "win", "plies": 184, "updates": 60, "minutes": 1.0474314316666702, "seconds": {"play": 51.8, "labels": 1.3, "learn": 3.7}, "totals": {"win": 5, "draw": 3, "loss": 2}}
+{"game": 11, "colour": "white", "result": "loss", "plies": 134, "updates": 66, "minutes": 1.1419778000000103, "seconds": {"play": 57.0, "labels": 1.4, "learn": 4.1}, "totals": {"win": 5, "draw": 3, "loss": 3}}
+{"game": 12, "colour": "black", "result": "loss", "plies": 105, "updates": 72, "minutes": 1.2442449150000054, "seconds": {"play": 62.7, "labels": 1.5, "learn": 4.5}, "totals": {"win": 5, "draw": 3, "loss": 4}}
+{"game": 13, "colour": "white", "result": "draw", "plies": 300, "updates": 78, "minutes": 1.3440805416666686, "seconds": {"play": 68.1, "labels": 1.6, "learn": 4.9}, "totals": {"win": 5, "draw": 4, "loss": 4}}
+{"game": 14, "colour": "black", "result": "draw", "plies": 259, "updates": 84, "minutes": 1.423459803333329, "seconds": {"play": 72.4, "labels": 1.8, "learn": 5.3}, "totals": {"win": 5, "draw": 5, "loss": 4}}

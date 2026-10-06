@@ -1,0 +1,29 @@
+{
+  "source_checkpoint": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\checkpoints\\obj-max-continuo\\latest.pt",
+  "stockfish_elo": 2850,
+  "wins_in_replay": 2,
+  "win_plies": [167, 165],
+  "victim_values_external_2850": {
+    "pawn": 1.0,
+    "knight": 1.6736512539116575,
+    "bishop": 2.0488503840645205,
+    "rook": 3.2934548231811354,
+    "queen": 6.850400614295603
+  },
+  "tonkai_side": {
+    "pawn": {"captures": 7, "weighted_kills": 7.0, "deaths": 12, "weighted_kd": 0.5833333333333334, "relative_to_pawn": 1.0},
+    "knight": {"captures": 7, "weighted_kills": 23.091956819901384, "deaths": 3, "weighted_kd": 7.697318939967128, "relative_to_pawn": 13.195403897086505},
+    "bishop": {"captures": 2, "weighted_kills": 3.722501637976178, "deaths": 4, "weighted_kd": 0.9306254094940445, "relative_to_pawn": 1.5953578448469332},
+    "rook": {"captures": 2, "weighted_kills": 3.0488503840645205, "deaths": 1, "weighted_kd": 3.0488503840645205, "relative_to_pawn": 5.22660065839632},
+    "queen": {"captures": 4, "weighted_kills": 9.260560900273928, "deaths": 1, "weighted_kd": 9.260560900273928, "relative_to_pawn": 15.875247257612447}
+  },
+  "pooled_both_sides": {
+    "pawn": {"captures": 10, "weighted_kills": 10.0, "deaths": 23, "weighted_kd": 0.43478260869565216, "relative_to_pawn": 1.0},
+    "knight": {"captures": 12, "weighted_kills": 31.43426202714704, "deaths": 7, "weighted_kd": 4.4906088610210055, "relative_to_pawn": 10.328400380348313},
+    "bishop": {"captures": 5, "weighted_kills": 8.445003275952356, "deaths": 8, "weighted_kd": 1.0556254094940445, "relative_to_pawn": 2.4279384418363024},
+    "rook": {"captures": 5, "weighted_kills": 6.722501637976178, "deaths": 4, "weighted_kd": 1.6806254094940445, "relative_to_pawn": 3.8654384418363024},
+    "queen": {"captures": 8, "weighted_kills": 15.35826166840297, "deaths": 3, "weighted_kd": 5.119420556134323, "relative_to_pawn": 11.774667279108945}
+  },
+  "method": "Each capture is weighted by the checkpoint's organic external@2850 value of the captured piece. Weighted K/D is weighted kills divided by deaths of the capturing piece. Relative values normalize weighted K/D by the pawn.",
+  "limitation": "Only two complete wins against Stockfish nominal 2850 exist in the frozen replay, so the estimates have very high variance."
+}

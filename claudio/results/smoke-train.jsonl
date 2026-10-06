@@ -1,0 +1,2 @@
+{"game": 1, "colour": "white", "result": "draw", "plies": 106, "updates": 6, "minutes": 0.10305684000001444, "seconds": {"play": 1.9, "labels": 0.1, "learn": 0.4}, "totals": {"win": 0, "draw": 1, "loss": 0}}
+{"game": 2, "colour": "black", "result": "draw", "plies": 161, "updates": 12, "minutes": 0.1389700600000045, "seconds": {"play": 3.6, "labels": 0.2, "learn": 0.8}, "totals": {"win": 0, "draw": 2, "loss": 0}}

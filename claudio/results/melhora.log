@@ -1,0 +1,27 @@
+
+$ claudio/eval_colour.py --checkpoint claudio/claudio-grande-g0.pt --colour white --opponent fairy1450 --games 200
+{"checkpoint": "claudio/claudio-grande-g0.pt", "colour": "white", "opponent": "Fairy-Stockfish 1450", "win_rate": 0.55, "wins": 110, "draws": 29, "losses": 58, "truncated": 3}
+
+$ claudio/eval_colour.py --checkpoint claudio/claudio-grande-g0.pt --colour black --opponent fairy1450 --games 200
+{"checkpoint": "claudio/claudio-grande-g0.pt", "colour": "black", "opponent": "Fairy-Stockfish 1450", "win_rate": 0.545, "wins": 109, "draws": 26, "losses": 60, "truncated": 5}
+
+$ claudio/train_grande.py --start claudio/claudio-grande-g0.pt --out-dir claudio/train-notas-brancas --colour white --learn notes --opponent fairy1450 --max-games 1000 --eval-every 250 --eval-games 200 --eval-opponent fairy1450 --lr 1e-4 --set value_scaling=true --save-every 250 --hours 3
+done (completed): 1000 games, 1996 updates, {'wins': 384, 'draws': 182, 'losses': 431, 'truncated': 3}, {'Fairy-Stockfish 1450': {'wins': 384, 'draws': 182, 'losses': 431, 'truncated': 3}}
+
+$ claudio/train_grande.py --start claudio/claudio-grande-g0.pt --out-dir claudio/train-notas-pretas --colour black --learn notes --opponent fairy1450 --max-games 1000 --eval-every 250 --eval-games 200 --eval-opponent fairy1450 --lr 1e-4 --set value_scaling=true --save-every 250 --hours 3
+done (completed): 1000 games, 1996 updates, {'wins': 431, 'draws': 121, 'losses': 439, 'truncated': 9}, {'Fairy-Stockfish 1450': {'wins': 431, 'draws': 121, 'losses': 439, 'truncated': 9}}
+
+$ claudio/train_grande.py --start claudio/claudio-grande-g0.pt --out-dir claudio/train-rev5-brancas --colour white --learn review --opponent fairy1450 --max-games 1000 --eval-every 250 --eval-games 200 --eval-opponent fairy1450 --lr 1e-4 --set value_scaling=true --save-every 250 --hours 3
+done (completed): 1000 games, 2000 updates, {'wins': 457, 'draws': 158, 'losses': 377, 'truncated': 8}, {'Fairy-Stockfish 1450': {'wins': 457, 'draws': 158, 'losses': 377, 'truncated': 8}}
+
+$ claudio/train_grande.py --start claudio/claudio-grande-g0.pt --out-dir claudio/train-rev5-pretas --colour black --learn review --opponent fairy1450 --max-games 1000 --eval-every 250 --eval-games 200 --eval-opponent fairy1450 --lr 1e-4 --set value_scaling=true --save-every 250 --hours 3
+done (completed): 1000 games, 2000 updates, {'wins': 473, 'draws': 180, 'losses': 330, 'truncated': 17}, {'Fairy-Stockfish 1450': {'wins': 473, 'draws': 180, 'losses': 330, 'truncated': 17}}
+
+$ claudio/judge_positions.py --label melhora --models g0=claudio/claudio-grande-g0.pt antigo=claudio/train-brancas/claudio-grande-1000.pt+claudio/train-pretas/claudio-grande-1000.pt notas=claudio/train-notas-brancas/claudio-grande-final.pt+claudio/train-notas-pretas/claudio-grande-final.pt rev5=claudio/train-rev5-brancas/claudio-grande-final.pt+claudio/train-rev5-pretas/claudio-grande-final.pt
+300 posicoes (Stockfish so como juiz, profundidade 12)
+  g0         perda media    82 cp | erros>=100cp 25.7% | asneiras>=200cp 10.7% | igual a g0: 100.0% | abertura 75 meio 90 final 37
+  antigo     perda media    83 cp | erros>=100cp 27.3% | asneiras>=200cp 10.7% | igual a g0: 49.0% | abertura 84 meio 90 final 41
+  notas      perda media   109 cp | erros>=100cp 34.3% | asneiras>=200cp 16.0% | igual a g0: 25.3% | abertura 93 meio 125 final 32
+  rev5       perda media    86 cp | erros>=100cp 26.7% | asneiras>=200cp 12.7% | igual a g0: 44.3% | abertura 74 meio 93 final 63
+
+FIM

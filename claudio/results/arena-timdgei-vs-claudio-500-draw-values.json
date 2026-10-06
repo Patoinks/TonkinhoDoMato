@@ -1,0 +1,83 @@
+{
+  "label": "timdgei-vs-claudio-500-draw-values",
+  "scope": "organic piece values calculated from drawn games only",
+  "checkpoints": {
+    "claudio": {
+      "path": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\claudio\\claudio.pt",
+      "sha256": "5c58ed33eefffed2bdd677f0f4e2e87193b9421e6755fb663c77b60382d298b7"
+    },
+    "timdgei": {
+      "path": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\checkpoints\\obj-max-continuo\\latest.pt",
+      "sha256": "16f86376edf9d5605f905c98b6d845da81ad47480ea976778978d2bc4800a974"
+    }
+  },
+  "match": {
+    "games": 500,
+    "perspective": "Claudio",
+    "win": 145,
+    "draw": 171,
+    "loss": 184,
+    "score": 0.461,
+    "white": {
+      "W/D/L": [
+        74,
+        89,
+        87
+      ]
+    },
+    "black": {
+      "W/D/L": [
+        71,
+        82,
+        97
+      ]
+    },
+    "plies_per_game": 188.212,
+    "time": {
+      "claudio": {
+        "s_per_game": 0.5396390812004102,
+        "ms_per_decision": 5.735715756137177
+      },
+      "timdgei": {
+        "s_per_game": 1.5749098091999985,
+        "ms_per_decision": 16.731576249362554
+      }
+    },
+    "claudio_speedup": 2.918450245850729
+  },
+  "draw_subset": {
+    "games": 171,
+    "capture_counts": {
+      "pawn": {
+        "kills": 1129,
+        "deaths": 1733
+      },
+      "knight": {
+        "kills": 446,
+        "deaths": 661
+      },
+      "bishop": {
+        "kills": 716,
+        "deaths": 583
+      },
+      "rook": {
+        "kills": 774,
+        "deaths": 504
+      },
+      "queen": {
+        "kills": 534,
+        "deaths": 359
+      }
+    },
+    "organic_values_relative_to_pawn": {
+      "pawn": 1.0,
+      "knight": 1.0817073121293437,
+      "bishop": 1.917886110561459,
+      "rook": 2.8161788889331683,
+      "queen": 2.9860009326162626
+    }
+  },
+  "method": "Only the drawn games enter CaptureStats. Values use its iterative victim-level-weighted kill/death calculation, pooling both players and normalizing the pawn to 1.",
+  "stored_game_moves": false,
+  "finished_utc": "2026-09-24T21:44:58+00:00"
+}

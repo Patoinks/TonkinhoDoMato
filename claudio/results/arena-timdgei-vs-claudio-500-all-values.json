@@ -1,0 +1,57 @@
+{
+  "label": "timdgei-vs-claudio-500-all-values",
+  "scope": "organic piece values calculated from all games",
+  "checkpoints": {
+    "claudio": {
+      "path": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\claudio\\claudio.pt",
+      "sha256": "5c58ed33eefffed2bdd677f0f4e2e87193b9421e6755fb663c77b60382d298b7"
+    },
+    "timdgei": {
+      "path": "C:\\Users\\Martim\\Desktop\\Github\\TonkAI\\checkpoints\\obj-max-continuo\\latest.pt",
+      "sha256": "16f86376edf9d5605f905c98b6d845da81ad47480ea976778978d2bc4800a974"
+    }
+  },
+  "match": {
+    "games": 500,
+    "perspective": "Claudio",
+    "win": 145,
+    "draw": 171,
+    "loss": 184,
+    "score": 0.461
+  },
+  "all_games": {
+    "games": 500,
+    "capture_counts": {
+      "pawn": {
+        "kills": 3243,
+        "deaths": 5043
+      },
+      "knight": {
+        "kills": 1331,
+        "deaths": 1922
+      },
+      "bishop": {
+        "kills": 2018,
+        "deaths": 1741
+      },
+      "rook": {
+        "kills": 2265,
+        "deaths": 1447
+      },
+      "queen": {
+        "kills": 1694,
+        "deaths": 952
+      }
+    },
+    "organic_values_relative_to_pawn": {
+      "pawn": 1.0,
+      "knight": 1.1304553547113287,
+      "bishop": 1.9069164660320475,
+      "rook": 2.842750382527616,
+      "queen": 3.7880286158756586
+    }
+  },
+  "method": "All 500 games enter CaptureStats. Values use its iterative victim-level-weighted kill/death calculation, pooling both players and normalizing the pawn to 1.",
+  "stored_game_moves": false,
+  "finished_utc": "2026-09-24T21:49:42+00:00"
+}

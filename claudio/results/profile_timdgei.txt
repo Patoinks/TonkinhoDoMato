@@ -1,0 +1,44 @@
+4 games, 6.7 s total, 1.68 s/game (profiled, ~1.5-2x slower than real)
+cognitive_agent.py:_repeated_moves               calls     405  cum    0.15 s  (  2.2%)
+cognitive_agent.py:_avoid_repetition_when_ahead  calls       1  cum    0.04 s  (  0.6%)
+cognitive_agent.py:_tablebase_value              calls   11092  cum    0.02 s  (  0.3%)
+cognitive_agent.py:keys                          calls     810  cum    0.22 s  (  3.3%)
+survival_agent.py:observe                        calls    1417  cum    0.16 s  (  2.3%)
+cognitive_memory.py:query                        calls     405  cum    0.20 s  (  3.0%)
+king_safety_model.py:ks_rows                     calls    2023  cum    0.46 s  (  6.8%)
+execution_fastpaths.py:batched_replies           calls     402  cum    0.21 s  (  3.2%)
+
+--- top 25 own time ---
+         2707320 function calls (2621907 primitive calls) in 2.400 seconds
+
+   Ordered by: internal time
+   List reduced from 681 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    15564    0.549    0.000    0.549    0.000 {built-in method torch._C._nn.linear}
+      405    0.118    0.000    0.202    0.000 C:\Users\Martim\Desktop\Github\TonkAI\tonkai\cognitive_memory.py:87(query)
+     1819    0.092    0.000    0.092    0.000 {built-in method torch.gru_cell}
+    13758    0.086    0.000    0.086    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+     2032    0.075    0.000    0.075    0.000 {method 'argsort' of 'numpy.ndarray' objects}
+    12938    0.049    0.000    0.049    0.000 {built-in method torch._C._nn.silu}
+    340/0    0.044    0.000    0.000          C:\Users\Martim\Desktop\Github\TonkAI\tonkai\cognitive_memory.py:213(retrieve)
+36994/8893    0.042    0.000    0.833    0.000 C:\Users\Martim\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\nn\modules\module.py:1783(_call_impl)
+    818/2    0.040    0.000    0.000    0.000 C:\Users\Martim\Desktop\Github\TonkAI\tonkai\fast_rules.py:34(board)
+     2443    0.037    0.000    0.055    0.000 C:\Users\Martim\Desktop\Github\TonkAI\tonkai\encoding.py:53(encode_into)
+    26027    0.034    0.000    0.096    0.000 C:\Users\Martim\AppData\Local\Programs\Python\Python313\Lib\copy.py:62(copy)
+     1212    0.033    0.000    0.197    0.000 C:\Users\Martim\Desktop\Github\TonkAI\tonkai\temporal_model.py:120(survival)
+     5047    0.032    0.000    0.032    0.000 {built-in method torch.cat}
+36994/8893    0.028    0.000    0.841    0.000 C:\Users\Martim\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\nn\modules\module.py:1775(_wrapped_call_impl)
+   155458    0.027    0.000    0.027    0.000 C:\Users\Martim\Desktop\Github\TonkAI\tonkai\fast_rules.py:30(code)
+     1212    0.026    0.000    0.026    0.000 {built-in method torch.einsum}
+     6477    0.026    0.000    0.050    0.000 C:\Users\Martim\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\autograd\grad_mode.py:289(__enter__)
+     7291    0.026    0.000    0.058    0.000 C:\Users\Martim\AppData\Local\Programs\Python\Python313\Lib\site-packages\chess\__init__.py:2310(push)
+    28957    0.024    0.000    0.055    0.000 C:\Users\Martim\AppData\Local\Programs\Python\Python313\Lib\site-packages\chess\__init__.py:1819(generate_pseudo_legal_moves)
+    41036    0.023    0.000    0.023    0.000 {built-in method torch._C._get_tracing_state}
+     1617    0.023    0.000    0.023    0.000 {method 'mean' of 'torch._C.TensorBase' objects}
+    69967    0.022    0.000    0.022    0.000 C:\Users\Martim\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\nn\modules\module.py:1955(__getattr__)
+     7074    0.022    0.000    0.693    0.000 C:\Users\Martim\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\nn\modules\container.py:248(forward)
+155554/130094    0.019    0.000    0.035    0.000 {built-in method builtins.len}
+    26027    0.018    0.000    0.037    0.000 C:\Users\Martim\AppData\Local\Programs\Python\Python313\Lib\copy.py:248(_reconstruct)
+
+

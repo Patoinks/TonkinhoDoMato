@@ -1,0 +1,21 @@
+# builds (setup_cloud.sh / the setup.py files rebuild them)
+build/
+build.log
+*.pyd
+*.so
+fast-next/
+*.before-*
+
+# every training run's checkpoints stay local; the numbers are in results/
+*.pt
+!claudio-grande-g0.pt
+!claudio.pt
+train-*/
+!train-1550/
+train-1550/*
+!train-1550/claudio-grande-last.pt
+*.out
+site/
+results/eval-colour-tmp/
+results/test-review/
+results/profile-selfplay/

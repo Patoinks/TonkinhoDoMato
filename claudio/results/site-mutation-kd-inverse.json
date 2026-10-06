@@ -1,0 +1,614 @@
+{
+ "label": "kd-inverse",
+ "mutant_settings": [
+  "kd_weight=0.82695538207"
+ ],
+ "games": 50,
+ "win": 2,
+ "draw": 46,
+ "loss": 2,
+ "mutant_s_per_game": 0.5342946279994066,
+ "base_s_per_game": 0.5241965280008298,
+ "list": [
+  {
+   "game": 0,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 65,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 1.0396818999943207,
+    "base": 1.003918300015357
+   },
+   "moves": "a2a3 f7f5 g1h3 g8f6 b1c3 b8c6 h3f4 a7a6 g2g3 f6g4 f1g2 g7g6 g2f3 c6e5 f3d5 a6a5 d2d4 e5c6 a1b1 f8g7 c3b5 a8a6 d1d3 a6b6 c1d2 a5a4 d2c1 g7f6 c1d2 d7d6 d5f3 c8d7 d4d5 g4e5 b5d6 e7d6 d3e3 c6d4 e3c3 d7b5 f3g2 e5g4 e2e3 d4f3 g2f3 f6c3 d2c3 g4e5 f3g2 b5c4 c3d4 b6a6 f4e6 d8d7 b1d1 a6a8 d1b1 a8b8 b1d1 d7e7 d1b1 e7d7 b1d1 d7e7 d1b1"
+  },
+  {
+   "game": 1,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 65,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 1.0809892999968724,
+    "base": 0.9713570000021718
+   },
+   "moves": "a2a3 f7f5 g1h3 g8f6 b1c3 b8c6 h3f4 a7a6 g2g3 f6g4 f1g2 g7g6 g2f3 c6e5 f3d5 a6a5 d2d4 e5c6 a1b1 f8g7 c3b5 a8a6 d1d3 a6b6 c1d2 a5a4 d2c1 g7f6 c1d2 d7d6 d5f3 c8d7 d4d5 g4e5 b5d6 e7d6 d3e3 c6d4 e3c3 d7b5 f3g2 e5g4 e2e3 d4f3 g2f3 f6c3 d2c3 g4e5 f3g2 b5c4 c3d4 b6a6 f4e6 d8d7 b1d1 a6a8 d1b1 a8b8 b1d1 d7e7 d1b1 e7d7 b1d1 d7e7 d1b1"
+  },
+  {
+   "game": 2,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 127,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 1.2554682999762008,
+    "base": 1.4724313999977312
+   },
+   "moves": "g1h3 e7e5 g2g4 a7a6 g4g5 d8e7 b1c3 b8c6 a2a3 e5e4 h3g1 g7g6 d2d3 e4d3 c2d3 d7d6 c1e3 a8b8 g1f3 c8e6 a1b1 e8d8 f1g2 c6e5 f3d4 e6c8 d1d2 f8g7 c3d5 e7d7 g2e4 d8e8 d2a5 c7c6 d5f4 d7e7 e1d1 c8g4 h2h3 g4c8 a3a4 d6d5 e4d5 c6d5 f4d5 e7d6 e3f4 c8d7 f4g3 b8d8 d1e1 d8b8 h1h2 b8d8 h3h4 d7g4 g3e5 g7e5 h2g2 g4e2 d4e2 d6d5 a5d5 d8d5 d3d4 e5d4 e2d4 d5d4 h4h5 g6h5 g2h2 h5h4 b2b3 d4b4 h2h3 b7b6 h3c3 e8e7 c3c4 b4c4 b3c4 e7e8 b1b6 a6a5 e1e2 e8f8 b6b5 f8g7 b5a5 h7h6 a5b5 h6g5 b5g5 g7f8 c4c5 f8e8 e2e1 e8d8 a4a5 g8h6 e1d1 d8d7 d1c1 d7c6 c1d1 h8c8 d1e1 c8d8 e1e2 d8d5 g5d5 c6d5 e2d1 d5c6 d1c2 h6g4 f2f3 g4e5 c2d1 c6c7 d1e2 e5g6 e2d1 g6e5 d1e2 c7b7 e2d1"
+  },
+  {
+   "game": 3,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 127,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 1.2494808999945235,
+    "base": 1.4455530000086583
+   },
+   "moves": "g1h3 e7e5 g2g4 a7a6 g4g5 d8e7 b1c3 b8c6 a2a3 e5e4 h3g1 g7g6 d2d3 e4d3 c2d3 d7d6 c1e3 a8b8 g1f3 c8e6 a1b1 e8d8 f1g2 c6e5 f3d4 e6c8 d1d2 f8g7 c3d5 e7d7 g2e4 d8e8 d2a5 c7c6 d5f4 d7e7 e1d1 c8g4 h2h3 g4c8 a3a4 d6d5 e4d5 c6d5 f4d5 e7d6 e3f4 c8d7 f4g3 b8d8 d1e1 d8b8 h1h2 b8d8 h3h4 d7g4 g3e5 g7e5 h2g2 g4e2 d4e2 d6d5 a5d5 d8d5 d3d4 e5d4 e2d4 d5d4 h4h5 g6h5 g2h2 h5h4 b2b3 d4b4 h2h3 b7b6 h3c3 e8e7 c3c4 b4c4 b3c4 e7e8 b1b6 a6a5 e1e2 e8f8 b6b5 f8g7 b5a5 h7h6 a5b5 h6g5 b5g5 g7f8 c4c5 f8e8 e2e1 e8d8 a4a5 g8h6 e1d1 d8d7 d1c1 d7c6 c1d1 h8c8 d1e1 c8d8 e1e2 d8d5 g5d5 c6d5 e2d1 d5c6 d1c2 h6g4 f2f3 g4e5 c2d1 c6c7 d1e2 e5g6 e2d1 g6e5 d1e2 c7b7 e2d1"
+  },
+  {
+   "game": 4,
+   "mutant_white": true,
+   "result": "loss",
+   "plies": 88,
+   "end": "CHECKMATE",
+   "time": {
+    "mutant": 0.9110560999943118,
+    "base": 1.0400733000024047
+   },
+   "moves": "a2a3 a7a6 f2f4 f7f6 b1c3 b8c6 g1f3 g7g6 g2g3 g8h6 f3h4 h6g4 c3e4 c6d4 f1g2 a8b8 d2d3 a6a5 d1d2 d7d6 c2c3 d4b3 e4d6 c7d6 g2c6 b7c6 d2d1 b3a1 a3a4 c8e6 c1d2 a1b3 h4f3 b3d2 d1d2 d8c7 f3h4 f8h6 h4f3 e6d5 h1f1 d5f7 f1h1 g4e5 f3d4 c7b7 d2c2 f7d5 h1f1 e5g4 h2h3 g4e3 c2d2 e3f1 e1f1 b7b2 d2b2 b8b2 f1e1 b2b1 e1f2 b1c1 c3c4 d5h1 d4b3 c1b1 b3d2 b1c1 d2e4 h1e4 d3e4 c1c4 f2g1 c4a4 e2e3 a4e4 g1f2 e4c4 f2g1 h8f8 h3h4 c4c2 g3g4 e8d7 e3e4 f8b8 e4e5 b8b1"
+  },
+  {
+   "game": 5,
+   "mutant_white": false,
+   "result": "win",
+   "plies": 88,
+   "end": "CHECKMATE",
+   "time": {
+    "mutant": 1.164607700000488,
+    "base": 0.7706814000011946
+   },
+   "moves": "a2a3 a7a6 f2f4 f7f6 b1c3 b8c6 g1f3 g7g6 g2g3 g8h6 f3h4 h6g4 c3e4 c6d4 f1g2 a8b8 d2d3 a6a5 d1d2 d7d6 c2c3 d4b3 e4d6 c7d6 g2c6 b7c6 d2d1 b3a1 a3a4 c8e6 c1d2 a1b3 h4f3 b3d2 d1d2 d8c7 f3h4 f8h6 h4f3 e6d5 h1f1 d5f7 f1h1 g4e5 f3d4 c7b7 d2c2 f7d5 h1f1 e5g4 h2h3 g4e3 c2d2 e3f1 e1f1 b7b2 d2b2 b8b2 f1e1 b2b1 e1f2 b1c1 c3c4 d5h1 d4b3 c1b1 b3d2 b1c1 d2e4 h1e4 d3e4 c1c4 f2g1 c4a4 e2e3 a4e4 g1f2 e4c4 f2g1 h8f8 h3h4 c4c2 g3g4 e8d7 e3e4 f8b8 e4e5 b8b1"
+  },
+  {
+   "game": 6,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 50,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.38338110000404413,
+    "base": 0.4123036000164575
+   },
+   "moves": "e2e3 g7g5 f2f3 c7c6 a2a3 a7a6 d1e2 g8f6 b1c3 h8g8 g2g3 g5g4 f1g2 g4f3 g2f3 d7d6 e2d3 c8e6 a1b1 g8h8 c3e4 f6e4 f3e4 h7h6 e4f3 d8d7 e3e4 f8g7 c2c3 g7f6 a3a4 c6c5 d3c2 b8c6 c2d3 c5c4 d3e3 f6e5 d2d3 a6a5 f3g2 e5f6 g1f3 d7d8 c1d2 d8d7 d2c1 d7d8 c1d2 d8d7"
+  },
+  {
+   "game": 7,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 50,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.3659518000094977,
+    "base": 0.4251680999987002
+   },
+   "moves": "e2e3 g7g5 f2f3 c7c6 a2a3 a7a6 d1e2 g8f6 b1c3 h8g8 g2g3 g5g4 f1g2 g4f3 g2f3 d7d6 e2d3 c8e6 a1b1 g8h8 c3e4 f6e4 f3e4 h7h6 e4f3 d8d7 e3e4 f8g7 c2c3 g7f6 a3a4 c6c5 d3c2 b8c6 c2d3 c5c4 d3e3 f6e5 d2d3 a6a5 f3g2 e5f6 g1f3 d7d8 c1d2 d8d7 d2c1 d7d8 c1d2 d8d7"
+  },
+  {
+   "game": 8,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 53,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.4868214999951306,
+    "base": 0.40343590000702534
+   },
+   "moves": "h2h4 h7h5 b2b3 a7a6 g1f3 b8c6 a2a3 g7g6 h1h3 g8f6 b1c3 f6g4 f3g5 c6e5 c3d5 a8b8 c1b2 f8g7 b2d4 g7f8 g2g3 d7d6 f1g2 c8f5 h3h1 d8d7 g2e4 f5e4 g5e4 f8g7 e4g5 b8d8 a3a4 d8b8 f2f3 g4h6 b3b4 h6f5 d4e5 g7e5 f3f4 e5a1 d1a1 h8h6 a1c3 c7c6 d5b6 d7c7 b6d5 c7d7 d5b6 d7c7 b6d5"
+  },
+  {
+   "game": 9,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 53,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.3917968999958248,
+    "base": 0.5022333999913826
+   },
+   "moves": "h2h4 h7h5 b2b3 a7a6 g1f3 b8c6 a2a3 g7g6 h1h3 g8f6 b1c3 f6g4 f3g5 c6e5 c3d5 a8b8 c1b2 f8g7 b2d4 g7f8 g2g3 d7d6 f1g2 c8f5 h3h1 d8d7 g2e4 f5e4 g5e4 f8g7 e4g5 b8d8 a3a4 d8b8 f2f3 g4h6 b3b4 h6f5 d4e5 g7e5 f3f4 e5a1 d1a1 h8h6 a1c3 c7c6 d5b6 d7c7 b6d5 c7d7 d5b6 d7c7 b6d5"
+  },
+  {
+   "game": 10,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 73,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.42353310001271893,
+    "base": 0.3679294000103255
+   },
+   "moves": "b2b4 g7g5 b4b5 f7f6 a2a3 a7a6 b1c3 g5g4 g2g3 g8h6 a1b1 d7d6 c3e4 h6f5 c2c3 c7c6 b5c6 b8c6 d1a4 a8b8 d2d4 d8d7 f1g2 c6e5 a4a5 e5g6 d4d5 f8g7 a3a4 g6e5 c1f4 e5g6 e4c5 d7d8 a5d8 e8d8 c5e6 c8e6 d5e6 g6f4 g3f4 d8c7 g2d5 a6a5 b1b5 c7d8 b5b7 b8b7 d5b7 d8e8 b7a6 d6d5 f2f3 g4f3 e2f3 e8f8 g1h3 f8e8 e1e2 e8d8 e2e1 h8e8 e1d1 h7h6 d1e1 g7h8 h3g1 e8f8 g1h3 f8e8 h3g1 e8f8 g1h3"
+  },
+  {
+   "game": 11,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 73,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.39680449998922995,
+    "base": 0.39801420000367216
+   },
+   "moves": "b2b4 g7g5 b4b5 f7f6 a2a3 a7a6 b1c3 g5g4 g2g3 g8h6 a1b1 d7d6 c3e4 h6f5 c2c3 c7c6 b5c6 b8c6 d1a4 a8b8 d2d4 d8d7 f1g2 c6e5 a4a5 e5g6 d4d5 f8g7 a3a4 g6e5 c1f4 e5g6 e4c5 d7d8 a5d8 e8d8 c5e6 c8e6 d5e6 g6f4 g3f4 d8c7 g2d5 a6a5 b1b5 c7d8 b5b7 b8b7 d5b7 d8e8 b7a6 d6d5 f2f3 g4f3 e2f3 e8f8 g1h3 f8e8 e1e2 e8d8 e2e1 h8e8 e1d1 h7h6 d1e1 g7h8 h3g1 e8f8 g1h3 f8e8 h3g1 e8f8 g1h3"
+  },
+  {
+   "game": 12,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 44,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.38925689999450697,
+    "base": 0.4376083999959519
+   },
+   "moves": "b1c3 e7e6 a1b1 d7d5 g1h3 c7c6 h3f4 d8e7 a2a3 a7a6 g2g3 b8d7 d2d3 d7e5 c1e3 g7g6 d1d2 f8g7 f1g2 g7f6 d3d4 e5c4 d2d3 c4e3 d3e3 e7d6 e3d3 a8b8 g2f3 g8e7 f3g2 e7f5 e2e3 c8d7 f2f3 d7c8 g2h3 d6e7 d3e2 e7d6 e2d3 d6e7 d3e2 e7d6"
+  },
+  {
+   "game": 13,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 44,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.38127060000624624,
+    "base": 0.4318805000075372
+   },
+   "moves": "b1c3 e7e6 a1b1 d7d5 g1h3 c7c6 h3f4 d8e7 a2a3 a7a6 g2g3 b8d7 d2d3 d7e5 c1e3 g7g6 d1d2 f8g7 f1g2 g7f6 d3d4 e5c4 d2d3 c4e3 d3e3 e7d6 e3d3 a8b8 g2f3 g8e7 f3g2 e7f5 e2e3 c8d7 f2f3 d7c8 g2h3 d6e7 d3e2 e7d6 e2d3 d6e7 d3e2 e7d6"
+  },
+  {
+   "game": 14,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 79,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.6575715000108175,
+    "base": 0.5659480999856896
+   },
+   "moves": "d2d4 c7c5 h2h3 e7e6 h1h2 a7a6 c1e3 d8c7 g1f3 c5c4 b1c3 b8c6 g2g3 g8e7 a2a3 e7f5 e3f4 f8d6 f4d6 c7d6 c3e4 d6e7 f3e5 c6e5 d4e5 g7g6 d1d2 a8b8 d2a5 b8a8 e4c5 a8b8 f1g2 h7h6 g2f3 b7b6 a5d2 b6c5 d2c3 a6a5 c3a5 b8b2 f3e4 b2b8 e4a8 d7d6 a8c6 e8f8 e5d6 e7d6 a5c3 h8h7 c6e4 c8a6 c3d2 f8e8 d2d6 f5d6 e4c6 e8f8 h2h1 a6b7 a1b1 h7h8 h1h2 h6h5 h2h1 f7f6 e1d1 e6e5 d1e1 e5e4 c6d5 h8h6 d5c6 h6h8 c6d5 h8h6 d5c6"
+  },
+  {
+   "game": 15,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 79,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.6520830000044953,
+    "base": 0.6111268000058772
+   },
+   "moves": "d2d4 c7c5 h2h3 e7e6 h1h2 a7a6 c1e3 d8c7 g1f3 c5c4 b1c3 b8c6 g2g3 g8e7 a2a3 e7f5 e3f4 f8d6 f4d6 c7d6 c3e4 d6e7 f3e5 c6e5 d4e5 g7g6 d1d2 a8b8 d2a5 b8a8 e4c5 a8b8 f1g2 h7h6 g2f3 b7b6 a5d2 b6c5 d2c3 a6a5 c3a5 b8b2 f3e4 b2b8 e4a8 d7d6 a8c6 e8f8 e5d6 e7d6 a5c3 h8h7 c6e4 c8a6 c3d2 f8e8 d2d6 f5d6 e4c6 e8f8 h2h1 a6b7 a1b1 h7h8 h1h2 h6h5 h2h1 f7f6 e1d1 e6e5 d1e1 e5e4 c6d5 h8h6 d5c6 h6h8 c6d5 h8h6 d5c6"
+  },
+  {
+   "game": 16,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 44,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.30442760000005364,
+    "base": 0.3379184000150417
+   },
+   "moves": "a2a3 h7h6 h2h3 c7c6 g1f3 d7d6 h1h2 c8e6 b1c3 a7a6 g2g3 g7g6 c3e4 b8d7 d2d3 d7c5 c1e3 d8a5 e4c3 a5c7 h2h1 g8f6 f1g2 f6d5 c3d5 e6d5 d1d2 a8b8 a1b1 f8g7 h1h2 b7b6 h2h1 a6a5 c2c3 c5b3 d2c2 c7b7 h1h2 b7c7 h2h1 c7b7 h1h2 b7c7"
+  },
+  {
+   "game": 17,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 44,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.3397668000034173,
+    "base": 0.28991709999900195
+   },
+   "moves": "a2a3 h7h6 h2h3 c7c6 g1f3 d7d6 h1h2 c8e6 b1c3 a7a6 g2g3 g7g6 c3e4 b8d7 d2d3 d7c5 c1e3 d8a5 e4c3 a5c7 h2h1 g8f6 f1g2 f6d5 c3d5 e6d5 d1d2 a8b8 a1b1 f8g7 h1h2 b7b6 h2h1 a6a5 c2c3 c5b3 d2c2 c7b7 h1h2 b7c7 h2h1 c7b7 h1h2 b7c7"
+  },
+  {
+   "game": 18,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 39,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.26153149999663583,
+    "base": 0.23029640000822837
+   },
+   "moves": "d2d3 e7e6 b2b4 c7c6 a2a3 d7d6 g1f3 a7a6 c2c3 d8e7 c1e3 g8f6 d1c2 b8d7 f3d4 d7e5 b1d2 f6d5 d2c4 e5c4 d3c4 d5e3 f2e3 c8d7 g2g3 g7g6 f1g2 f8g7 g2f3 g7f6 h1f1 a8b8 c2d3 f6e5 d3c2 e5f6 c2d3 f6e5 d3c2"
+  },
+  {
+   "game": 19,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 39,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.23822109999673557,
+    "base": 0.28214760000264505
+   },
+   "moves": "d2d3 e7e6 b2b4 c7c6 a2a3 d7d6 g1f3 a7a6 c2c3 d8e7 c1e3 g8f6 d1c2 b8d7 f3d4 d7e5 b1d2 f6d5 d2c4 e5c4 d3c4 d5e3 f2e3 c8d7 g2g3 g7g6 f1g2 f8g7 g2f3 g7f6 h1f1 a8b8 c2d3 f6e5 d3c2 e5f6 c2d3 f6e5 d3c2"
+  },
+  {
+   "game": 20,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 38,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.2052128000104858,
+    "base": 0.2075230999980704
+   },
+   "moves": "b1c3 f7f6 f2f4 b7b5 c3b5 g7g6 b5c3 a7a6 a2a3 b8c6 g1f3 c8b7 f3h4 g8h6 a1b1 a8b8 c3d5 h6g4 d5c3 c6d4 b1a1 b7c8 a1b1 f8h6 h4f3 d4f5 c3d5 h6g7 f3g1 f5d4 g1h3 d4f5 b1a1 f5d4 a1b1 d4f5 b1a1 f5d4"
+  },
+  {
+   "game": 21,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 38,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.23991470000328263,
+    "base": 0.16385660001105862
+   },
+   "moves": "b1c3 f7f6 f2f4 b7b5 c3b5 g7g6 b5c3 a7a6 a2a3 b8c6 g1f3 c8b7 f3h4 g8h6 a1b1 a8b8 c3d5 h6g4 d5c3 c6d4 b1a1 b7c8 a1b1 f8h6 h4f3 d4f5 c3d5 h6g7 f3g1 f5d4 g1h3 d4f5 b1a1 f5d4 a1b1 d4f5 b1a1 f5d4"
+  },
+  {
+   "game": 22,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 51,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.4356343999897945,
+    "base": 0.3327832999966631
+   },
+   "moves": "d2d4 f7f6 d1d3 c7c5 d4c5 b8c6 a2a3 g8h6 b1c3 h6g4 a1b1 a8b8 g1f3 a7a6 f3d4 c6d4 d3d4 g4e5 c1e3 d8c7 g2g3 g7g6 f1h3 f8g7 c3e4 a6a5 d4a4 c7c6 a4c6 b7c6 e4c3 e7e6 h3g2 e5g4 e3d4 g7h6 g2f3 e6e5 f3g4 e5d4 c3e4 h6g7 e4d6 e8e7 d6e4 e7e8 e4d6 e8e7 d6e4 e7e8 e4d6"
+  },
+  {
+   "game": 23,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 51,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.31716270000106306,
+    "base": 0.44037339999340475
+   },
+   "moves": "d2d4 f7f6 d1d3 c7c5 d4c5 b8c6 a2a3 g8h6 b1c3 h6g4 a1b1 a8b8 g1f3 a7a6 f3d4 c6d4 d3d4 g4e5 c1e3 d8c7 g2g3 g7g6 f1h3 f8g7 c3e4 a6a5 d4a4 c7c6 a4c6 b7c6 e4c3 e7e6 h3g2 e5g4 e3d4 g7h6 g2f3 e6e5 f3g4 e5d4 c3e4 h6g7 e4d6 e8e7 d6e4 e7e8 e4d6 e8e7 d6e4 e7e8 e4d6"
+  },
+  {
+   "game": 24,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 25,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.1707748000007996,
+    "base": 0.15456259999336908
+   },
+   "moves": "c2c3 d7d5 g2g3 h7h5 a2a3 c8e6 a1a2 d8d6 a2a1 a7a6 d1c2 g7g6 c2d3 h8h6 g1f3 b8c6 f3g5 c6e5 d3e3 e5g4 e3d3 g4e5 d3e3 e5g4 e3d3"
+  },
+  {
+   "game": 25,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 25,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.15600339999582502,
+    "base": 0.13962949999404373
+   },
+   "moves": "c2c3 d7d5 g2g3 h7h5 a2a3 c8e6 a1a2 d8d6 a2a1 a7a6 d1c2 g7g6 c2d3 h8h6 g1f3 b8c6 f3g5 c6e5 d3e3 e5g4 e3d3 g4e5 d3e3 e5g4 e3d3"
+  },
+  {
+   "game": 26,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 80,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.7284032000025036,
+    "base": 0.8685363000113284
+   },
+   "moves": "b2b3 g8f6 g2g4 f6h5 g4h5 b8c6 a2a3 d7d6 b1c3 c8e6 g1f3 a7a6 c1b2 g7g6 c3e4 f7f6 f3g5 e6d5 h5g6 h7g6 f1g2 d5e4 g2e4 h8h6 g5e6 d8d7 e4d5 f6f5 b2g7 f8g7 d5c6 d7c6 e6g7 e8f7 h1g1 f7g7 a1b1 g7f7 c2c3 h6h5 d1c2 e7e6 b3b4 a8e8 c2d3 c6a4 d3g3 g6g5 b1a1 g5g4 g1h1 e6e5 e1f1 c7c6 g3e3 f5f4 e3d3 e8e6 f1e1 e6g6 c3c4 h5g5 c4c5 d6d5 a1d1 f7g7 d1b1 g5h5 d3c3 g7f7 c3d3 g6e6 d3c3 e6h6 h1f1 h6e6 f1h1 e6h6 h1f1 h6e6"
+  },
+  {
+   "game": 27,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 80,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.8559272000093188,
+    "base": 0.7308138999869698
+   },
+   "moves": "b2b3 g8f6 g2g4 f6h5 g4h5 b8c6 a2a3 d7d6 b1c3 c8e6 g1f3 a7a6 c1b2 g7g6 c3e4 f7f6 f3g5 e6d5 h5g6 h7g6 f1g2 d5e4 g2e4 h8h6 g5e6 d8d7 e4d5 f6f5 b2g7 f8g7 d5c6 d7c6 e6g7 e8f7 h1g1 f7g7 a1b1 g7f7 c2c3 h6h5 d1c2 e7e6 b3b4 a8e8 c2d3 c6a4 d3g3 g6g5 b1a1 g5g4 g1h1 e6e5 e1f1 c7c6 g3e3 f5f4 e3d3 e8e6 f1e1 e6g6 c3c4 h5g5 c4c5 d6d5 a1d1 f7g7 d1b1 g5h5 d3c3 g7f7 c3d3 g6e6 d3c3 e6h6 h1f1 h6e6 f1h1 e6h6 h1f1 h6e6"
+  },
+  {
+   "game": 28,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 86,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.7496837000107917,
+    "base": 0.7374212000031548
+   },
+   "moves": "b1c3 d7d6 c3e4 c7c5 a1b1 c8e6 a2a3 b8c6 g1f3 c5c4 d2d3 a7a6 g2g3 g7g6 c1e3 d8d7 d1d2 f8g7 f1g2 a6a5 e3b6 g7h6 f3g5 c4d3 c2d3 e6b3 g2h3 d7h3 g5h3 h6d2 e4d2 a8a6 d2b3 a6b6 b3d2 g8f6 d2e4 f6e4 d3e4 b6b3 h3g5 c6e5 h2h3 b7b6 a3a4 b3b4 b2b3 e7e6 f2f3 h7h6 g5e6 f7e6 e1f1 e8e7 f1g1 h8b8 h3h4 e5c6 e2e3 e6e5 g1g2 b8d8 h1c1 c6a7 c1c4 d8b8 c4c7 e7f8 c7a7 f8g8 a7c7 g8h8 c7c4 b4c4 b3c4 h8g8 b1e1 b8e8 g2g1 e8b8 g1f1 b8e8 f1g1 e8b8 g1f1 b8e8"
+  },
+  {
+   "game": 29,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 86,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.7812268000052427,
+    "base": 0.7679314999950293
+   },
+   "moves": "b1c3 d7d6 c3e4 c7c5 a1b1 c8e6 a2a3 b8c6 g1f3 c5c4 d2d3 a7a6 g2g3 g7g6 c1e3 d8d7 d1d2 f8g7 f1g2 a6a5 e3b6 g7h6 f3g5 c4d3 c2d3 e6b3 g2h3 d7h3 g5h3 h6d2 e4d2 a8a6 d2b3 a6b6 b3d2 g8f6 d2e4 f6e4 d3e4 b6b3 h3g5 c6e5 h2h3 b7b6 a3a4 b3b4 b2b3 e7e6 f2f3 h7h6 g5e6 f7e6 e1f1 e8e7 f1g1 h8b8 h3h4 e5c6 e2e3 e6e5 g1g2 b8d8 h1c1 c6a7 c1c4 d8b8 c4c7 e7f8 c7a7 f8g8 a7c7 g8h8 c7c4 b4c4 b3c4 h8g8 b1e1 b8e8 g2g1 e8b8 g1f1 b8e8 f1g1 e8b8 g1f1 b8e8"
+  },
+  {
+   "game": 30,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 49,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.6637621000045328,
+    "base": 0.5458366999846476
+   },
+   "moves": "f2f4 b7b6 c2c3 g8h6 g1h3 a7a6 d2d3 b8c6 c1e3 a8b8 b1a3 h6f5 e3d2 g7g6 a3c4 f8g7 h3g5 g7f6 a2a3 c8b7 g2g3 c6e5 f4e5 b7h1 e5f6 e7f6 g5e4 d8e7 d1c2 a6a5 d2f4 d7d6 f1h3 h7h6 a1b1 b8d8 a3a4 d8b8 e2e3 b8d8 b2b3 d8b8 h3g4 e7d8 g4h3 d8e7 h3g4 e7d8 g4h3"
+  },
+  {
+   "game": 31,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 49,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.6464998000046762,
+    "base": 0.5850181999958295
+   },
+   "moves": "f2f4 b7b6 c2c3 g8h6 g1h3 a7a6 d2d3 b8c6 c1e3 a8b8 b1a3 h6f5 e3d2 g7g6 a3c4 f8g7 h3g5 g7f6 a2a3 c8b7 g2g3 c6e5 f4e5 b7h1 e5f6 e7f6 g5e4 d8e7 d1c2 a6a5 d2f4 d7d6 f1h3 h7h6 a1b1 b8d8 a3a4 d8b8 e2e3 b8d8 b2b3 d8b8 h3g4 e7d8 g4h3 d8e7 h3g4 e7d8 g4h3"
+  },
+  {
+   "game": 32,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 41,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.3645811999995203,
+    "base": 0.31210750000172993
+   },
+   "moves": "g2g3 d7d6 d2d3 c8d7 a2a3 c7c6 b1c3 g8f6 a1b1 a7a6 c1e3 d7e6 g1f3 b8d7 d1d2 d7c5 f3e5 f6g4 e5g4 e6g4 c3e4 c5e4 d3e4 g4e6 d2d3 a8b8 f1g2 g7g6 g2f3 d8d7 c2c3 f8g7 f3g2 g7f6 g2f3 f6e5 f3g2 e5f6 g2f3 f6e5 f3g2"
+  },
+  {
+   "game": 33,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 41,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.3108209999954852,
+    "base": 0.34880319999865605
+   },
+   "moves": "g2g3 d7d6 d2d3 c8d7 a2a3 c7c6 b1c3 g8f6 a1b1 a7a6 c1e3 d7e6 g1f3 b8d7 d1d2 d7c5 f3e5 f6g4 e5g4 e6g4 c3e4 c5e4 d3e4 g4e6 d2d3 a8b8 f1g2 g7g6 g2f3 d8d7 c2c3 f8g7 f3g2 g7f6 g2f3 f6e5 f3g2 e5f6 g2f3 f6e5 f3g2"
+  },
+  {
+   "game": 34,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 37,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.27846120000322117,
+    "base": 0.27567410000483505
+   },
+   "moves": "f2f3 d7d5 b2b4 g7g6 a2a3 c7c6 g2g3 c8e6 a1a2 a7a6 b1c3 d8d7 c1b2 f8g7 a2a1 g7d4 f3f4 a6a5 b4a5 a8a5 g1f3 d4f6 f1g2 b8a6 f3g5 e6f5 g2f3 f6d4 a1a2 a6c5 d1b1 c5b3 b1d1 b3c5 d1b1 c5b3 b1d1"
+  },
+  {
+   "game": 35,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 37,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.29145759999664733,
+    "base": 0.24404160000631236
+   },
+   "moves": "f2f3 d7d5 b2b4 g7g6 a2a3 c7c6 g2g3 c8e6 a1a2 a7a6 b1c3 d8d7 c1b2 f8g7 a2a1 g7d4 f3f4 a6a5 b4a5 a8a5 g1f3 d4f6 f1g2 b8a6 f3g5 e6f5 g2f3 f6d4 a1a2 a6c5 d1b1 c5b3 b1d1 b3c5 d1b1 c5b3 b1d1"
+  },
+  {
+   "game": 36,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 49,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.5336387999886938,
+    "base": 0.45649600000615465
+   },
+   "moves": "d2d4 c7c6 d4d5 a7a6 b1c3 c6d5 c3d5 b8c6 g1f3 a8a7 c1e3 a7a8 d1d3 g8f6 a2a3 d7d6 f3g5 f6d5 d3d5 c6e5 d5d4 c8f5 d4c3 a8b8 e3d4 f5g6 d4e3 e5c6 a1d1 d8d7 g2g3 a6a5 f1g2 a5a4 g2e4 g6e4 g5e4 d7e6 e4g5 e6g6 c3d2 e7e6 e3b6 c6e5 b6e3 e5c6 e3b6 c6e5 b6e3"
+  },
+  {
+   "game": 37,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 49,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.4327898000010464,
+    "base": 0.5312588000015239
+   },
+   "moves": "d2d4 c7c6 d4d5 a7a6 b1c3 c6d5 c3d5 b8c6 g1f3 a8a7 c1e3 a7a8 d1d3 g8f6 a2a3 d7d6 f3g5 f6d5 d3d5 c6e5 d5d4 c8f5 d4c3 a8b8 e3d4 f5g6 d4e3 e5c6 a1d1 d8d7 g2g3 a6a5 f1g2 a5a4 g2e4 g6e4 g5e4 d7e6 e4g5 e6g6 c3d2 e7e6 e3b6 c6e5 b6e3 e5c6 e3b6 c6e5 b6e3"
+  },
+  {
+   "game": 38,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 102,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.8078367000016442,
+    "base": 0.7588201999933517
+   },
+   "moves": "f2f3 h7h6 g1h3 b7b5 a2a3 a7a6 b1c3 g7g6 h3f4 b8c6 f4d3 g8f6 g2g3 a8b8 a1b1 f8g7 d3f4 c6e5 f1g2 b5b4 a3b4 b8b4 c3d5 f6d5 f4d5 b4d4 d5f4 d4b4 c2c3 b4c4 d1c2 g7f6 b2b3 c4c5 c1b2 c8b7 c3c4 d7d6 d2d4 c5c6 d4e5 f6e5 b2e5 d6e5 c2c3 d8d6 e2e3 c6c5 e3e4 c5c6 f4d5 d6e6 c4c5 e8g8 c3e3 f8e8 e3h6 c6c5 g2h3 e6d6 h3g2 b7d5 e4d5 c5d5 h6e3 d6e6 b1d1 g8h8 d1d5 e6d5 e1f2 d5e6 e3c3 c7c6 h1e1 f7f6 g2h1 c6c5 f2g1 h8g8 e1e4 g8h8 g1g2 e8b8 c3a5 b8e8 h2h3 f6f5 a5a4 f5e4 a4e8 h8g7 f3e4 g7f6 e8a4 f6f7 a4a5 f7f6 a5a4 f6f7 a4a5 f7f6"
+  },
+  {
+   "game": 39,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 102,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.763480100013112,
+    "base": 0.7859237999837205
+   },
+   "moves": "f2f3 h7h6 g1h3 b7b5 a2a3 a7a6 b1c3 g7g6 h3f4 b8c6 f4d3 g8f6 g2g3 a8b8 a1b1 f8g7 d3f4 c6e5 f1g2 b5b4 a3b4 b8b4 c3d5 f6d5 f4d5 b4d4 d5f4 d4b4 c2c3 b4c4 d1c2 g7f6 b2b3 c4c5 c1b2 c8b7 c3c4 d7d6 d2d4 c5c6 d4e5 f6e5 b2e5 d6e5 c2c3 d8d6 e2e3 c6c5 e3e4 c5c6 f4d5 d6e6 c4c5 e8g8 c3e3 f8e8 e3h6 c6c5 g2h3 e6d6 h3g2 b7d5 e4d5 c5d5 h6e3 d6e6 b1d1 g8h8 d1d5 e6d5 e1f2 d5e6 e3c3 c7c6 h1e1 f7f6 g2h1 c6c5 f2g1 h8g8 e1e4 g8h8 g1g2 e8b8 c3a5 b8e8 h2h3 f6f5 a5a4 f5e4 a4e8 h8g7 f3e4 g7f6 e8a4 f6f7 a4a5 f7f6 a5a4 f6f7 a4a5 f7f6"
+  },
+  {
+   "game": 40,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 59,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.41699010000229464,
+    "base": 0.4808904000055918
+   },
+   "moves": "h2h3 g7g6 b2b4 b8c6 a2a3 f8g7 a1a2 a8b8 b1c3 a7a6 g1f3 g7f6 c1b2 c6e5 g2g3 d7d6 f3e5 f6e5 h1h2 c8e6 a2a1 d8d7 a1b1 g8f6 d2d4 e5g3 f2g3 f6d5 c3d5 e6d5 d1d3 d7a4 f1g2 d5e6 g2e4 d6d5 e4h1 c7c6 h1f3 b7b6 h2h1 a6a5 b4a5 b6a5 h1h2 f7f6 h2h1 f6f5 c2c3 b8d8 b2c1 d8a8 d3e3 e6d7 e3d3 d7e6 d3e3 e6d7 e3d3"
+  },
+  {
+   "game": 41,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 59,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.4674091999877419,
+    "base": 0.41208209998876555
+   },
+   "moves": "h2h3 g7g6 b2b4 b8c6 a2a3 f8g7 a1a2 a8b8 b1c3 a7a6 g1f3 g7f6 c1b2 c6e5 g2g3 d7d6 f3e5 f6e5 h1h2 c8e6 a2a1 d8d7 a1b1 g8f6 d2d4 e5g3 f2g3 f6d5 c3d5 e6d5 d1d3 d7a4 f1g2 d5e6 g2e4 d6d5 e4h1 c7c6 h1f3 b7b6 h2h1 a6a5 b4a5 b6a5 h1h2 f7f6 h2h1 f6f5 c2c3 b8d8 b2c1 d8a8 d3e3 e6d7 e3d3 d7e6 d3e3 e6d7 e3d3"
+  },
+  {
+   "game": 42,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 40,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.32394999999087304,
+    "base": 0.2988151000063226
+   },
+   "moves": "b2b3 b8c6 e2e4 c6b8 d1e2 a7a6 e4e5 b8c6 a2a3 g8h6 b1c3 h6f5 a1b1 a8b8 g1f3 g7g6 f3g5 f8g7 g5f3 c6d4 f3d4 f5d4 e2e4 d4f5 e4e2 a6a5 c1b2 c7c6 g2g3 d8c7 c3d1 b7b6 f1g2 g7h6 d1c3 h6g7 c3d1 g7h6 d1c3 h6g7"
+  },
+  {
+   "game": 43,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 40,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.3205651000025682,
+    "base": 0.3125793000035628
+   },
+   "moves": "b2b3 b8c6 e2e4 c6b8 d1e2 a7a6 e4e5 b8c6 a2a3 g8h6 b1c3 h6f5 a1b1 a8b8 g1f3 g7g6 f3g5 f8g7 g5f3 c6d4 f3d4 f5d4 e2e4 d4f5 e4e2 a6a5 c1b2 c7c6 g2g3 d8c7 c3d1 b7b6 f1g2 g7h6 d1c3 h6g7 c3d1 g7h6 d1c3 h6g7"
+  },
+  {
+   "game": 44,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 72,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.5345961000020907,
+    "base": 0.48309370000788476
+   },
+   "moves": "e2e4 a7a6 g1e2 a6a5 b1c3 b8c6 a2a3 a8a6 a1b1 g7g6 e2f4 a6a8 d1e2 c6e5 g2g3 a8a6 f1g2 d7d6 a3a4 c7c6 d2d4 c8g4 f2f3 g4f3 g2f3 e5f3 e2f3 g8f6 f3e3 f6g4 e3e2 d8d7 e4e5 d6e5 d4e5 f8g7 e5e6 g7c3 b2c3 f7e6 e2g4 e8f7 c1e3 h8d8 e3d4 d8e8 g4e6 d7e6 f4e6 f7e6 b1b7 e6f7 b7b1 f7g8 d4e5 h7h6 e5c7 e7e6 e1d1 e6e5 h2h3 h6h5 h1e1 e5e4 e1e3 g8g7 d1e1 g7g8 e1d1 g8g7 d1e1 g7g8"
+  },
+  {
+   "game": 45,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 72,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.5580853999927058,
+    "base": 0.4748180999849865
+   },
+   "moves": "e2e4 a7a6 g1e2 a6a5 b1c3 b8c6 a2a3 a8a6 a1b1 g7g6 e2f4 a6a8 d1e2 c6e5 g2g3 a8a6 f1g2 d7d6 a3a4 c7c6 d2d4 c8g4 f2f3 g4f3 g2f3 e5f3 e2f3 g8f6 f3e3 f6g4 e3e2 d8d7 e4e5 d6e5 d4e5 f8g7 e5e6 g7c3 b2c3 f7e6 e2g4 e8f7 c1e3 h8d8 e3d4 d8e8 g4e6 d7e6 f4e6 f7e6 b1b7 e6f7 b7b1 f7g8 d4e5 h7h6 e5c7 e7e6 e1d1 e6e5 h2h3 h6h5 h1e1 e5e4 e1e3 g8g7 d1e1 g7g8 e1d1 g8g7 d1e1 g7g8"
+  },
+  {
+   "game": 46,
+   "mutant_white": true,
+   "result": "draw",
+   "plies": 44,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.362997299998824,
+    "base": 0.3431127000003471
+   },
+   "moves": "b2b4 c7c6 d2d3 g7g5 c1g5 d7d6 c2c3 c8e6 g1f3 a7a6 g5e3 g8f6 a2a3 b8d7 d1c2 d7e5 f3d4 f6d5 d4e6 d5e3 f2e3 f7e6 b1d2 d8c7 d2e4 a8b8 g2g3 f8g7 f1g2 a6a5 b4a5 c7a5 a3a4 a5c7 c2d2 c7d7 d2c2 b8d8 g2h3 d8b8 h3g2 b8d8 g2h3 d8b8"
+  },
+  {
+   "game": 47,
+   "mutant_white": false,
+   "result": "draw",
+   "plies": 44,
+   "end": "THREEFOLD_REPETITION",
+   "time": {
+    "mutant": 0.35192329998972127,
+    "base": 0.3412409000011394
+   },
+   "moves": "b2b4 c7c6 d2d3 g7g5 c1g5 d7d6 c2c3 c8e6 g1f3 a7a6 g5e3 g8f6 a2a3 b8d7 d1c2 d7e5 f3d4 f6d5 d4e6 d5e3 f2e3 f7e6 b1d2 d8c7 d2e4 a8b8 g2g3 f8g7 f1g2 a6a5 b4a5 c7a5 a3a4 a5c7 c2d2 c7d7 d2c2 b8d8 g2h3 d8b8 h3g2 b8d8 g2h3 d8b8"
+  },
+  {
+   "game": 48,
+   "mutant_white": true,
+   "result": "win",
+   "plies": 87,
+   "end": "CHECKMATE",
+   "time": {
+    "mutant": 0.6758383999986108,
+    "base": 0.5836937000094622
+   },
+   "moves": "h2h4 g8f6 g2g4 c7c6 g4g5 f6g4 b1c3 d7d6 a1b1 c8e6 a2a3 a7a6 g1f3 g7g6 d2d3 b8d7 c1f4 d7e5 f3e5 g4e5 f4e3 a8b8 h4h5 f8g7 c3e4 d8c7 f1g2 c7d7 d1d2 d7c7 a3a4 c7d7 d2a5 g6h5 h1h5 e6d5 h5h4 d7e6 g2h3 e6g6 c2c3 e5c4 a5c7 b8a8 c7b7 a8d8 e3f4 d5e4 d3e4 g6e4 b1d1 e4h1 h3f1 h1h4 b7c6 d8d7 c6c4 h4g4 c4c8 d7d8 c8g4 g7e5 f4e5 d6e5 g4f5 e5e4 d1d8 e8d8 f5a5 d8e8 a5a6 e8d7 a6b7 d7d6 g5g6 h7g6 b2b3 h8h4 b3b4 h4g4 f1h3 g4h4 b7d7 d6e5 d7e7 e5f4 e7f6"
+  },
+  {
+   "game": 49,
+   "mutant_white": false,
+   "result": "loss",
+   "plies": 87,
+   "end": "CHECKMATE",
+   "time": {
+    "mutant": 0.5954023999911442,
+    "base": 0.692146599998523
+   },
+   "moves": "h2h4 g8f6 g2g4 c7c6 g4g5 f6g4 b1c3 d7d6 a1b1 c8e6 a2a3 a7a6 g1f3 g7g6 d2d3 b8d7 c1f4 d7e5 f3e5 g4e5 f4e3 a8b8 h4h5 f8g7 c3e4 d8c7 f1g2 c7d7 d1d2 d7c7 a3a4 c7d7 d2a5 g6h5 h1h5 e6d5 h5h4 d7e6 g2h3 e6g6 c2c3 e5c4 a5c7 b8a8 c7b7 a8d8 e3f4 d5e4 d3e4 g6e4 b1d1 e4h1 h3f1 h1h4 b7c6 d8d7 c6c4 h4g4 c4c8 d7d8 c8g4 g7e5 f4e5 d6e5 g4f5 e5e4 d1d8 e8d8 f5a5 d8e8 a5a6 e8d7 a6b7 d7d6 g5g6 h7g6 b2b3 h8h4 b3b4 h4g4 f1h3 g4h4 b7d7 d6e5 d7e7 e5f4 e7f6"
+  }
+ ]
+}
