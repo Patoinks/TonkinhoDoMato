@@ -37,7 +37,9 @@ def _init(claudio_path, settings, rival_settings):
     import evolve_tonkinho as evo
     from claudio_agent import ClaudioConfig
     evo._init(str(TIMDGEI))
-    genes = dict(json.loads(EVOLUTION.read_text(encoding="utf-8"))["base_genes"], tactic_search="exact")
+    # Timdgei's tournament genes (only Timdgei needs them; the file stayed on Martim's PC).
+    base = json.loads(EVOLUTION.read_text(encoding="utf-8"))["base_genes"] if EVOLUTION.exists() else {}
+    genes = dict(base, tactic_search="exact")
     for item in rival_settings:
         key, _, raw = item.partition("=")
         genes[key] = raw

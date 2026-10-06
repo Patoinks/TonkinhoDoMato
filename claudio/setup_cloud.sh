@@ -8,6 +8,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+# Debian/Ubuntu's own setuptools cannot build python-chess (install_layout error): a newer one beside it.
+python -m pip install -q --upgrade --ignore-installed setuptools wheel
+# No GPU (the usual cloud machine): the CPU build of torch, not the default one with CUDA (GBs).
+# Cloud networks may block download.pytorch.org; then the default build from PyPI also works.
+if ! command -v nvidia-smi >/dev/null 2>&1 && ! python -c "import torch" 2>/dev/null; then
+    python -m pip install -q --retries 1 --timeout 15 torch --index-url https://download.pytorch.org/whl/cpu \
+        || echo "torch CPU indisponivel nesta rede: instalo o do PyPI"
+fi
 python -m pip install -q -r requirements.txt
 
 # TinyOpponent: built from the repo's source, used from Claudio's frozen base.

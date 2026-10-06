@@ -57,6 +57,30 @@ def test_never_plays_a_move_that_allows_mate():
     assert fast.forced_mate(False, 1, 20_000)[0] == 0
 
 
+@pytest.mark.parametrize("mode", ["min", "expect"])
+def test_replies_alone_see_a_mate_in_one(mode):
+    # No mate defence: only the look one reply further can see that ...Qxg2# is coming.
+    board = chess.Board("6k1/1b3ppp/8/8/8/6q1/5PP1/5RK1 w - - 0 1")
+    move = player(mate_attack=0, mate_defence=0, reply_top=100, reply_mode=mode).choose(board)
+    board.push(move)
+    assert fast_rules.board(board).forced_mate(False, 1, 20_000)[0] == 0
+
+
+def test_replies_keep_the_choice_legal_and_off_changes_nothing():
+    rng = np.random.default_rng(3)
+    for _ in range(10):
+        board = chess.Board()
+        for _ in range(int(rng.integers(0, 40))):
+            moves = list(board.legal_moves)
+            if not moves:
+                break
+            board.push(moves[int(rng.integers(len(moves)))])
+        if board.is_game_over():
+            continue
+        assert player(reply_top=6).choose(board) in board.legal_moves
+        assert player(reply_top=0).choose(board) == player().choose(board)
+
+
 def test_does_not_leave_its_queen_to_a_pawn():
     board = chess.Board("4k3/8/8/8/2p5/3Q4/8/4K3 w - - 0 1")      # ...c4 attacks the queen on d3
     move = player(mate_attack=0).choose(board)

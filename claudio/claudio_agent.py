@@ -9,6 +9,8 @@ rules of chess, never from outside knowledge:
 - calculation: the exact capture sequence after each move, and a lazy check of
   the move it intends to play (4 half-moves of material, the opponent's forced
   mates), the way a player checks the move they are about to make;
+- one reply further with its own intuition (optional): the network's value of the
+  positions after each answer of the opponent, for its best candidates;
 - its own forced mates, found by the rules;
 - a position it has already seen in this game is a draw if it goes back to it
   (the opponent can simply repeat), which is the rules, not a preference.
@@ -44,6 +46,9 @@ class ClaudioConfig:
     root_pvs: bool = True           # ...each only as far as needed to know if it is the best
     tactic_rounds: int = 4          # how many times a new intended move may be checked (lazy)
     tactic_nodes: int = 2_000_000
+    reply_top: int = 0              # >0: the best n candidates are also judged after each opponent reply (own network)
+    reply_weight: float = 1.0       # share of that 2-ply value in those candidates' value (their level is kept)
+    reply_mode: str = "min"         # "min": the reply worst for Claudio; "expect": weighted by its own prediction
     mate_defence: int = 2           # opponent's forced mate within n, checked on the intended move
     mate_attack: int = 3            # own forced mates within n
     mate_gate: float = 0.0          # >0: beyond 2 moves only when the learned KS of the enemy king is below this
@@ -208,6 +213,58 @@ class Claudio:
         for index in beaten:
             scores[index] = min(scores[index], best_score - 1e-9)
 
+    def _replies(self, fast, codes, me, after, values, scores, known, earlier, centre, stretch):
+        """The best candidates judged one reply further: the network's value of the position after
+        each answer of the opponent - its worst one ("min"), or weighted by Claudio's own prediction
+        of the opponent's move ("expect"). Game-ending replies have their exact value. Only the order
+        of these candidates among themselves changes: their mean level is kept."""
+        cfg = self.cfg
+        top = [int(i) for i in np.argsort(scores)[::-1] if not known[i]][:cfg.reply_top]
+        if len(top) < 2:
+            return
+        rows, sizes, fixed = [], [], []
+        for index in top:
+            fast.push(codes[index])
+            replies = list(fast.legal_moves())
+            ends = {}
+            for j, reply in enumerate(replies):
+                fast.push(reply)
+                ending = fast.terminal_strict()
+                if ending == fast_rules.DRAW:
+                    ends[j] = cfg.draw_value
+                elif ending != fast_rules.NONE:
+                    ends[j] = WIN if (ending == fast_rules.WHITE_WINS) == me else LOSS
+                elif earlier is not None and _key(fast) in earlier:
+                    ends[j] = cfg.draw_value
+                fast.pop()
+            rows.append(fast_rules.encode_after_moves(fast, replies, me))
+            fast.pop()
+            sizes.append(len(replies))
+            fixed.append(ends)
+        if cfg.memory:
+            memory = torch.cat([after[i:i + 1].expand(n, -1) for i, n in zip(top, sizes)])
+        else:
+            memory = self.net.initial_memory(1)
+        contexts, _ = self.net.candidates(torch.from_numpy(np.concatenate(rows)), memory)
+        heads, _ = self.net.survival(contexts)
+        answers = (heads.mean(-1) if self.head is None else heads[:, self.head]).numpy().astype(np.float64)
+        answers = centre + (answers - centre) * stretch
+        guesses = self.net.predict_logits(contexts).split(sizes) if cfg.reply_mode == "expect" else None
+        deeper, start = [], 0
+        for k, (n, ends) in enumerate(zip(sizes, fixed)):
+            part = answers[start:start + n].copy()
+            start += n
+            for j, value in ends.items():
+                part[j] = value
+            if guesses is None:
+                deeper.append(float(part.min()))
+            else:
+                deeper.append(float(guesses[k].softmax(0).numpy().astype(np.float64) @ part))
+        top, deeper = np.asarray(top), np.asarray(deeper)
+        plain = deeper > LOSS / 2          # a reply that mates is not part of the level
+        shift = float(np.mean(values[top][plain] - deeper[plain])) if plain.any() else 0.0
+        scores[top] += cfg.reply_weight * (deeper + shift - values[top])
+
     @torch.inference_mode()
     def choose(self, board: chess.Board) -> chess.Move:
         cfg, me = self.cfg, board.turn
@@ -245,15 +302,16 @@ class Claudio:
         # Intuition: the network's value of every position we can reach.
         encoded = fast_rules.encode_after_moves(fast, codes, me)
         memory = self.memory if cfg.memory else self.net.initial_memory(1)
-        contexts, _ = self.net.candidates(torch.from_numpy(encoded), memory)
+        contexts, after = self.net.candidates(torch.from_numpy(encoded), memory)
         heads, _ = self.net.survival(contexts)
         values = (heads.mean(-1) if self.head is None else heads[:, self.head]).numpy().astype(np.float64)
+        centre, stretch = 0.0, 1.0
         if cfg.value_scaling and len(values) > 1:
             # Self-calibration: the intuition's differences are brought back to the reference
             # spread, so a pessimistic or stretched network does not unbalance the calculation.
             self.spread = cfg.value_spread_decay * self.spread + (1 - cfg.value_spread_decay) * float(values.std())
-            centre = float(values.mean())
-            values = centre + (values - centre) * (cfg.value_spread_ref / max(self.spread, 1e-6))
+            centre, stretch = float(values.mean()), cfg.value_spread_ref / max(self.spread, 1e-6)
+            values = centre + (values - centre) * stretch
         scores = values.copy()
         self._lap("network")
         if cfg.king_weight and self.king_model is not None:
@@ -297,6 +355,11 @@ class Claudio:
                 scores[index], known[index] = cfg.draw_value, True
             fast.pop()
         self._lap("endings")
+
+        # One reply further with its own intuition, for the best candidates.
+        if cfg.reply_top > 0:
+            self._replies(fast, codes, me, after, values, scores, known, earlier, centre, stretch)
+            self._lap("replies")
 
         # Calculation: the best candidates first, together.
         if nets is not None and cfg.tactic_depth > 0 and cfg.tactic_top > 1:

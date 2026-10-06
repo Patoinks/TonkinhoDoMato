@@ -287,6 +287,11 @@ def _init_worker(out_dir, architecture, values, settings, start, learner_draw, o
     learner_cfg = ClaudioConfig(**settings)
     if learner_draw is not None:
         learner_cfg.draw_value = learner_draw
+    if not Path(cfg.king_safety_model).is_file():
+        # The KS file stayed on Martim's PC: the copy inside Claudio's own checkpoint, under the same name.
+        from claudio_load import load_claudio
+        from tonkai import king_safety_model
+        king_safety_model._CACHE[str(Path(cfg.king_safety_model).resolve())] = load_claudio(start, with_king=True)[2]
     _w.update(out_dir=Path(out_dir), net=net, values=values, ccfg=learner_cfg, frozen_cfg=ClaudioConfig(**settings),
               king=load_cached(cfg.king_safety_model), version=-1, shaped=objective == "shaped",
               proxy=CognitiveAgent(net, cfg, CognitiveKnowledge(cfg, net.encoder), kd_values=values),

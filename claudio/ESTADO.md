@@ -29,7 +29,10 @@ a memória dela ficou no PC do Martim, por isso tudo o que importa está aqui.
 Instala os pacotes, compila os 3 módulos C++ e compila os motores nas mesmas versões
 do PC (Stockfish 11, Fairy-Stockfish 14) para `engines/linux/`. `claudio/paths.py` escolhe
 os motores por sistema (ou `CLAUDIO_STOCKFISH` / `CLAUDIO_FAIRY`). O treino usa a GPU se
-houver; senão CPU. **Ainda não foi corrido em Linux**: se falhar, corrige o script.
+houver; senão CPU. **Corre em Linux desde 2026-10-06** (máquina da nuvem: 4 núcleos, sem GPU,
+`download.pytorch.org` bloqueado, por isso o torch vem do PyPI; ~15 min). O modelo KS e o
+`evolution.json` ficaram no PC: o treino usa a cópia do KS dentro do checkpoint do Claudio e
+o `arena.py` passa sem o `evolution.json` (só o Timdgei precisa dele, com os genes de torneio).
 
 O Claudio corre numa cópia congelada do código do TonkAI (`claudio/base`, com o seu
 `tonkai_fast`), nunca no `tonkai/` partilhado (`paths.py` trata da ordem do sys.path).
@@ -52,6 +55,12 @@ peças exata + cálculo na raiz (PVS sobre os 4 melhores, 4 meios-lances, em C++
 defesa contra mate + ataque de mate a 3 lances quando o seu próprio modelo de
 segurança do rei diz que o rei inimigo está exposto + simplificar quando está à frente.
 Valores das peças medidos por ele: P 1, C 2,13, B 2,73, T 3,98, D 9,06.
+
+Opcional (desligado por omissão, 2026-10-06): **respostas** (`reply_top`, `reply_mode`,
+`reply_weight`). Os n melhores candidatos são julgados também depois de cada resposta do
+adversário, com a própria rede: a pior resposta (`min`) ou a média pesada pela sua previsão
+do lance do adversário (`expect`, a cabeça `predict_head`). Só muda a ordem entre esses
+candidatos (o nível médio deles fica). Ligar: `--set reply_top=6 --set reply_mode=expect`.
 
 ## Ferramentas principais
 
@@ -97,8 +106,42 @@ Do g0, 1000 jogos por cor contra Fairy 1450, avaliação de 200 jogos a cada 250
 | especialistas antigos | — | — | 83 cp |
 
 A hipótese (o valor a copiar o material apagava o sentido posicional) estava errada:
-só notas foi o pior. **O g0 continua a ser o melhor.** Isto ainda não foi contado ao
-Martim quando a sessão passou para a nuvem — conta-lhe.
+só notas foi o pior. **O g0 continua a ser a melhor rede.** (Contado ao Martim em 2026-10-06.)
+
+## Sessão na nuvem (2026-10-06): respostas com a própria rede
+
+Sem treino nenhum: os 6 melhores candidatos veem cada resposta do adversário pela rede.
+Fairy 1450, 600 jogos cada, mesmas aberturas (`--seed 1450`, 4 meios-lances aleatórios,
+cores trocadas), `results/engine-nuvem-fairy1450-*.json`:
+
+| Versão | Winrate | V/E/D | ms/lance |
+|---|---|---|---|
+| g0 | 53,5% | 321/107/172 | 7,3 |
+| **g0 + `reply_top=6 reply_mode=expect`** | **63,2%** | 379/77/144 | 13,6 |
+| g0 + `reply_top=10 reply_mode=expect` | 61,3% | 368/83/149 | 16,2 |
+| g0 + `reply_top=6` (`min`) | 59,7% | 358/88/154 | 13,7 |
+| g0 + `reply_top=4 reply_mode=expect` | 59,2% | 355/89/156 | 15,3 |
+| g0 + `reply_top=100` (todos, `min`) | 61,7% | 370/71/159 | 23,3 |
+
+Emparelhado jogo a jogo contra o g0 (95%): **6/expect +9,7 ± 5,6 pp (z = 3,4)**; todos/min
++8,2 ± 5,7 (z = 2,8); 10/expect +7,8 ± 5,6 (z = 2,8); 6/min +6,2 ± 5,6 (z = 2,2);
+4/expect +5,7 ± 5,5 (z = 2,0). Todas ganham ao g0; 6/expect é a melhor e das mais baratas.
+(Os ms/lance das 3 do meio foram medidos com a máquina mais carregada.)
+
+Contra Stockfish 1800 (400 jogos, `results/engine-nuvem-sf1800-*.json`): g0 5,5% (22/77/301),
+6/expect 6,75% (27/69/304): +1,2 ± 3,4 pp, sem diferença visível. Contra um adversário
+muito mais forte o que falta não é isto.
+Menos derrotas por mate (172 → 144) e menos repetições (90 → 56). O g0 aqui deu o mesmo
+que no PC (53,5% vs 55/54,5%), por isso a nuvem mede igual.
+
+O juiz (300 posições, `results/judge-nuvem-respostas.json`) quase não vê diferença:
+6/expect −3,8 ± 4,1 cp, todos/min −3,5 ± 4,0 cp, 6/min +0,2 ± 3,3 cp; asneiras ≥200 cp
+12,7% → 10,7–11,3%. Os jogos veem-na; o juiz, com 300 posições, não chega para isto.
+O juiz agora mostra a diferença emparelhada e o erro (`vs g0 ... +- ...`) e aceita
+definições por versão: `nome=ficheiro.pt@reply_top=6,reply_mode=expect`.
+
+Custo: ~+6 ms por lance (quase tudo é a rede nas ~200 posições de resposta), conta no
+duelo de tempo. Por decidir com o Martim: ligar por omissão / num checkpoint próprio.
 
 ## Ideias ainda não testadas (não lances sem ele pedir)
 

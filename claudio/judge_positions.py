@@ -5,6 +5,7 @@ best one (centipawns, Stockfish depth --depth)? Same positions for every version
 so differences are not luck of the games.
 
     python claudio/judge_positions.py --models g0=claudio/claudio-grande-g0.pt b1000=claudio/train-brancas/claudio-grande-1000.pt
+    (settings over a checkpoint's: name=checkpoint@reply_top=4,reply_mode=min)
 """
 import argparse
 from concurrent.futures import ProcessPoolExecutor
@@ -41,7 +42,10 @@ def _init(models, depth):
     torch.set_num_threads(1)
     import chess.engine
     from claudio_load import load_players, make_player
-    _j["players"] = {name: load_players(spec) for name, spec in models.items()}
+    _j["players"] = {}
+    for name, spec in models.items():
+        path, _, settings = spec.partition("@")
+        _j["players"][name] = load_players(path, [s for s in settings.split(",") if s])
     _j["make"] = make_player
     _j["engine"] = chess.engine.SimpleEngine.popen_uci(str(STOCKFISH))
     _j["engine"].configure({"Threads": 1, "Hash": 64})
@@ -103,6 +107,13 @@ def main():
                          "blunders_200": sum(x >= 200 for x in losses) / len(losses),
                          "mistakes_100": sum(x >= 100 for x in losses) / len(losses),
                          "same_move_as_" + first: sum(r["moves"][name] == r["moves"][first] for r in rows) / len(rows)}
+        # Same positions for every version: the paired difference and its standard error say
+        # whether a difference in mean loss is more than the luck of the 300 positions.
+        diffs = [r["loss"][name] - r["loss"][first] for r in rows]
+        mean = sum(diffs) / len(diffs)
+        spread = (sum((d - mean) ** 2 for d in diffs) / max(1, len(diffs) - 1)) ** 0.5
+        summary[name]["minus_" + first] = mean
+        summary[name]["minus_" + first + "_se"] = spread / len(diffs) ** 0.5
     for phase, test in (("abertura (<=20 meios-lances)", lambda r: r["ply"] <= 20),
                         ("meio-jogo", lambda r: r["ply"] > 20 and r["pieces"] > 12),
                         ("final (<=12 pecas)", lambda r: r["ply"] > 20 and r["pieces"] <= 12)):
@@ -115,6 +126,7 @@ def main():
     for name, s in summary.items():
         print(f"  {name:10s} perda media {s['mean_loss_cp']:5.0f} cp | erros>=100cp {100 * s['mistakes_100']:4.1f}% | "
               f"asneiras>=200cp {100 * s['blunders_200']:4.1f}% | igual a {first}: {100 * s['same_move_as_' + first]:4.1f}% | "
+              f"vs {first} {s['minus_' + first]:+5.1f} +- {s['minus_' + first + '_se']:4.1f} cp | "
               f"abertura {s['abertura (<=20 meios-lances)']:.0f} meio {s['meio-jogo']:.0f} final {s['final (<=12 pecas)']:.0f}")
 
 
