@@ -243,6 +243,7 @@ def main():
     parser.add_argument("--checkpoint", default=str(ROOT / "claudio/claudio-grande-g0-forte.pt"))
     parser.add_argument("--generations", type=int, default=10)
     parser.add_argument("--mutants", type=int, default=200, help="mutants per generation (their parent plays too)")
+    parser.add_argument("--later-mutants", type=int, default=0, help="mutants from generation 2 on (0 = --mutants)")
     parser.add_argument("--rate", type=float, default=0.3, help="chance of each numeric setting mutating")
     parser.add_argument("--spread", type=float, nargs=2, default=(0.2, 0.5), help="change, as a share up or down")
     parser.add_argument("--games", type=int, default=5, help="games per knockout match (best of)")
@@ -266,13 +267,15 @@ def main():
     tournament = Tournament(args)
     started = time.perf_counter()
     parent, champions = dict(base), {"original": dict(base)}
-    print(f"{args.generations} geracoes x ({args.mutants} mutantes + o pai), melhor de {args.games}; "
+    later = f", depois {args.later_mutants}" if args.later_mutants else ""
+    print(f"{args.generations} geracoes x ({args.mutants} mutantes{later} + o pai), melhor de {args.games}; "
           f"grupos melhor de {args.group_games}", flush=True)
     try:
         for generation in range(1, args.generations + 1):
             rng = np.random.default_rng([args.seed, generation])
             players = {f"G{generation}-pai": parent}
-            for i in range(1, args.mutants + 1):
+            count = args.later_mutants if generation > 1 and args.later_mutants else args.mutants
+            for i in range(1, count + 1):
                 players[f"G{generation}-m{i:03d}"] = mutate(parent, rng, args.rate, args.spread)
             champion, rounds, won = tournament.bracket(generation, players, rng)
             parent = players[champion]
