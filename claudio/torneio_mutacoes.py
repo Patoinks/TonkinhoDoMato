@@ -131,7 +131,7 @@ def play(key, a, b, a_settings, b_settings, a_white, seed, opening, random_plies
 class Tournament:
     def __init__(self, args):
         self.args = args
-        self.log = ROOT / "claudio/results" / f"torneio-{args.label}.jsonl"
+        self.log = Path(args.log) if args.log else ROOT / "claudio/results" / f"torneio-{args.label}.jsonl"
         self.done = {}
         if self.log.exists():
             for line in self.log.read_text(encoding="utf-8").splitlines():
@@ -253,6 +253,7 @@ def main():
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument("--label", required=True)
+    parser.add_argument("--log", default="", help="where the live game log goes (default results/torneio-<label>.jsonl)")
     args = parser.parse_args()
 
     import numpy as np
