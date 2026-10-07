@@ -179,5 +179,10 @@ respostas 1/3/6, `tactic_depth=7` + `reply_depth=3` 0/1/9, **`tactic_depth=7` 2/
 400 jogos de respostas + `tactic_depth=5` contra Stockfish 1800 em fila.
 
 Treino autorizado pelo Martim (2026-10-07, só na nuvem): `train_grande.py --learn search`
-(aprende com o próprio cálculo, estilo TD-Leaf; ver o docstring). A correr: 6000 jogos contra
-Fairy 1700, avaliação de 300 jogos a cada 500, `claudio/train-busca/`.
+(aprende com o próprio cálculo, estilo TD-Leaf; ver o docstring). Contra Fairy 1700, `--lr 5e-5
+--anchor 1e-3 --updates 2 --search-rows 512`, parou aos 3100 jogos (limite de tempo da sessão).
+Avaliações (300 jogos, sem aberturas aleatórias): 22,3 / 18,0 / 19,3 / 24,3 / 21,7 / 20,7% aos
+500..3000. O melhor (2000 jogos), emparelhado com a base: 24,8% vs 24,5% (+0,3 ± 4,8): **nem
+melhor nem pior**. A rede aprende os alvos (erro 0,0039 → 0,0014), mas o valor a 1 meio-lance
+já concorda com o de 2 meios-lances: ensinar isso não traz conhecimento novo. Os pesos ficaram
+na nuvem (`claudio/train-busca/`, não versionado).
