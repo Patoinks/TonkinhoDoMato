@@ -34,6 +34,15 @@ level is not trained (a ranking within each position cannot make it pessimistic)
 When the opponent wins, its moves are learned too (with an engine opponent that
 means learning from the engine's winning moves).
 
+--learn search (organic, TD-Leaf style): Claudio learns from its own calculation. At each of its
+decisions the search judges its best candidates one reply further with its own network (the
+replies weighted by its own prediction of the opponent's move); the intuition's value of each of
+those candidates is pulled towards that deeper value, kept at the candidates' mean level (only the
+order is taught, so the value's scale does not drift). A candidate the opponent answers with mate
+is taught 0. Only Claudio's own games and values - no old replay, no outcomes, nothing from the
+opponent. --anchor pulls the weights back towards the starting network after every step, so it
+cannot forget what it knew. Needs reply_top > 0 (e.g. the claudio-grande-g0-respostas.pt checkpoint).
+
 Progress is written for the training tracker app (history/<run>/launch.json +
 history/<run>.jsonl, the same records train_cognitive.py writes).
 
@@ -265,7 +274,54 @@ def make_trainer_class():
             self.steps += 1
             return float(loss.detach())
 
+        def search_update(self, buffer, rows, anchor):
+            """One step of learning from its own calculation: the candidates' values towards the values
+            the search found one reply further (buffer: packed rows, memories before them, targets)."""
+            if buffer.size < max(rows, 1000):
+                return None
+            index = self.rng.integers(0, buffer.size, rows)
+            x = torch.from_numpy(unpack_many(buffer.packed[index])).to(self.device)
+            memory = torch.from_numpy(buffer.memory[index].astype(np.float32)).to(self.device)
+            target = torch.from_numpy(buffer.target[index]).to(self.device)
+            self.net.train()
+            context, _ = self.net.candidates(x, memory)
+            heads, _ = self.net.survival(context)
+            loss = ((heads - target[:, None]) ** 2).mean()
+            self.optimizer.zero_grad(set_to_none=True)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.net.parameters(), self.cfg.grad_clip)
+            self.optimizer.step()
+            if anchor > 0:
+                with torch.no_grad():               # back towards the starting network: it cannot forget
+                    for parameter, start in zip(self.net.parameters(), self.start_parameters):
+                        parameter.sub_(anchor * (parameter - start))
+            self.steps += 1
+            return float(loss.detach())
+
     return ClaudioTrainer
+
+
+class SearchBuffer:
+    """Ring buffer of what Claudio's calculation taught: packed candidate rows, memories, targets."""
+
+    def __init__(self, capacity):
+        import numpy as np
+        from tonkai.encoding import PACKED_SIZE
+        self.capacity, self.size, self.next = capacity, 0, 0
+        self.packed = np.zeros((capacity, PACKED_SIZE), dtype=np.uint8)
+        self.memory, self.target = None, np.zeros(capacity, dtype=np.float32)
+
+    def add(self, packed, memory, target):
+        import numpy as np
+        if self.memory is None:
+            self.memory = np.zeros((self.capacity, memory.shape[1]), dtype=np.float16)
+        for start in range(0, len(target), self.capacity):
+            p, m, t = packed[start:start + self.capacity], memory[start:start + self.capacity], target[start:start + self.capacity]
+            n = len(t)
+            where = (self.next + np.arange(n)) % self.capacity
+            self.packed[where], self.memory[where], self.target[where] = p, m, t
+            self.next = (self.next + n) % self.capacity
+            self.size = min(self.capacity, self.size + n)
 
 
 # ---------------------------------------------------------------------- actors
@@ -327,7 +383,7 @@ def _opponent(stage, rng, seed, game):
 
 
 def play(game, version, seed, stage, random_plies, max_plies, explore_plies, explore_temperature,
-         colour="both", reviewed=False):
+         colour="both", reviewed=False, trace=False):
     import chess
     import numpy as np
     import torch
@@ -345,6 +401,8 @@ def play(game, version, seed, stage, random_plies, max_plies, explore_plies, exp
     me = {"white": chess.WHITE, "black": chess.BLACK}.get(colour, chess.WHITE if game % 2 == 0 else chess.BLACK)
     claudio = Claudio(net, _w["values"], _w["ccfg"], rng=np.random.default_rng([seed, game, 1]), king_model=_w["king"])
     claudio.spread = _w.get("spread", claudio.spread)          # its value-spread estimate carries across games
+    if trace:
+        claudio.trace = []                                      # what its own calculation finds (--learn search)
     answer, rival = _opponent(stage, rng, seed, game)
     board = chess.Board()
     while True:
@@ -446,6 +504,9 @@ def play(game, version, seed, stage, random_plies, max_plies, explore_plies, exp
             "winner": None if not (won or lost) else ("claudio" if won else "opponent"),
             "review_labels": review_labels,
             "winner_packed": winner_packed,
+            "search": None if not trace or not claudio.trace else (
+                pack_many(np.concatenate([t[0] for t in claudio.trace])),
+                np.concatenate([t[1] for t in claudio.trace]), np.concatenate([t[2] for t in claudio.trace])),
             "plies": len(board.move_stack), "seconds": time.perf_counter() - started}
 
 
@@ -513,7 +574,10 @@ def main():
     parser.add_argument("--colour", choices=("both", "white", "black"), default="both",
                         help="white/black: Claudio always plays that colour (a separate specialist)")
     parser.add_argument("--review-weight", type=float, default=0.5, help="review: weight of the good/bad move notes")
-    parser.add_argument("--learn", choices=("outcomes", "winners", "review", "notes"), default="outcomes",
+    parser.add_argument("--search-rows", type=int, default=512, help="search: candidate rows per learner step")
+    parser.add_argument("--anchor", type=float, default=1e-3,
+                        help="search: pull towards the starting weights after every step (0 = none)")
+    parser.add_argument("--learn", choices=("outcomes", "winners", "review", "notes", "search"), default="outcomes",
                         help="outcomes: TonkAI's usual learning; winners: only the winning side's moves, as better")
     parser.add_argument("--winner-updates", type=int, default=2, help="winners: learner steps per decided game")
     parser.add_argument("--winner-rows", type=int, default=32, help="winners: positions per learner step")
@@ -595,13 +659,19 @@ def main():
     net.requires_grad_(True).train()
     net.rnd_target.requires_grad_(False)                             # the fixed random target stays fixed
     trainer = Trainer(cfg, net=net)
-    trainer.replay.load_state_dict(state["replay"])                 # the experience Claudio grew up with
+    if args.learn != "search":
+        trainer.replay.load_state_dict(state["replay"])             # the experience Claudio grew up with
     trainer.replay.capacity_positions = max(trainer.replay.capacity_positions, args.replay_capacity)
     trainer.games, trainer.steps = state["games"], state["steps"]
     del state
     from tonkai.sequence_replay import SequenceReplay
     winners = SequenceReplay(args.replay_capacity, seed=args.seed + 3) if args.learn == "winners" else None
     noted = SequenceReplay(args.replay_capacity, seed=args.seed + 4) if args.learn == "notes" else None
+    taught = SearchBuffer(args.replay_capacity) if args.learn == "search" else None
+    if taught is not None:
+        if not config.get("reply_top"):
+            raise SystemExit("--learn search needs reply_top > 0 (e.g. --set reply_top=6 --set reply_mode=expect)")
+        trainer.start_parameters = [p.detach().clone() for p in trainer.net.parameters()]
 
     def publish(version):
         path = args.out_dir / f"actor-{version}.pt"
@@ -636,7 +706,8 @@ def main():
         nonlocal game
         stage = stage_of(game)
         future = pool.submit(play, game, version, args.seed, stage, args.random_plies, args.max_plies,
-                             args.explore_plies, args.explore_temperature, args.colour, args.learn in ("review", "notes"))
+                             args.explore_plies, args.explore_temperature, args.colour, args.learn in ("review", "notes"),
+                             args.learn == "search")
         future.stage, future.eval_round = stage, None
         game += 1
         return future
@@ -676,7 +747,16 @@ def main():
                                         args.out_dir / "claudio-grande-best.pt")
                 continue
             t0 = time.perf_counter()
-            if winners is not None:
+            if taught is not None:
+                # Only its own calculation teaches: the candidates' values towards what the search found.
+                if r.get("search") is not None:
+                    taught.add(*r["search"])
+                for _ in range(args.updates):
+                    loss = trainer.search_update(taught, args.search_rows, args.anchor)
+                    if loss is not None:
+                        updates += 1
+                        losses.append((loss, 0.0, 0.0))
+            elif winners is not None:
                 # Only the winning side teaches, and only "this move is even better".
                 if r["winner_packed"] is not None:
                     winners.add(SequenceEpisode(packed=r["winner_packed"], lost=False, terminated=True,

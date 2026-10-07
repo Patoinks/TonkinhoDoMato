@@ -113,6 +113,7 @@ class Claudio:
         self.rng = rng or np.random.default_rng()
         self.king_model = king_model
         self.clock = None               # {section: seconds} when profiling
+        self.trace = None               # a list: what its own calculation found, to learn from (train_grande)
         self.spread = self.cfg.value_spread_ref   # its own running spread of move values (kept across games)
         self.reset()
 
@@ -257,7 +258,7 @@ class Claudio:
         except RuntimeError:
             return gains
 
-    def _replies(self, fast, codes, me, after, values, scores, known, earlier, centre, stretch):
+    def _replies(self, fast, codes, me, after, values, scores, known, earlier, centre, stretch, encoded=None):
         """The best candidates judged one reply further: the network's value of the position after
         each answer of the opponent - its worst one ("min"), or weighted by Claudio's own prediction
         of the opponent's move ("expect"). Game-ending replies have their exact value. Only the order
@@ -295,6 +296,8 @@ class Claudio:
             for j, value in ends.items():
                 part[j] = value
             parts.append(part)
+        if self.trace is not None and encoded is not None:
+            self._remember(top, parts, chances, values, encoded, centre, stretch)
         if cfg.reply_depth >= 3:
             self._own_answers(fast, codes, top, replies_of, parts, fixed, chances, firsts, later, me, earlier,
                               centre, stretch)
@@ -305,6 +308,22 @@ class Claudio:
         plain = deeper > LOSS / 2          # a reply that mates is not part of the level
         shift = float(np.mean(values[top][plain] - deeper[plain])) if plain.any() else 0.0
         scores[top] += cfg.reply_weight * (deeper + shift - values[top])
+
+    def _remember(self, top, parts, chances, values, encoded, centre, stretch):
+        """What learning reads (train_grande --learn search): for the best candidates, the value one reply
+        further (its own network, the replies weighted as in the search), at the candidates' mean level,
+        as a target for its intuition. A candidate the opponent can answer with mate: 0."""
+        deeper = np.array([part.min() if chances is None or part.min() <= LOSS / 2 else chances[k] @ part
+                           for k, part in enumerate(parts)])
+        top = np.asarray(top)
+        plain = deeper > LOSS / 2
+        if not plain.any():
+            return
+        level = deeper + float(np.mean(values[top][plain] - deeper[plain]))
+        level = centre + (level - centre) / max(stretch, 1e-9)       # back to the network's own scale
+        targets = np.where(plain, np.clip(level, 0.0, 1.0), 0.0).astype(np.float32)
+        memory = (self.memory if self.cfg.memory else self.net.initial_memory(1)).numpy()
+        self.trace.append((encoded[top], np.repeat(memory, len(top), 0).astype(np.float16), targets))
 
     def _own_answers(self, fast, codes, top, replies_of, parts, fixed, chances, firsts, later, me, earlier,
                      centre, stretch):
@@ -446,7 +465,7 @@ class Claudio:
 
         # One reply further with its own intuition, for the best candidates.
         if cfg.reply_top > 0:
-            self._replies(fast, codes, me, after, values, scores, known, earlier, centre, stretch)
+            self._replies(fast, codes, me, after, values, scores, known, earlier, centre, stretch, encoded)
             self._lap("replies")
 
         # Calculation: the best candidates first, together.
