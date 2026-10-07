@@ -41,7 +41,8 @@ O Claudio corre numa cópia congelada do código do TonkAI (`claudio/base`, com 
 
 | Ficheiro | O quê |
 |---|---|
-| `claudio/claudio-grande-g0-respostas.pt` | **o melhor até hoje** (2026-10-07): os pesos do g0 com `reply_top=6 reply_mode=expect` ligado |
+| `claudio/claudio-grande-g0-forte.pt` | **o melhor até hoje** (2026-10-07): os pesos do g0 com respostas + `tactic_depth=5` (~60 ms/lance) |
+| `claudio/claudio-grande-g0-respostas.pt` | os pesos do g0 com `reply_top=6 reply_mode=expect` (rápido, ~14 ms/lance) |
 | `claudio/claudio-grande-g0.pt` | a melhor rede. Rede crescida (Net2Net, 254k→810k parâmetros) |
 | `claudio/claudio.pt` | o Claudio do duelo com o Gepeto |
 | `claudio/train-1550/claudio-grande-last.pt` | "Este (treino 1550)", usado na fase de grupos |
@@ -185,6 +186,13 @@ respostas 1/3/6, `tactic_depth=7` + `reply_depth=3` 0/1/9, **`tactic_depth=7` 2/
 | **respostas + `tactic_depth=5`** | **61/86/253** | **15,2%** | **26,0%** | **~1620** |
 
 +8,5 ± 4,3 pp de vitórias vs respostas (z = 3,9). Para 1800 faltam ~180 Elo (50% dos pontos).
+Esta versão está em `claudio-grande-g0-forte.pt`.
+
+Afinações em cima de respostas + `tactic_depth=5` (Fairy 1700, 600 jogos; td5 = 32,7%):
+`tactic_top=6` 33,0% (+0,3), `reply_top=10` 32,7% (0), `exchange_depth=7` 32,3% (−0,3),
+`tactic_rounds=16` 35,0% (+2,3), `tactic_rounds=8` 38,2% (+5,5 ± 5,1, z = 2,1) - mas contra
+Stockfish 1800 (400 jogos) `tactic_rounds=8` deu 11,2% (45/84/271) vs 15,2%: −4,0 ± 4,7. Era
+sorte (4 testes, um com z = 2 é de esperar). Nenhuma destas fica.
 
 Treino autorizado pelo Martim (2026-10-07, só na nuvem): `train_grande.py --learn search`
 (aprende com o próprio cálculo, estilo TD-Leaf; ver o docstring). Contra Fairy 1700, `--lr 5e-5
