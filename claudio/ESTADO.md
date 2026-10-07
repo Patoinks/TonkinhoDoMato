@@ -197,6 +197,14 @@ sorte (4 testes, um com z = 2 é de esperar). Nenhuma destas fica.
 `tactic_depth=6` contra Stockfish 1800 (400 jogos): 13,0% (52/85/263), 23,6% dos pontos, vs td5
 15,2%: −2,2 ± 4,5, e 283 ms/lance. Mais fundo que 5 já não rende: o cálculo de material está esgotado.
 
+`leaf_weight` (opção nova: a rede no fim da linha principal do cálculo de material, cortada à vez
+do adversário), Fairy 1700, 600 jogos, sobre o forte (32,7%): peso 1 → 18,8% (−13,8 ± 4,7),
+peso 0,5 → 31,7% (−1,0 ± 5,4). Piora, como o `reply_depth=3`: **a rede não julga bem posições mais
+fundas que 2 meios-lances** (ou no meio de trocas, ou com a memória sem ver a linha). Desligado.
+
+Conclusão (2026-10-07): o cálculo à volta da rede rendeu ~+120 Elo (g0 ~1500 → forte ~1620 na
+escala do Stockfish 1800) e parou. O que falta para 1800 é uma rede melhor.
+
 Treino autorizado pelo Martim (2026-10-07, só na nuvem): `train_grande.py --learn search`
 (aprende com o próprio cálculo, estilo TD-Leaf; ver o docstring). Contra Fairy 1700, `--lr 5e-5
 --anchor 1e-3 --updates 2 --search-rows 512`, parou aos 3100 jogos (limite de tempo da sessão).
