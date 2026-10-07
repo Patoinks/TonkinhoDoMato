@@ -129,8 +129,13 @@ Emparelhado jogo a jogo contra o g0 (95%): **6/expect +9,7 ± 5,6 pp (z = 3,4)**
 (Os ms/lance das 3 do meio foram medidos com a máquina mais carregada.)
 
 Contra Stockfish 1800 (400 jogos, `results/engine-nuvem-sf1800-*.json`): g0 5,5% (22/77/301),
-6/expect 6,75% (27/69/304): +1,2 ± 3,4 pp, sem diferença visível. Contra um adversário
-muito mais forte o que falta não é isto.
+6/expect 6,75% (27/69/304): +1,2 ± 3,4 pp, sem diferença visível (o g0 quase nunca ganha ali).
+
+Contra Fairy 1700 (600 jogos, `--seed 1700`): g0 17,5% (105/129/366), 6/expect **23,5%**
+(141/109/350): **+6,0 ± 4,7 pp (z = 2,5)**. O ganho mantém-se contra um adversário mais forte.
+
+Peso das respostas (`reply_weight`, Fairy 1450, 6/expect): 0,5 → 57,2% (+3,7 ± 5,3 vs g0);
+**1 → 63,2%**; 2 → 53,3% (−0,2 ± 5,5 vs g0; −9,8 ± 5,5 vs peso 1). O peso 1 é o certo.
 Menos derrotas por mate (172 → 144) e menos repetições (90 → 56). O g0 aqui deu o mesmo
 que no PC (53,5% vs 55/54,5%), por isso a nuvem mede igual.
 
