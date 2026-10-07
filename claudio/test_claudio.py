@@ -79,7 +79,16 @@ def test_replies_keep_the_choice_legal_and_off_changes_nothing():
             continue
         assert player(reply_top=6).choose(board) in board.legal_moves
         assert player(reply_top=6, reply_mode="expect", reply_depth=3).choose(board) in board.legal_moves
+        assert player(reply_top=6, reply_mode="expect", leaf_weight=1.0).choose(board) in board.legal_moves
         assert player(reply_top=0).choose(board) == player().choose(board)
+
+
+def test_leaf_value_still_never_leaves_its_queen_to_a_pawn():
+    board = chess.Board("4k3/8/8/8/2p5/3Q4/8/4K3 w - - 0 1")      # ...c4 attacks the queen on d3
+    move = player(mate_attack=0, leaf_weight=1.0, tactic_depth=5).choose(board)
+    fast = fast_rules.board(board)
+    loss = fast.exchange_after_moves([fast_rules.code(move)], [0, 1, 3, 3, 5, 9], 5, 200_000)[0]
+    assert (1.0 if board.is_capture(move) else 0.0) - loss >= 0
 
 
 def test_does_not_leave_its_queen_to_a_pawn():

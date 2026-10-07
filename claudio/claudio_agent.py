@@ -46,6 +46,8 @@ class ClaudioConfig:
     root_pvs: bool = True           # ...each only as far as needed to know if it is the best
     tactic_rounds: int = 4          # how many times a new intended move may be checked (lazy)
     tactic_nodes: int = 2_000_000
+    leaf_weight: float = 0.0        # >0: the network's value where the calculated main line ends replaces, by this
+                                    # share, its value right after the move (the line cut to the opponent's turn)
     reply_top: int = 0              # >0: the best n candidates are also judged after each opponent reply (own network)
     reply_weight: float = 1.0       # share of that 2-ply value in those candidates' value (their level is kept)
     reply_mode: str = "min"         # "min": the reply worst for Claudio; "expect": weighted by its own prediction
@@ -176,14 +178,39 @@ class Claudio:
             gain += self.values[move.promotion] - self.values[chess.PAWN]
         return gain
 
-    def _deep(self, codes):
-        """What the opponent wins by force after each move (4 half-moves), NaN if aborted."""
+    def _deep_lines(self, codes):
+        """What the opponent wins by force after each move (tactic_depth half-moves, NaN if aborted),
+        and the main line after each move (empty when aborted)."""
         cfg = self.cfg
         try:
-            return [loss for loss, _ in self.fast.deep_after_moves(codes, self.values, cfg.tactic_depth,
-                                                                   cfg.exchange_depth, cfg.tactic_nodes, True)]
+            found = self.fast.deep_after_moves(codes, self.values, cfg.tactic_depth, cfg.exchange_depth,
+                                               cfg.tactic_nodes, True)
+            return [loss for loss, _ in found], [line for _, line in found]
         except RuntimeError:
-            return [float("nan")] * len(codes)
+            return [float("nan")] * len(codes), [[] for _ in codes]
+
+    def _leaf(self, indices, codes, lines, scores):
+        """The network's value where each calculated main line ends - cut to an even length, so the
+        opponent is to move as right after the move - replaces, by leaf_weight, the value right after it.
+        The calculation counts material; this lets it also see the position its line leads to."""
+        after, values, centre, stretch, me = self._leafing
+        fast, rows, which = self.fast, [], []
+        for index, line in zip(indices, lines):
+            line = list(line)[:len(line) // 2 * 2]
+            if not line:
+                continue
+            fast.push(codes[index])
+            fast.push_many(line)
+            rows.append(np.asarray(fast.encode_here(me), dtype=np.float32))
+            for _ in range(len(line) + 1):
+                fast.pop()
+            which.append(index)
+        if not rows:
+            return
+        memory = after[which] if self.cfg.memory else self.net.initial_memory(1)
+        contexts, _ = self.net.candidates(torch.from_numpy(np.stack(rows)), memory)
+        for index, value in zip(which, self._value(contexts, centre, stretch)):
+            scores[index] += self.cfg.leaf_weight * (value - values[index])
 
     def _recount(self, index, loss, gains, nets, scores):
         if loss == loss:
@@ -420,6 +447,7 @@ class Claudio:
             centre, stretch = float(values.mean()), cfg.value_spread_ref / max(self.spread, 1e-6)
             values = centre + (values - centre) * stretch
         scores = values.copy()
+        self._leafing = (after, values, centre, stretch, me) if cfg.leaf_weight else None
         self._lap("network")
         if cfg.king_weight and self.king_model is not None:
             enemy = fast_rules.encode_after_moves(fast, codes, not me)
@@ -471,12 +499,15 @@ class Claudio:
         # Calculation: the best candidates first, together.
         if nets is not None and cfg.tactic_depth > 0 and cfg.tactic_top > 1:
             top = [int(i) for i in np.argsort(scores)[::-1] if not known[i]][:cfg.tactic_top]
-            if cfg.root_pvs and top:
+            if cfg.root_pvs and top and not cfg.leaf_weight:
                 self._root(top, codes, gains, nets, scores, known)
             else:
-                for index, loss in zip(top, self._deep([codes[i] for i in top])):
+                losses, lines = self._deep_lines([codes[i] for i in top])
+                for index, loss in zip(top, losses):
                     self._recount(index, loss, gains, nets, scores)
                     known[index] = True     # calculated: not again
+                if cfg.leaf_weight:
+                    self._leaf(top, codes, lines, scores)
             self._lap("tactic")
 
         # Check the move it intends to play, then the next one if that fails.
@@ -504,7 +535,10 @@ class Claudio:
                 continue
             if not known[best] and nets is not None and cfg.tactic_depth > 0 and rounds < cfg.tactic_rounds:
                 rounds += 1
-                self._recount(best, self._deep([code])[0], gains, nets, scores)
+                losses, lines = self._deep_lines([code])
+                self._recount(best, losses[0], gains, nets, scores)
+                if cfg.leaf_weight:
+                    self._leaf([best], codes, lines, scores)
                 self._lap("tactic")
             if scores[best] >= before - 1e-12 or int(np.argmax(scores)) == best:
                 return moves[best]
