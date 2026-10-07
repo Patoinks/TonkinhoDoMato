@@ -41,7 +41,8 @@ O Claudio corre numa cópia congelada do código do TonkAI (`claudio/base`, com 
 
 | Ficheiro | O quê |
 |---|---|
-| `claudio/claudio-grande-g0.pt` | **o melhor até hoje.** Rede crescida (Net2Net, 254k→810k parâmetros) |
+| `claudio/claudio-grande-g0-respostas.pt` | **o melhor até hoje** (2026-10-07): os pesos do g0 com `reply_top=6 reply_mode=expect` ligado |
+| `claudio/claudio-grande-g0.pt` | a melhor rede. Rede crescida (Net2Net, 254k→810k parâmetros) |
 | `claudio/claudio.pt` | o Claudio do duelo com o Gepeto |
 | `claudio/train-1550/claudio-grande-last.pt` | "Este (treino 1550)", usado na fase de grupos |
 | `checkpoints/obj-max-continuo/latest.pt` | o Timdgei (o TonkAI de referência; o treino lê a config e o replay dele) |
@@ -153,3 +154,30 @@ duelo de tempo. Por decidir com o Martim: ligar por omissão / num checkpoint pr
 - Taxa de aprendizagem muito menor / menos updates por jogo, parando no primeiro sinal
   de descida (a avaliação a cada 250 já guarda o melhor).
 - Aprender só quando a revisão e o resultado concordam (lance mau num jogo perdido).
+
+## Rumo a 1800 (2026-10-07, nuvem)
+
+Meta do Martim: rating 1800 (referência: Stockfish 11 a `UCI_Elo` 1800, 2 ms por lance). Medições
+contra Fairy 1700 (mais sensível: o g0 ganha 17,5%), 600 jogos, mesmas aberturas (`--seed 1700`),
+checkpoint `claudio-grande-g0-respostas.pt` + `--set`:
+
+| Versão | Winrate | vs base (95%) | ms/lance |
+|---|---|---|---|
+| g0 (sem respostas) | 17,5% | | 7 |
+| **base** (respostas) | 24,5% | | 14 |
+| + `mate_defence=3` | 21,7% | sem ganho | 18 |
+| + `tactic_depth=5` | 32,7% | **+8,2 ± 5,0** | 59 |
+| + `tactic_depth=6` | **35,8%** | **+11,3 ± 5,0** (vs td5 +3,2 ± 5,0) | 291 |
+| + `tactic_depth=5 reply_depth=3` | 17,8% | −14,8 ± 4,9 vs td5: **o 3.º meio-lance estraga** | 128 |
+
+`tactic_depth` (cálculo de material depois do lance pensado) é o que mais rende; 7 já custa ~1 s por
+lance. O `reply_depth=3` (opção nova) piora: provavelmente conta o material duas vezes (as trocas
+já entram na raiz) e o máximo sobre ~35 respostas próprias é otimista. Fica desligado.
+
+Contra Stockfish 1800, as mesmas 10 aberturas (`--seed 1800`, ±30 pp, só indicativo): g0 0/2/8,
+respostas 1/3/6, `tactic_depth=7` + `reply_depth=3` 0/1/9, **`tactic_depth=7` 2/0/8** (1,2 s/lance).
+400 jogos de respostas + `tactic_depth=5` contra Stockfish 1800 em fila.
+
+Treino autorizado pelo Martim (2026-10-07, só na nuvem): `train_grande.py --learn search`
+(aprende com o próprio cálculo, estilo TD-Leaf; ver o docstring). A correr: 6000 jogos contra
+Fairy 1700, avaliação de 300 jogos a cada 500, `claudio/train-busca/`.
