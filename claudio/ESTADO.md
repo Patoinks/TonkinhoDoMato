@@ -176,7 +176,15 @@ já entram na raiz) e o máximo sobre ~35 respostas próprias é otimista. Fica 
 
 Contra Stockfish 1800, as mesmas 10 aberturas (`--seed 1800`, ±30 pp, só indicativo): g0 0/2/8,
 respostas 1/3/6, `tactic_depth=7` + `reply_depth=3` 0/1/9, **`tactic_depth=7` 2/0/8** (1,2 s/lance).
-400 jogos de respostas + `tactic_depth=5` contra Stockfish 1800 em fila.
+**400 jogos contra Stockfish 1800** (`--seed 1800`, mesmas aberturas):
+
+| Versão | V/E/D | Winrate | Pontos (empate ½) | ~Elo (escala SF 1800) |
+|---|---|---|---|---|
+| g0 | 22/77/301 | 5,5% | 15,1% | ~1500 |
+| respostas | 27/69/304 | 6,75% | 15,4% | ~1500 |
+| **respostas + `tactic_depth=5`** | **61/86/253** | **15,2%** | **26,0%** | **~1620** |
+
++8,5 ± 4,3 pp de vitórias vs respostas (z = 3,9). Para 1800 faltam ~180 Elo (50% dos pontos).
 
 Treino autorizado pelo Martim (2026-10-07, só na nuvem): `train_grande.py --learn search`
 (aprende com o próprio cálculo, estilo TD-Leaf; ver o docstring). Contra Fairy 1700, `--lr 5e-5
