@@ -21,6 +21,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
+- Claude (nuvem) | claudio/claudio-grande-g0-respostas.pt, claudio/claudio_agent.py, claudio/test_claudio.py, claudio/ESTADO.md, claudio/results/engine-nuvem-* | checkpoint com respostas ligadas + mais calculo organico (rumo a 1800) | 2026-10-07
 
 
 ## Pedidos

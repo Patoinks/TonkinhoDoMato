@@ -57,11 +57,11 @@ def test_never_plays_a_move_that_allows_mate():
     assert fast.forced_mate(False, 1, 20_000)[0] == 0
 
 
-@pytest.mark.parametrize("mode", ["min", "expect"])
-def test_replies_alone_see_a_mate_in_one(mode):
+@pytest.mark.parametrize("mode,depth", [("min", 2), ("expect", 2), ("min", 3), ("expect", 3)])
+def test_replies_alone_see_a_mate_in_one(mode, depth):
     # No mate defence: only the look one reply further can see that ...Qxg2# is coming.
     board = chess.Board("6k1/1b3ppp/8/8/8/6q1/5PP1/5RK1 w - - 0 1")
-    move = player(mate_attack=0, mate_defence=0, reply_top=100, reply_mode=mode).choose(board)
+    move = player(mate_attack=0, mate_defence=0, reply_top=100, reply_mode=mode, reply_depth=depth).choose(board)
     board.push(move)
     assert fast_rules.board(board).forced_mate(False, 1, 20_000)[0] == 0
 
@@ -78,6 +78,7 @@ def test_replies_keep_the_choice_legal_and_off_changes_nothing():
         if board.is_game_over():
             continue
         assert player(reply_top=6).choose(board) in board.legal_moves
+        assert player(reply_top=6, reply_mode="expect", reply_depth=3).choose(board) in board.legal_moves
         assert player(reply_top=0).choose(board) == player().choose(board)
 
 

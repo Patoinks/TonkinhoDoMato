@@ -49,6 +49,8 @@ class ClaudioConfig:
     reply_top: int = 0              # >0: the best n candidates are also judged after each opponent reply (own network)
     reply_weight: float = 1.0       # share of that 2-ply value in those candidates' value (their level is kept)
     reply_mode: str = "min"         # "min": the reply worst for Claudio; "expect": weighted by its own prediction
+    reply_depth: int = 2            # 3: also its own best answer to the replies it expects most
+    reply_branch: int = 3           # depth 3: replies per candidate it answers (most expected, or the worst)
     mate_defence: int = 2           # opponent's forced mate within n, checked on the intended move
     mate_attack: int = 3            # own forced mates within n
     mate_gate: float = 0.0          # >0: beyond 2 moves only when the learned KS of the enemy king is below this
@@ -213,57 +215,143 @@ class Claudio:
         for index in beaten:
             scores[index] = min(scores[index], best_score - 1e-9)
 
+    def _endings(self, fast, moves, me, earlier):
+        """{index: exact value} of the moves (from the position on `fast`) that end the game or go back
+        to a position of this game (a draw: the opponent can simply repeat)."""
+        cfg, ends = self.cfg, {}
+        for j, move in enumerate(moves):
+            fast.push(move)
+            ending = fast.terminal_strict()
+            if ending == fast_rules.DRAW:
+                ends[j] = cfg.draw_value
+            elif ending != fast_rules.NONE:
+                ends[j] = WIN if (ending == fast_rules.WHITE_WINS) == me else LOSS
+            elif earlier is not None and _key(fast) in earlier:
+                ends[j] = cfg.draw_value
+            fast.pop()
+        return ends
+
+    def _value(self, contexts, centre, stretch):
+        heads, _ = self.net.survival(contexts)
+        out = (heads.mean(-1) if self.head is None else heads[:, self.head]).numpy().astype(np.float64)
+        return centre + (out - centre) * stretch
+
+    def _material(self, fast, moves):
+        """Each move's capture gain minus what the opponent then wins back by force (its own values)."""
+        cfg = self.cfg
+        kinds = [0] * 64
+        for square, kind, _ in fast.pieces():
+            kinds[square] = kind
+        gains = np.zeros(len(moves))
+        for j, code in enumerate(moves):
+            frm, to, promotion = code & 63, (code >> 6) & 63, code >> 12
+            if kinds[to]:
+                gains[j] = self.values[kinds[to]]
+            elif kinds[frm] == chess.PAWN and (frm - to) % 8:
+                gains[j] = self.values[chess.PAWN]          # en passant
+            if promotion:
+                gains[j] += self.values[promotion] - self.values[chess.PAWN]
+        try:
+            return gains - np.asarray(fast.exchange_after_moves(moves, self.values, cfg.exchange_depth,
+                                                                cfg.exchange_nodes))
+        except RuntimeError:
+            return gains
+
     def _replies(self, fast, codes, me, after, values, scores, known, earlier, centre, stretch):
         """The best candidates judged one reply further: the network's value of the position after
         each answer of the opponent - its worst one ("min"), or weighted by Claudio's own prediction
         of the opponent's move ("expect"). Game-ending replies have their exact value. Only the order
-        of these candidates among themselves changes: their mean level is kept."""
+        of these candidates among themselves changes: their mean level is kept.
+
+        reply_depth=3: after the replies it expects most ("min": the worst ones), also its own best
+        answer, judged as at the root (network value + the exact capture sequence)."""
         cfg = self.cfg
         top = [int(i) for i in np.argsort(scores)[::-1] if not known[i]][:cfg.reply_top]
         if len(top) < 2:
             return
-        rows, sizes, fixed = [], [], []
+        rows, sizes, fixed, replies_of = [], [], [], []
         for index in top:
             fast.push(codes[index])
             replies = list(fast.legal_moves())
-            ends = {}
-            for j, reply in enumerate(replies):
-                fast.push(reply)
-                ending = fast.terminal_strict()
-                if ending == fast_rules.DRAW:
-                    ends[j] = cfg.draw_value
-                elif ending != fast_rules.NONE:
-                    ends[j] = WIN if (ending == fast_rules.WHITE_WINS) == me else LOSS
-                elif earlier is not None and _key(fast) in earlier:
-                    ends[j] = cfg.draw_value
-                fast.pop()
+            fixed.append(self._endings(fast, replies, me, earlier))
             rows.append(fast_rules.encode_after_moves(fast, replies, me))
             fast.pop()
             sizes.append(len(replies))
-            fixed.append(ends)
+            replies_of.append(replies)
         if cfg.memory:
             memory = torch.cat([after[i:i + 1].expand(n, -1) for i, n in zip(top, sizes)])
         else:
             memory = self.net.initial_memory(1)
-        contexts, _ = self.net.candidates(torch.from_numpy(np.concatenate(rows)), memory)
-        heads, _ = self.net.survival(contexts)
-        answers = (heads.mean(-1) if self.head is None else heads[:, self.head]).numpy().astype(np.float64)
-        answers = centre + (answers - centre) * stretch
-        guesses = self.net.predict_logits(contexts).split(sizes) if cfg.reply_mode == "expect" else None
-        deeper, start = [], 0
-        for k, (n, ends) in enumerate(zip(sizes, fixed)):
-            part = answers[start:start + n].copy()
-            start += n
+        contexts, later = self.net.candidates(torch.from_numpy(np.concatenate(rows)), memory)
+        answers = self._value(contexts, centre, stretch)
+        chances = None
+        if cfg.reply_mode == "expect":
+            chances = [part.softmax(0).numpy().astype(np.float64)
+                       for part in self.net.predict_logits(contexts).split(sizes)]
+        firsts = np.concatenate([[0], np.cumsum(sizes)[:-1]]).astype(int)
+        parts = []
+        for k, ends in enumerate(fixed):
+            part = answers[firsts[k]:firsts[k] + sizes[k]].copy()
             for j, value in ends.items():
                 part[j] = value
-            if guesses is None:
-                deeper.append(float(part.min()))
-            else:
-                deeper.append(float(guesses[k].softmax(0).numpy().astype(np.float64) @ part))
-        top, deeper = np.asarray(top), np.asarray(deeper)
+            parts.append(part)
+        if cfg.reply_depth >= 3:
+            self._own_answers(fast, codes, top, replies_of, parts, fixed, chances, firsts, later, me, earlier,
+                              centre, stretch)
+        # A reply that mates is a known result: it decides, however unlikely Claudio thinks the move is.
+        deeper = np.array([part.min() if chances is None or part.min() <= LOSS / 2 else chances[k] @ part
+                           for k, part in enumerate(parts)])
+        top = np.asarray(top)
         plain = deeper > LOSS / 2          # a reply that mates is not part of the level
         shift = float(np.mean(values[top][plain] - deeper[plain])) if plain.any() else 0.0
         scores[top] += cfg.reply_weight * (deeper + shift - values[top])
+
+    def _own_answers(self, fast, codes, top, replies_of, parts, fixed, chances, firsts, later, me, earlier,
+                     centre, stretch):
+        """Third half-move: Claudio's best answer to the replies it expects most (or the worst ones).
+        The replies not looked at keep their value, moved by the candidate's mean change."""
+        cfg = self.cfg
+        picks, rows, sizes, ends_of, nets_of = [], [], [], [], []
+        for k, index in enumerate(top):
+            order = np.argsort(-chances[k]) if chances is not None else np.argsort(parts[k])
+            chosen = [int(j) for j in order if int(j) not in fixed[k]][:cfg.reply_branch]
+            for j in chosen:
+                fast.push(codes[index])
+                fast.push(replies_of[k][j])
+                mine = list(fast.legal_moves())
+                if mine:
+                    picks.append((k, j))
+                    ends_of.append(self._endings(fast, mine, me, earlier))
+                    nets_of.append(self._material(fast, mine) if cfg.safety_weight else np.zeros(len(mine)))
+                    rows.append(fast_rules.encode_after_moves(fast, mine, me))
+                    sizes.append(len(mine))
+                fast.pop()
+                fast.pop()
+        if not picks:
+            return
+        if cfg.memory:
+            memory = torch.cat([later[firsts[k] + j:firsts[k] + j + 1].expand(n, -1)
+                                for (k, j), n in zip(picks, sizes)])
+        else:
+            memory = self.net.initial_memory(1)
+        contexts, _ = self.net.candidates(torch.from_numpy(np.concatenate(rows)), memory)
+        values = self._value(contexts, centre, stretch)
+        best, start = {}, 0
+        for (k, j), n, ends, nets in zip(picks, sizes, ends_of, nets_of):
+            own = values[start:start + n] + cfg.safety_weight * np.tanh(nets / 3.0)
+            start += n
+            for a, value in ends.items():
+                own[a] = value
+            best.setdefault(k, {})[j] = float(own.max())
+        for k, found in best.items():
+            moves = [(j, value - parts[k][j]) for j, value in found.items() if abs(value) < WIN / 2]
+            change = float(np.mean([d for _, d in moves])) if moves else 0.0
+            rest = np.ones(len(parts[k]), dtype=bool)
+            rest[list(fixed[k])] = False
+            rest[list(found)] = False
+            parts[k][rest] += change
+            for j, value in found.items():
+                parts[k][j] = value
 
     @torch.inference_mode()
     def choose(self, board: chess.Board) -> chess.Move:
