@@ -1179,6 +1179,24 @@ public:
         if (repetition(3)) return 0;
         return -1;
     }
+    // Exactly terminal_strict() after each candidate, including real game history.
+    // Keep push/pop inside C++ instead of crossing the Python boundary twice
+    // per candidate (especially for the reply search's ~200 positions).
+    std::vector<int> terminal_after_moves(const std::vector<int>& codes) {
+        std::vector<int> results;
+        results.reserve(codes.size());
+        for (int code : codes) {
+            push(code);
+            try {
+                results.push_back(terminal_strict());
+            } catch (...) {
+                pop();
+                throw;
+            }
+            pop();
+        }
+        return results;
+    }
 
     std::pair<double, double> king_risks() const {
         auto rows = king_senses(pos);
@@ -1778,6 +1796,7 @@ PYBIND11_MODULE(claudio_fast, m) {
         .def_property_readonly("ply", &Board::ply)
         .def("terminal", &Board::terminal)
         .def("terminal_strict", &Board::terminal_strict)
+        .def("terminal_after_moves", &Board::terminal_after_moves, py::arg("codes"))
         .def("king_risks", &Board::king_risks)
         .def("king_detail", &Board::king_detail)
         .def("piece_risks", &Board::piece_risks_py, py::arg("values"), py::arg("promotion"), py::arg("tolerance"),
