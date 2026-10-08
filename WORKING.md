@@ -21,7 +21,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
-- ChatGPT GPT-6 | claudio/fast/claudio_fast.cpp, claudio/claudio_agent.py, claudio/test_claudio.py | agrupar avaliações de fim de jogo G16 sem alterar decisões (branch perf/g16-batch-terminal-20261008) | 2026-10-08T07:30+01:00
+- ChatGPT GPT-6 | claudio/fast/claudio_fast.cpp, claudio/claudio_agent.py, claudio/test_claudio.py, claudio/bench_terminal_batch.py | agrupar avaliações de fim de jogo G16 sem alterar decisões (branch perf/g16-batch-terminal-20261008) | 2026-10-08T07:30+01:00
 
 ## Pedidos
 
