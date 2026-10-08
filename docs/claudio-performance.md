@@ -70,3 +70,48 @@ nem treinar automaticamente.
 
 Resultados e scripts de reprodução deste ensaio foram guardados na pasta
 `Documents/Codex/2026-10-08/b/outputs` e em `work`, respetivamente.
+
+# Claudio G16 3,8× mais rápido, lances idênticos (Claude na nuvem, 2026-10-08)
+
+Base: os PRs #1–#3 do ChatGPT (merge `0f9d3d2`), autorizado pelo Martim. Só o C++ mudou
+(`claudio/fast/claudio_fast.cpp`); a rede, o Python e as definições do G16 ficaram iguais.
+
+## Medição (ABBA, mesmo núcleo, 1 thread, `claudio/bench_velocidade.py`)
+
+| G16, jogos 0–6 do BO30 (1497 decisões) | C++ original `d5e6fda` | Agora |
+|---|---:|---:|
+| ms por decisão | 168,1 | 44,5 |
+| s por jogo | 41,9 | 11,1 |
+| jogos/s por núcleo | 0,024 | 0,090 |
+| lances diferentes (8 execuções) | – | 0 |
+
+Os 30 jogos completos (5848 decisões) também deram 0 lances diferentes. Instruções do motor
+(callgrind, 260 chamadas reais): original 33,8 mil milhões, PRs #1–#3 23,7, agora 8,8.
+Números em `claudio/results/velocidade-g16.json`.
+
+## Alterações (todas devolvem exatamente o mesmo: valores, ordem dos lances, linhas, nós)
+
+- Legalidade pelas cravações e xeques (`Pos::guard`/`legal_by`), sem fazer o lance; roque e en
+  passant continuam a fazê-lo. `any_legal` tenta primeiro os passos do rei.
+- `type_at` sem ciclo, `attacked()` com saída antecipada, `make()` sabendo que peça está em cada casa.
+- Quiescência: se "não capturar" já chega ao beta, devolve 0 sem gerar capturas.
+- Pesquisa funda: ordenação preguiçosa (o 1.º lance por seleção, o resto só se o nó precisar), e na
+  fronteira um sucessor que não pode estar em xeque e corta logo conta os seus 2 nós sem ser feito.
+- Mates: geração preguiçosa (pára no primeiro lance que resolve), sem alocações, e no último lance só
+  se fazem lances que podem dar xeque (filtro conservador: descobertos, linhas livres, cavalo/peão).
+- Geração de lances num buffer da pilha (até 16 peças por lado; acima disso, a forma antiga).
+
+## Verificação
+
+- `claudio/test_fast_exactness.py`: respostas gravadas do C++ original em 281 posições (jogos reais
+  do G16, aleatórias, especiais e ilegais), 6171 chamadas + contagens exatas de nós. Três versões
+  sabotadas de propósito falham o teste. Gravar outra vez: `--record --build PASTA`.
+- Caça adversarial com 6 agentes: só diferenças em tabuleiros impossíveis (dois reis da mesma cor,
+  en passant sem peão, xeque duplo resolvido por en passant de um cavalo), todas corrigidas.
+  Pré-condição que fica: cada casa tem no máximo uma peça e uma cor (o que o python-chess garante).
+
+## No PC (Windows/MSVC)
+
+    cd claudio\fast; python setup.py build_ext --inplace --force; cd ..\..
+    python -m pytest claudio/test_fast_exactness.py -q
+    python claudio/bench_velocidade.py --a git:d5e6fda --b claudio/fast --games 0:6 --rounds 2

@@ -1,0 +1,68 @@
+{
+ "what": "G16 (claudio-g16.pt) deciding at every ply of the BO30 G16 vs G15-100 games 0-6; ABBA, one core, one thread",
+ "original_d5e6fda_vs_v7": {
+  "decisions": 1497,
+  "different_moves": 0,
+  "rounds": 2,
+  "builds": {
+   "A": {
+    "seconds_per_run": [
+     249.04119876100958,
+     248.24414446799165,
+     249.09115329602537,
+     260.2531531129971
+    ],
+    "ms_per_decision": 168.10782392084565,
+    "seconds_per_game": 41.94290206825099,
+    "games_per_second_one_core": 0.023841936315535925
+   },
+   "B": {
+    "seconds_per_run": [
+     66.32627923700602,
+     67.08601746896238,
+     66.22700289399108,
+     66.5664825200056
+    ],
+    "ms_per_decision": 44.45654344020792,
+    "seconds_per_game": 11.091907588331878,
+    "games_per_second_one_core": 0.09015581783713643
+   }
+  },
+  "speedup_b_over_a": 3.7813966384260893
+ },
+ "v7_vs_final": {
+  "decisions": 1497,
+  "different_moves": 0,
+  "rounds": 1,
+  "builds": {
+   "A": {
+    "seconds_per_run": [
+     65.51807170198481,
+     67.49465599697032
+    ],
+    "ms_per_decision": 44.42642875716604,
+    "seconds_per_game": 11.084393974912928,
+    "games_per_second_one_core": 0.09021693042157096
+   },
+   "B": {
+    "seconds_per_run": [
+     66.9210776649852,
+     66.23984889399617
+    ],
+    "ms_per_decision": 44.475927374409274,
+    "seconds_per_game": 11.096743879915115,
+    "games_per_second_one_core": 0.0901165252457507
+   }
+  },
+  "speedup_b_over_a": 0.9988870694740879
+ },
+ "full_replay_30_games": {
+  "decisions": 5848,
+  "different_moves_vs_original": 0
+ },
+ "instructions_callgrind_260_calls": {
+  "original": 33774354899,
+  "prs_1_3": 23683766364,
+  "final": 8846517066
+ }
+}

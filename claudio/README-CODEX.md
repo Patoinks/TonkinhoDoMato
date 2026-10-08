@@ -244,6 +244,9 @@ copiar de `results/engine-nuvem-*.json` (campo `list`, chave `game`). Com 600 jo
 ## 9. Notas práticas
 
 - Testes do Claudio: `python -m pytest claudio/test_claudio.py claudio/test_search_learning.py claudio/test_winners.py claudio/test_review.py -q`.
+- Depois de mexer no C++: recompila (`claudio/fast`, `python setup.py build_ext --inplace --force`) e corre
+  `python -m pytest claudio/test_fast_exactness.py -q` (tem de dar exatamente o que o G16 original dava). Velocidade:
+  `python claudio/bench_velocidade.py --a git:d5e6fda --b claudio/fast` (3,8× no G16, ver `docs/claudio-performance.md`).
 - `python -m pytest -q` (repositório) tem uma falha antiga, não do Claudio:
   `tests/test_model.py` reclama dos 1/3/3/5/9 em `tonkai/cognitive_agent.py:945`.
 - Na nuvem: `claudio/setup_cloud.sh` prepara tudo em Linux; o modelo KS e o `evolution.json`

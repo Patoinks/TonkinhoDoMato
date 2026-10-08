@@ -36,6 +36,14 @@
 namespace py = pybind11;
 using U64 = std::uint64_t;
 
+// The small functions every search node calls, always inlined (the compiler's choice changes as
+// the file grows; their results do not depend on it).
+#if defined(_MSC_VER)
+#define HOT __forceinline
+#else
+#define HOT inline __attribute__((always_inline))
+#endif
+
 namespace {
 
 constexpr int BLACK = 0, WHITE = 1;
@@ -116,15 +124,15 @@ struct Tables {
 
 const Tables T;
 
-inline U64 ray_attacks(int d, int s, U64 occupied) {
+HOT U64 ray_attacks(int d, int s, U64 occupied) {
     U64 r = T.ray[d][s], blockers = r & occupied;
     if (blockers) r ^= T.ray[d][d < 4 ? lsb(blockers) : msb(blockers)];
     return r;
 }
-inline U64 rook_attacks(int s, U64 occ) {
+HOT U64 rook_attacks(int s, U64 occ) {
     return ray_attacks(0, s, occ) | ray_attacks(1, s, occ) | ray_attacks(4, s, occ) | ray_attacks(5, s, occ);
 }
-inline U64 bishop_attacks(int s, U64 occ) {
+HOT U64 bishop_attacks(int s, U64 occ) {
     return ray_attacks(2, s, occ) | ray_attacks(3, s, occ) | ray_attacks(6, s, occ) | ray_attacks(7, s, occ);
 }
 
@@ -152,33 +160,27 @@ struct Pos {
     int fullmove = 1;
 
     U64 occupied() const { return occ[0] | occ[1]; }
-    int type_at(int s) const {
-        U64 m = bit(s);
-        if (!(occupied() & m)) return NO_PIECE;
-        for (int t = PAWN; t <= KING; ++t)
-            if (bb[t] & m) return t;
-        return NO_PIECE;
+    // The piece boards are disjoint (a square holds one piece), so the type (P=1 N=2 B=3 R=4 Q=5
+    // K=6) is read bit by bit, without testing each board in turn: the same answer, no branches.
+    HOT int type_at(int s) const {
+        U64 low = bb[PAWN] | bb[BISHOP] | bb[QUEEN], mid = bb[KNIGHT] | bb[BISHOP] | bb[KING],
+            high = bb[ROOK] | bb[QUEEN] | bb[KING];
+        return int((low >> s) & 1) | (int((mid >> s) & 1) << 1) | (int((high >> s) & 1) << 2);
+    }
+    HOT bool single_king(int c) const {     // no king or one: what the shortcuts below assume
+        U64 k = bb[KING] & occ[c];
+        return (k & (k - 1)) == 0;
     }
     int color_at(int s) const { return int((occ[WHITE] >> s) & 1); }
-    int king(int c) const {  // python-chess Board.king: msb of the king mask
+    HOT int king(int c) const {  // python-chess Board.king: msb of the king mask
         U64 k = bb[KING] & occ[c];
         return k ? msb(k) : -1;
     }
-    void remove(int s) {
-        const U64 square = bit(s);
-        // Most successor squares are empty. The old code masked all six
-        // piece boards (and both colours) even then, on every searched ply.
-        // Piece bitboards are disjoint, so only the occupied piece's board
-        // needs clearing. No changes to move ordering or search limits.
-        if (!(occupied() & square)) return;
-        for (int t = PAWN; t <= KING; ++t) {
-            if (bb[t] & square) {
-                bb[t] &= ~square;
-                break;
-            }
-        }
-        occ[0] &= ~square;
-        occ[1] &= ~square;
+    void remove(int s) {             // (make() clears its own two squares at once; this is for the rest)
+        U64 m = ~bit(s);
+        for (int t = PAWN; t <= KING; ++t) bb[t] &= m;
+        occ[0] &= m;
+        occ[1] &= m;
     }
     void put(int type, int colour, int s) {
         remove(s);
@@ -186,14 +188,25 @@ struct Pos {
         occ[colour] |= bit(s);
     }
     // python-chess attackers_mask(color, square, occupied)
-    U64 attackers(int colour, int s, U64 occupied) const {
+    HOT U64 attackers(int colour, int s, U64 occupied) const {
         U64 qr = bb[QUEEN] | bb[ROOK], qb = bb[QUEEN] | bb[BISHOP];
         U64 a = (T.king[s] & bb[KING]) | (T.knight[s] & bb[KNIGHT]) | (rook_attacks(s, occupied) & qr) |
                 (bishop_attacks(s, occupied) & qb) | (T.pawn[colour ^ 1][s] & bb[PAWN]);
         return a & occ[colour];
     }
+    // attackers(colour, s, occupied) != 0: the short-range pieces first, a slider's
+    // rays only when one of its pieces stands on the square's lines at all.
+    HOT bool attacked(int colour, int s, U64 occupied) const {
+        U64 them = occ[colour];
+        if ((T.knight[s] & bb[KNIGHT] & them) || (T.pawn[colour ^ 1][s] & bb[PAWN] & them) ||
+            (T.king[s] & bb[KING] & them))
+            return true;
+        U64 qr = (bb[QUEEN] | bb[ROOK]) & them, qb = (bb[QUEEN] | bb[BISHOP]) & them;
+        if ((qr & (T.file_line[s] | T.rank_line[s])) && (rook_attacks(s, occupied) & qr)) return true;
+        return (qb & T.diag_line[s]) && (bishop_attacks(s, occupied) & qb);
+    }
     // python-chess attacks_mask(square)
-    U64 attacks_mask(int s) const {
+    HOT U64 attacks_mask(int s) const {
         U64 m = bit(s);
         if (m & bb[PAWN]) return T.pawn[color_at(s)][s];
         if (m & bb[KNIGHT]) return T.knight[s];
@@ -222,9 +235,9 @@ struct Pos {
         }
         return ALL;
     }
-    bool is_check() const {
+    HOT bool is_check() const {
         int k = king(turn);
-        return k >= 0 && attackers(turn ^ 1, k, occupied()) != 0;
+        return k >= 0 && attacked(turn ^ 1, k, occupied());
     }
     // python-chess clean_castling_rights (standard chess)
     U64 clean_castling() const {
@@ -235,14 +248,14 @@ struct Pos {
         if (!(occ[BLACK] & bb[KING] & bit(60))) b = 0;
         return w | b;
     }
-    bool is_en_passant(int m) const {
+    HOT bool is_en_passant(int m) const {
         int from = mfrom(m), to = mto(m), diff = std::abs(to - from);
         return ep == to && (bb[PAWN] & bit(from)) && (diff == 7 || diff == 9) && !(occupied() & bit(to));
     }
-    int captured_square(int m) const {
+    HOT int captured_square(int m) const {
         return is_en_passant(m) ? mto(m) + (turn == WHITE ? -8 : 8) : mto(m);
     }
-    bool is_zeroing(int m) const {
+    HOT bool is_zeroing(int m) const {
         U64 touched = bit(mfrom(m)) ^ bit(mto(m));
         return (touched & bb[PAWN]) || (touched & occ[turn ^ 1]);
     }
@@ -256,6 +269,7 @@ struct Pos {
     void make(int m) {
         int from = mfrom(m), to = mto(m), promo = mpromo(m), us = turn, them = us ^ 1;
         int type = type_at(from), previous_ep = ep;
+        int captured = type_at(to);         // (lifting the piece first changes nothing: from != to)
         bool zeroing = is_zeroing(m);
         ++halfmove;
         if (us == BLACK) ++fullmove;
@@ -265,8 +279,18 @@ struct Pos {
         castling &= ~rook_from & ~bit(from);
         if (type == KING) castling &= ~(us == WHITE ? RANK1 : RANK8);
         ep = -1;
-        remove(from);
-        int captured = type_at(to);
+        // remove(from) and the remove(to) inside put(), knowing what stands there.
+        U64 fb = bit(from), tb = bit(to);
+        if (type) {
+            bb[type] &= ~fb;
+            occ[0] &= ~fb;
+            occ[1] &= ~fb;
+        }
+        if (captured) {
+            bb[captured] &= ~tb;
+            occ[0] &= ~tb;
+            occ[1] &= ~tb;
+        }
         if (type == PAWN) {
             int diff = to - from;
             if (diff == 16 && rank_of(from) == 1)
@@ -284,7 +308,8 @@ struct Pos {
             put(ROOK, us, base + (kingside ? 5 : 3));
             put(KING, us, to);
         } else {
-            put(type, us, to);
+            bb[type] |= tb;                 // put(type, us, to): the square is already empty
+            occ[us] |= tb;
         }
         turn = them;
     }
@@ -294,52 +319,133 @@ struct Pos {
         Pos next = *this;
         next.make(m);
         int after = next.king(turn);
-        return after < 0 || !next.attackers(turn ^ 1, after, next.occupied());
+        return after < 0 || !next.attacked(turn ^ 1, after, next.occupied());
+    }
+    // What decides legal(m) for every move of this position, found once: the king,
+    // the pieces pinned to it and the pieces giving check.
+    struct Guard {
+        int king;           // -1: no king, every pseudo-legal move is legal
+        U64 pinned, checkers;
+        bool plain;         // false: two kings or more - every move is made (legal(m))
+    };
+    Guard guard() const {
+        Guard g{king(turn), 0, 0, single_king(turn)};
+        if (g.king < 0) return g;
+        int k = g.king, us = turn, them = us ^ 1;
+        U64 all = occupied();
+        g.checkers = attackers(them, k, all);
+        U64 snipers = (((T.file_line[k] | T.rank_line[k]) & (bb[ROOK] | bb[QUEEN])) |
+                       (T.diag_line[k] & (bb[BISHOP] | bb[QUEEN]))) & occ[them];
+        for (; snipers; snipers &= snipers - 1) {
+            U64 between = T.between[lsb(snipers)][k] & all;
+            if (between && !(between & (between - 1)) && (between & occ[us])) g.pinned |= between;
+        }
+        return g;
+    }
+    // The side to move's pieces that alone stand between one of its sliders and the square target
+    // (the enemy king): only moving one of these can uncover a check from that slider.
+    U64 discoverers(int target) const {
+        U64 out = 0, all = occupied(), own = occ[turn];
+        U64 sliders = ((((T.file_line[target] | T.rank_line[target]) & (bb[ROOK] | bb[QUEEN])) |
+                        (T.diag_line[target] & (bb[BISHOP] | bb[QUEEN]))) & own);
+        for (; sliders; sliders &= sliders - 1) {
+            U64 between = T.between[lsb(sliders)][target] & all;
+            if (between && !(between & (between - 1)) && (between & own)) out |= between;
+        }
+        return out;
+    }
+    // legal(m) without making the move (castling and en passant still make it). A king
+    // step is legal when its square is not attacked with the king lifted off the board;
+    // any other move when it keeps a pin on its line and, in check, captures or blocks
+    // the only checker - the moves that leave the king attacked, and only those.
+    HOT bool legal_by(const Guard& g, int m) const {
+        if (g.king < 0) return true;
+        if (!g.plain) return legal(m);
+        int from = mfrom(m), to = mto(m);
+        if (from == g.king) {
+            if (std::abs(file_of(to) - file_of(from)) == 2) return legal(m);
+            return !attacked(turn ^ 1, to, occupied() ^ bit(from));
+        }
+        if (is_en_passant(m)) return legal(m);
+        if ((g.pinned & bit(from)) && !(T.line[g.king][from] & bit(to))) return false;
+        if (!g.checkers) return true;
+        if (g.checkers & (g.checkers - 1)) return false;
+        return ((g.checkers | T.between[lsb(g.checkers)][g.king]) & bit(to)) != 0;
     }
     bool attacked_for_king(U64 path, U64 occupied) const {
         for (; path; path &= path - 1)
-            if (attackers(turn ^ 1, lsb(path), occupied)) return true;
+            if (attacked(turn ^ 1, lsb(path), occupied)) return true;
         return false;
     }
 
-    // Pseudo-legal moves, python-chess semantics (captures of the king included).
-    void pseudo(std::vector<int>& out) const {
+    // Every pseudo-legal move (python-chess semantics, captures of the king included) to f, in one
+    // fixed order: pieces by square, each one's targets by square, castles, pawns, en passant. f returns
+    // false to stop there; each_pseudo then returns false. Nothing is generated past that point.
+    template <class F>
+    bool each_pseudo(F&& f) const {
         int us = turn, them = us ^ 1;
         U64 own = occ[us], enemy = occ[them], all = occupied();
         for (U64 pieces = own & ~bb[PAWN]; pieces; pieces &= pieces - 1) {
             int from = lsb(pieces);
             for (U64 targets = attacks_mask(from) & ~own; targets; targets &= targets - 1)
-                out.push_back(mv(from, lsb(targets)));
+                if (!f(mv(from, lsb(targets)))) return false;
         }
-        castles(out);
+        int special[16];
+        for (int *m = special, *end = castles_into(special); m < end; ++m)
+            if (!f(*m)) return false;
         for (U64 pawns = own & bb[PAWN]; pawns; pawns &= pawns - 1) {
             int from = lsb(pawns);
             auto add = [&](int to) {
-                if (rank_of(to) == 0 || rank_of(to) == 7)
-                    for (int p : {QUEEN, ROOK, BISHOP, KNIGHT}) out.push_back(mv(from, to, p));
-                else
-                    out.push_back(mv(from, to));
+                if (rank_of(to) == 0 || rank_of(to) == 7) {
+                    for (int p : {QUEEN, ROOK, BISHOP, KNIGHT})
+                        if (!f(mv(from, to, p))) return false;
+                    return true;
+                }
+                return bool(f(mv(from, to)));
             };
-            for (U64 caps = T.pawn[us][from] & enemy; caps; caps &= caps - 1) add(lsb(caps));
+            for (U64 caps = T.pawn[us][from] & enemy; caps; caps &= caps - 1)
+                if (!add(lsb(caps))) return false;
             int step = us == WHITE ? 8 : -8, one = from + step;
             if (one >= 0 && one < 64 && !(all & bit(one))) {
-                add(one);
+                if (!add(one)) return false;
                 int start = us == WHITE ? 1 : 6, two = one + step;
-                if (rank_of(from) == start && !(all & bit(two))) out.push_back(mv(from, two));
+                if (rank_of(from) == start && !(all & bit(two)) && !f(mv(from, two))) return false;
             }
         }
-        ep_moves(out);
+        for (int *m = special, *end = ep_into(special); m < end; ++m)
+            if (!f(*m)) return false;
+        return true;
+    }
+    // A side with at most 16 pieces has at most 16 x 27 + 2 pseudo-legal moves: they fit this buffer
+    // and are appended at once (any other board, one by one).
+    static constexpr int BUFFER = 448;
+    void pseudo(std::vector<int>& out) const {
+        if (popcnt(occ[turn]) <= 16) {
+            int buffer[BUFFER], *w = buffer;
+            each_pseudo([&](int m) { *w++ = m; return true; });
+            out.insert(out.end(), buffer, w);
+        } else {
+            each_pseudo([&](int m) { out.push_back(m); return true; });
+        }
     }
     // Pseudo-captures in the exact same order as pseudo(), omitting quiet
     // moves and castles before the quiescence search's legality filter.
     // This does not change any capture, en passant, underpromotion or order.
     void pseudo_captures(std::vector<int>& out) const {
+        if (popcnt(occ[turn]) > 16) {
+            each_pseudo([&](int m) {
+                if (occ[turn ^ 1] & bit(captured_square(m))) out.push_back(m);
+                return true;
+            });
+            return;
+        }
+        int buffer[BUFFER], *w = buffer;
         const int us = turn;
         const U64 own = occ[us], enemy = occ[us ^ 1];
         for (U64 pieces = own & ~bb[PAWN]; pieces; pieces &= pieces - 1) {
             const int from = lsb(pieces);
             for (U64 targets = attacks_mask(from) & enemy; targets; targets &= targets - 1)
-                out.push_back(mv(from, lsb(targets)));
+                *w++ = mv(from, lsb(targets));
         }
         for (U64 pawns = own & bb[PAWN]; pawns; pawns &= pawns - 1) {
             const int from = lsb(pawns);
@@ -347,24 +453,36 @@ struct Pos {
                 const int to = lsb(caps);
                 if (rank_of(to) == 0 || rank_of(to) == 7) {
                     for (int p : {QUEEN, ROOK, BISHOP, KNIGHT})
-                        out.push_back(mv(from, to, p));
+                        *w++ = mv(from, to, p);
                 } else {
-                    out.push_back(mv(from, to));
+                    *w++ = mv(from, to);
                 }
             }
         }
-        ep_moves(out);
+        // En passant, when its square really holds an enemy piece to take (what the old filter asked).
+        for (int *m = w, *end = ep_into(w); m < end; ++m)
+            if (occ[us ^ 1] & bit(captured_square(*m))) *w++ = *m;
+        out.insert(out.end(), buffer, w);
     }
-    void ep_moves(std::vector<int>& out) const {
-        if (ep <= 0 || (occupied() & bit(ep))) return;  // python: `not self.ep_square`
+    int* ep_into(int* w) const {
+        if (ep <= 0 || (occupied() & bit(ep))) return w;  // python: `not self.ep_square`
         U64 rank = turn == WHITE ? (0xFFULL << 32) : (0xFFULL << 24);
         for (U64 c = bb[PAWN] & occ[turn] & T.pawn[turn ^ 1][ep] & rank; c; c &= c - 1)
-            out.push_back(mv(lsb(c), ep));
+            *w++ = mv(lsb(c), ep);
+        return w;
+    }
+    void ep_moves(std::vector<int>& out) const {
+        int buffer[16];
+        out.insert(out.end(), buffer, ep_into(buffer));
     }
     void castles(std::vector<int>& out) const {
+        int buffer[4];
+        out.insert(out.end(), buffer, castles_into(buffer));
+    }
+    int* castles_into(int* w) const {
         U64 backrank = turn == WHITE ? RANK1 : RANK8;
         U64 kings = occ[turn] & bb[KING] & backrank;
-        if (!kings) return;
+        if (!kings) return w;
         int k = lsb(kings);
         int base = turn == WHITE ? 0 : 56;
         for (U64 rights = clean_castling() & backrank; rights; rights &= rights - 1) {
@@ -376,33 +494,42 @@ struct Pos {
             if (!((all ^ bit(k) ^ bit(candidate)) & (king_path | rook_path | bit(king_to) | bit(rook_to))) &&
                 !attacked_for_king(king_path | bit(k), all ^ bit(k)) &&
                 !attacked_for_king(bit(king_to), all ^ bit(k) ^ bit(candidate) ^ bit(rook_to)))
-                out.push_back(mv(k, king_to));
+                *w++ = mv(k, king_to);
         }
+        return w;
     }
     void legal_moves(std::vector<int>& out) const {
-        thread_local std::vector<int> all;   // scratch: legal_moves never calls itself
-        all.clear();
-        pseudo(all);
-        for (int m : all)
-            if (legal(m)) out.push_back(m);
+        Guard g = guard();
+        each_pseudo([&](int m) {
+            if (legal_by(g, m)) out.push_back(m);
+            return true;
+        });
     }
     bool any_legal() const {
-        std::vector<int> all;
-        all.reserve(64);
-        pseudo(all);
-        for (int m : all)
-            if (legal(m)) return true;
-        return false;
+        Guard g = guard();
+        if (g.king >= 0 && g.plain) {
+            // A king step first: there usually is one. (Castling is legal only when the
+            // step towards it is, so it never answers differently.)
+            U64 lifted = occupied() ^ bit(g.king);
+            for (U64 to = T.king[g.king] & ~occ[turn]; to; to &= to - 1)
+                if (!attacked(turn ^ 1, lsb(to), lifted)) return true;
+            // Double check: only the king moves (or, on boards no game reaches, an en passant that takes
+            // one checker and blocks the other).
+            if (g.checkers & (g.checkers - 1)) return has_legal_ep();
+        }
+        return !each_pseudo([&](int m) { return (g.plain && mfrom(m) == g.king) || !legal_by(g, m); });
     }
     // Legal captures ONTO square s (python: generate_legal_captures(to_mask=s)).
     void captures_to(int s, std::vector<int>& out) const {
         if (occ[turn ^ 1] & bit(s)) {
-            for (U64 a = attackers(turn, s, occupied()); a; a &= a - 1) {
+            U64 a = attackers(turn, s, occupied());
+            Guard g = a ? guard() : Guard{-1, 0, 0, true};
+            for (; a; a &= a - 1) {
                 int from = lsb(a);
                 if ((bb[PAWN] & bit(from)) && (rank_of(s) == 0 || rank_of(s) == 7)) {
                     for (int p : {QUEEN, ROOK, BISHOP, KNIGHT})
-                        if (legal(mv(from, s, p))) out.push_back(mv(from, s, p));
-                } else if (legal(mv(from, s))) {
+                        if (legal_by(g, mv(from, s, p))) out.push_back(mv(from, s, p));
+                } else if (legal_by(g, mv(from, s))) {
                     out.push_back(mv(from, s));
                 }
             }
@@ -414,12 +541,11 @@ struct Pos {
                 if (legal(m)) out.push_back(m);
         }
     }
-    bool has_legal_ep() const {
-        if (ep < 0) return false;
-        std::vector<int> eps;
-        ep_moves(eps);
-        for (int m : eps)
-            if (legal(m)) return true;
+    bool has_legal_ep() const {          // ep_moves(), each made: without a list
+        if (ep <= 0 || (occupied() & bit(ep))) return false;
+        U64 rank = turn == WHITE ? (0xFFULL << 32) : (0xFFULL << 24);
+        for (U64 c = bb[PAWN] & occ[turn] & T.pawn[turn ^ 1][ep] & rank; c; c &= c - 1)
+            if (legal(mv(lsb(c), ep))) return true;
         return false;
     }
     // python-chess has_kingside/queenside_castling_rights(color)
@@ -750,60 +876,123 @@ struct MateSearch {
     explicit MateSearch(long long limit_, int pawn_reach_ = 0) : limit(limit_), pawn_reach(pawn_reach_) {}
 
     // The mover's own king is safe after the move (Pos::legal, on the position already made).
-    static bool safe_after(const Pos& before, const Pos& after) {
+    static HOT bool safe_after(const Pos& before, const Pos& after) {
         if (before.king(before.turn) < 0) return true;
         int k = after.king(before.turn);
-        return k < 0 || !after.attackers(before.turn ^ 1, k, after.occupied());
+        return k < 0 || !after.attacked(before.turn ^ 1, k, after.occupied());
     }
 
+    // Can move m give check to the enemy king on square king (not attacked yet)? discoverers are
+    // p.discoverers(king). Every move that gives check passes (a few that do not pass too): a castle,
+    // a promotion, en passant, a discoverer moving (a discovered check), a knight or pawn landing
+    // where it attacks the king, a slider landing on one of its lines with nothing in between once
+    // it has left its square.
+    static HOT bool may_check(const Pos& p, int m, int king, U64 discoverers) {
+        int from = mfrom(m), to = mto(m);
+        U64 f = bit(from), t = bit(to);
+        if ((discoverers & f) || mpromo(m)) return true;
+        if (p.bb[KNIGHT] & f) return (T.knight[king] & t) != 0;
+        if (p.bb[PAWN] & f) return (T.pawn[p.turn ^ 1][king] & t) != 0 || p.is_en_passant(m);
+        if (p.bb[KING] & f) return std::abs(file_of(to) - file_of(from)) == 2;
+        U64 straight = T.file_line[king] | T.rank_line[king], diagonal = T.diag_line[king];
+        U64 lines = (p.bb[QUEEN] & f) ? (straight | diagonal) : (p.bb[ROOK] & f) ? straight : diagonal;
+        return (lines & t) && !(T.between[to][king] & (p.occupied() ^ f));
+    }
+
+    // The quiet moves of each recursion level (a deque keeps references valid).
+    struct Lists {
+        std::vector<int> quiet;
+    };
+    std::deque<Lists> levels;
+    int level = 0;
+    struct Down {
+        int& l;
+        explicit Down(int& x) : l(x) { ++l; }
+        ~Down() { --l; }
+    };
+    Lists& lists_here() {
+        while (int(levels.size()) <= level) levels.emplace_back();
+        return levels[level];
+    }
+
+    // The checking moves first, then the quiet ones, each group in generation order. A checking move
+    // is searched as soon as it is found (generating the rest first counts no node), a quiet one is
+    // made when its turn comes, and moves that cannot give check are not made to find that out.
     bool attack(const Pos& p, int n) {
         if (++nodes > limit) { aborted = true; return false; }
-        std::vector<int> moves;
-        p.pseudo(moves);                    // each move is made once: legality and check together
         int king = p.king(p.turn ^ 1);
-        if (pawn_reach > 0 && king >= 0) {
-            moves.erase(std::remove_if(moves.begin(), moves.end(), [&](int m) {
-                int from = mfrom(m);
-                int distance = std::max(std::abs((from & 7) - (king & 7)), std::abs((from >> 3) - (king >> 3)));
-                return (p.bb[PAWN] & bit(from)) && distance >= pawn_reach;
-            }), moves.end());
+        U64 skip = 0;                       // the attacker's pawns this far or farther from the king
+        if (pawn_reach > 0 && king >= 0)
+            for (U64 pawns = p.bb[PAWN] & p.occ[p.turn]; pawns; pawns &= pawns - 1) {
+                int s = lsb(pawns);
+                if (std::max(std::abs((s & 7) - (king & 7)), std::abs((s >> 3) - (king >> 3))) >= pawn_reach)
+                    skip |= bit(s);
+            }
+        if (n == 1 && king < 0) return false;          // no king: nothing gives check
+        // The shortcuts need the enemy king not attacked yet and one attacking king at most (a second
+        // king could step next to the enemy king: safe_after only looks at the first one).
+        bool direct = king >= 0 && p.single_king(p.turn) && !p.attacked(p.turn, king, p.occupied());
+        U64 disc = direct ? p.discoverers(king) : 0;
+        if (n == 1 && direct) {
+            // The last move: only a checkmate counts, in any order (no node is counted below this one).
+            return !p.each_pseudo([&](int m) {
+                if ((skip & bit(mfrom(m))) || !may_check(p, m, king, disc)) return true;
+                Pos q = p;
+                q.make(m);
+                return !(safe_after(p, q) && q.is_check() && !q.any_legal());
+            });
         }
-        std::vector<Pos> kids;
-        kids.reserve(moves.size());
-        std::vector<int> checking, quiet;
-        for (size_t i = 0; i < moves.size(); ++i) {
+        Lists& here = lists_here();
+        Down down(level);
+        std::vector<int>& quiet = here.quiet;
+        quiet.clear();
+        bool mate = false;
+        p.each_pseudo([&](int m) {
+            if (skip & bit(mfrom(m))) return true;
+            if (direct && !may_check(p, m, king, disc)) {
+                quiet.push_back(m);         // surely no check (if legal: seen when made)
+                return true;
+            }
             Pos q = p;
-            q.make(moves[i]);
+            q.make(m);
+            if (!safe_after(p, q)) return true;
+            if (!q.is_check()) {
+                quiet.push_back(m);
+                return true;
+            }
+            if (!q.any_legal() || (n > 1 && defend(q, n - 1))) {
+                mate = true;
+                return false;
+            }
+            return !aborted;
+        });
+        if (mate) return true;
+        if (aborted || n == 1) return false;
+        for (int m : quiet) {
+            Pos q = p;
+            q.make(m);
             if (!safe_after(p, q)) continue;
-            (q.is_check() ? checking : quiet).push_back(int(kids.size()));
-            kids.push_back(q);
-        }
-        for (int i : checking) {
-            if (!kids[i].any_legal()) return true;          // checkmate
-            if (n > 1 && defend(kids[i], n - 1)) return true;
+            if (defend(q, n - 1)) return true;
             if (aborted) return false;
         }
-        if (n > 1)
-            for (int i : quiet) {
-                if (defend(kids[i], n - 1)) return true;
-                if (aborted) return false;
-            }
         return false;
     }
 
     bool defend(const Pos& q, int n) {
         if (++nodes > limit) { aborted = true; return false; }
-        std::vector<int> moves;
-        q.pseudo(moves);                    // legality tested only for the replies actually tried
-        bool any = false;
-        for (int d : moves) {
+        bool any = false, escaped = false;  // legality tested only for the replies actually tried
+        q.each_pseudo([&](int d) {
             Pos r = q;
             r.make(d);
-            if (!safe_after(q, r)) continue;
+            if (!safe_after(q, r)) return true;
             any = true;
-            if (!attack(r, n) || aborted) return false;
-        }
-        return any;                         // no legal reply here is stalemate: the king survives
+            if (!attack(r, n) || aborted) {
+                escaped = true;
+                return false;
+            }
+            return true;
+        });
+        return any && !escaped;             // no legal reply here is stalemate: the king survives
     }
 };
 
@@ -833,9 +1022,16 @@ struct ExchangeSearch {
         return lists[level];
     }
 
-    double move_gain(const Pos& p, int m) const {
-        int victim = p.type_at(p.captured_square(m));
-        double gain = victim >= PAWN && victim <= QUEEN ? values[victim] : 0.0;
+    HOT double move_gain(const Pos& p, int m) const {
+        int to = mto(m);
+        double gain = 0.0;
+        if ((p.occupied() >> to) & 1) {             // the victim of type_at(captured_square(m)): no en passant
+            int victim = p.type_at(to);
+            if (victim <= QUEEN) gain = values[victim];
+        } else if (to == p.ep && p.is_en_passant(m)) {
+            int victim = p.type_at(p.captured_square(m));
+            if (victim >= PAWN && victim <= QUEEN) gain = values[victim];
+        }
         if (int promotion = mpromo(m)) gain += values[promotion] - values[PAWN];
         return gain;
     }
@@ -853,13 +1049,19 @@ struct ExchangeSearch {
         if (depth == 0) return 0.0;
 
         if (!check) {
+            // Standing pat (0) already reaches beta: that is the answer whatever the
+            // captures are, so they are not generated - same value, same nodes.
+            if ((0.0 > alpha ? 0.0 : alpha) >= beta) return 0.0;
             // Only captures matter here. Generate the exact capture subsequence
             // of pseudo() directly, avoiding quiet moves and castling entirely.
             // The legal filter preserves their original stable order.
             p.pseudo_captures(moves);
-            moves.erase(std::remove_if(moves.begin(), moves.end(), [&](int m) {
-                return !p.legal(m);
-            }), moves.end());
+            if (!moves.empty()) {
+                Pos::Guard g = p.guard();
+                moves.erase(std::remove_if(moves.begin(), moves.end(), [&](int m) {
+                    return !p.legal_by(g, m);
+                }), moves.end());
+            }
         }
         // MVV-LVA, with stable move order for equal scores: an insertion sort
         // gives exactly std::stable_sort's order without allocating.
@@ -928,6 +1130,9 @@ static double material_search(const Pos& p, int plies, double alpha, double beta
 // transposition table (also the source of the main line), principal variation
 // search, null move, late move reductions, killer and history move ordering.
 // Leaves are settled by the exact exchange search. Material and mate only.
+#ifndef LAZY_PICKS
+#define LAZY_PICKS 1
+#endif
 struct DeepSearch {
     struct Entry {
         U64 key = 0;
@@ -957,9 +1162,12 @@ struct DeepSearch {
     const std::uint32_t generation;
     int killers[128][2] = {};
     int history[2][64][64] = {};
+    struct Item {                                 // a move with its order rank and material gain
+        double rank, gain;
+        int move;
+    };
     std::deque<std::vector<int>> deep_lists;      // move lists reused per ply
-    std::deque<std::vector<double>> deep_scores;
-    std::deque<std::vector<double>> deep_gains;
+    std::deque<std::vector<Item>> deep_items;
 
     bool exact = false;   // true: no null move and no reductions - the same value as the full search
 
@@ -987,11 +1195,10 @@ struct DeepSearch {
             }
         }
         while (int(deep_lists.size()) <= ply) {
-            deep_lists.emplace_back(); deep_scores.emplace_back(); deep_gains.emplace_back();
+            deep_lists.emplace_back(); deep_items.emplace_back();
         }
         std::vector<int>& moves = deep_lists[ply];
-        std::vector<double>& ranks = deep_scores[ply];
-        std::vector<double>& gains = deep_gains[ply];
+        std::vector<Item>& items = deep_items[ply];
         moves.clear();
         p.pseudo(moves);                          // legality is checked lazily, move by move
         bool check = p.is_check();
@@ -1013,45 +1220,94 @@ struct DeepSearch {
             if (m == killers[k][1]) return 8e5;
             return double(history[side][mfrom(m)][mto(m)]);
         };
-        ranks.resize(moves.size());
-        gains.resize(moves.size());
+        items.resize(moves.size());
         for (size_t i = 0; i < moves.size(); ++i) {
-            gains[i] = q.move_gain(p, moves[i]);
-            ranks[i] = order(moves[i], gains[i]);
+            double gain = q.move_gain(p, moves[i]);
+            items[i] = Item{order(moves[i], gain), gain, moves[i]};
         }
-        for (size_t i = 1; i < moves.size(); ++i) {        // stable: same order as std::stable_sort
-            int m = moves[i];
-            double r = ranks[i], g = gains[i];
-            size_t j = i;
-            while (j > 0 && r > ranks[j - 1]) {
-                moves[j] = moves[j - 1]; ranks[j] = ranks[j - 1]; gains[j] = gains[j - 1]; --j;
+        // The order of a stable sort by rank, made only as far as the node gets: the first moves by
+        // selection (the earliest best of those left, the others keeping their order), the rest at
+        // once by insertion sort when more are needed - the same order, most nodes cut off early.
+        size_t sorted = 0;                            // moves[0, sorted) are in their final place
+        auto place = [&](size_t j) {
+            size_t n = items.size();
+            if (j < sorted) return;
+            if (j < LAZY_PICKS) {
+                size_t top = j;
+                for (size_t i = j + 1; i < n; ++i)
+                    if (items[i].rank > items[top].rank) top = i;
+                if (top != j) {
+                    Item chosen = items[top];
+                    for (size_t i = top; i > j; --i) items[i] = items[i - 1];
+                    items[j] = chosen;
+                }
+                sorted = j + 1;
+                return;
             }
-            moves[j] = m;
-            ranks[j] = r;
-            gains[j] = g;
-        }
+            for (size_t i = j + 1; i < n; ++i) {      // stable: same order as std::stable_sort
+                Item it = items[i];
+                size_t at = i;
+                while (at > j && it.rank > items[at - 1].rank) {
+                    items[at] = items[at - 1];
+                    --at;
+                }
+                items[at] = it;
+            }
+            sorted = n;
+        };
         double best = -std::numeric_limits<double>::infinity(), start = alpha;
         int best_move = 0;
         size_t searched = 0;                          // legal moves searched so far (i of the legal list)
-        for (size_t j = 0; j < moves.size(); ++j) {
-            int m = moves[j];
-            // Legality and recursion use the same successor. Pos::legal used to
-            // copy and make it once, then the search made the move a second time.
-            Pos next = p;
-            next.make(m);
-            if (!MateSearch::safe_after(p, next)) continue;
+        // At the frontier (one half-move left) a successor is made only when its search needs it. One
+        // that cannot be in check and stands pat at once (exchange search) costs its two nodes and is
+        // worth 0 - what searching it returns - so it is counted, not made. Legality by the pins then.
+        const bool frontier = depth == 1;
+        const Pos::Guard guard = frontier ? p.guard() : Pos::Guard{-1, 0, 0, true};
+        const int enemy_king = p.king(p.turn ^ 1);
+        // (Not with the enemy king attacked already - a quiet move leaves it so - nor with two kings.)
+        const bool direct = frontier && enemy_king >= 0 && p.single_king(p.turn) &&
+                            !p.attacked(p.turn, enemy_king, p.occupied());
+        const U64 disc = direct ? p.discoverers(enemy_king) : 0;
+        Pos next;
+        for (size_t j = 0; j < items.size(); ++j) {
+            place(j);
+            int m = items[j].move;
+            bool made = false, calm = false;          // calm: the successor is surely not in check
+            if (frontier) {
+                if (!p.legal_by(guard, m)) continue;
+                calm = enemy_king < 0 || (direct && !MateSearch::may_check(p, m, enemy_king, disc));
+            } else {
+                // Legality and recursion use the same successor.
+                next = p;
+                next.make(m);
+                made = true;
+                if (!MateSearch::safe_after(p, next)) continue;
+            }
+            auto child = [&](int d, double a, double b) {
+                if (calm && d <= 0 && (qdepth == 0 || (0.0 > a ? 0.0 : a) >= b)) {
+                    if (++q.nodes > q.limit) { q.aborted = true; return 0.0; }    // this search's node
+                    if (++q.nodes > q.limit) { q.aborted = true; return 0.0; }    // the exchange search's
+                    return 0.0;
+                }
+                if (!made) {
+                    next = p;
+                    next.make(m);
+                    made = true;
+                }
+                return search(next, d, a, b, ply + 1, true);
+            };
             size_t i = searched++;
             if (i == 0) best_move = m;
-            double gain = gains[j];
+            double gain = items[j].gain;
             bool quiet = gain == 0.0 && !mpromo(m);
             int reduction = (!exact && depth >= 3 && i >= 3 && quiet && !check && !next.is_check()) ? 1 : 0;
             double score;
             if (i == 0) {
-                score = gain - search(next, depth - 1, gain - beta, gain - alpha, ply + 1, true);
+                score = gain - child(depth - 1, gain - beta, gain - alpha);
             } else {
-                score = gain - search(next, depth - 1 - reduction, gain - alpha - eps, gain - alpha, ply + 1, true);
+                score = gain - child(depth - 1 - reduction, gain - alpha - eps, gain - alpha);
                 if (!q.aborted && score > alpha && (reduction || score < beta))
-                    score = gain - search(next, depth - 1, gain - beta, gain - alpha, ply + 1, true);
+                    score = gain - child(depth - 1, gain - beta, gain - alpha);
             }
             if (q.aborted) return best > -1e300 ? best : 0.0;
             if (score > best) { best = score; best_move = m; }

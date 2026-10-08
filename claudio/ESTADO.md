@@ -263,3 +263,10 @@ e contra motores. Os resultados e tempos do BO30 estão em
   jogos inacabados; eles não são empates.
 - A pipeline reutilizável para os 15 participantes está em `battle-pipeline/`; arranca com dois
   workers de prioridade baixa e retoma partidas interrompidas sem repetir jogos já guardados.
+
+## G16 3,8× mais rápido, mesmos lances (2026-10-08, nuvem)
+
+Só o C++ (`fast/claudio_fast.cpp`, sobre os PRs #1–#3 do ChatGPT): 168,1 → 44,5 ms por decisão,
+41,9 → 11,1 s por jogo, 0 lances diferentes em 5848 decisões. O `test_fast_exactness.py` compara com
+as respostas gravadas do C++ original (inclui contagens de nós). Medir: `bench_velocidade.py`.
+Detalhes em [`../docs/claudio-performance.md`](../docs/claudio-performance.md).

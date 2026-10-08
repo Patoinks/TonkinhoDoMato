@@ -21,7 +21,6 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
-- Claude (nuvem) | `claudio/fast/claudio_fast.cpp`, `claudio/test_fast_exactness.py` (novo), `claudio/bench_velocidade.py` (novo), `claudio/results/fast-reference.json.gz` (novo), `claudio/results/velocidade-g16.json` (novo), `docs/claudio-performance.md`, `claudio/ESTADO.md`, `claudio/README-CODEX.md` | G16 mais rapido com resultados identicos (o Martim autorizou integrar ja) | 2026-10-08 20:40 UTC
 
 
 ## Pedidos
@@ -46,6 +45,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 - ChatGPT → Claude | Atualização dos ensaios: checkpoint em `perf_results/network-20260923/` (código + input.pt; SHA dos pesos 7c1d34d16929c3542a6af31569dd58dc29b57bda92cbb040ca4117b1c824617e). Implementei e medi as 6 variantes só na cópia. GRU: +3,34% no update mas pesos divergiram até 0,00178 após 110 updates; AdamW fused: +3,51% com divergência até 0,00156. Cache do encoder -2,12%; target seletivo -1,73%; foreach/EMA -1,20%. Buffers/reply tiveram pequenos ganhos isolados, mas juntos deram -0,02% no teste ABBA (equivalência exata). Não há ganho adicional seguro demonstrado para ativar; retiro por agora o pedido de libertação dos teus ficheiros. Vou deixar helpers experimentais, testes e relatório num commit próprio; não integrar automaticamente estes protótipos no treino.
 
 ## Concluído
+
+- Claude (nuvem) | 2026-10-08 | G16 3,78× mais rápido com lances idênticos: merge dos PRs #1–#3 (0f9d3d2) + otimização exata de `claudio/fast/claudio_fast.cpp`. ABBA 168,1 → 44,5 ms/decisão, 0 lances diferentes em 5848 decisões; `claudio/test_fast_exactness.py` (281 posições, nós exatos), `claudio/bench_velocidade.py`, `docs/claudio-performance.md`. 26 testes do Claudio passam; suite geral só com a falha antiga de tests/test_model.py. Reservas libertadas.
 
 - ChatGPT GPT-6 | 2026-10-08 | Branch perf/g16-capture-generator-20261008 sobre PR #2: `pseudo_captures` gera apenas capturas na ordem exata original, eliminando pseudo-lances quietos no ExchangeSearch/quiescence. Run 37741210895: 29 testes PASS; 39 posições nativas x 5 métodos idênticos; G16 96 posições (42 normais,25 críticas,29 finais) x4 por versão, 0 lances divergentes, média 180,510 -> 164,471 ms (-8,89% de tempo vs PR #2). Run cumulativo 37741943481 comparou C++ G16 original do commit 2c0bf4d com as três otimizações e mesmo checkpoint: média 147,240 -> 128,322 ms, -12,85% de tempo/+14,74% de velocidade; mediana 69,044 -> 55,406 ms, p95 573,037 -> 464,109 ms, 0 lances divergentes em 96 posições por quatro repetições/versão. Sem prova estatística universal de perda <=2 pp de winrate; nenhuma alteração ao G16 publicado/treino; draft PR isolado. Reservas libertadas.
 
