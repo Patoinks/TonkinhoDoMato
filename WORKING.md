@@ -21,7 +21,6 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
-- Claude (nuvem) | claudio/claudio_agent.py, claudio/test_claudio.py, claudio/valores_fase.py, claudio/experiencia.py, claudio/experiencia.json, claudio/claudio-g16.pt, claudio/ESTADO.md, claudio/README-CODEX.md, claudio/results/*nuvem*, claudio/results/grupos-*, claudio/results/valores-fase*.json | G16 com todos os modulos novos (sem treino), pedido do Martim | 2026-10-08
 
 
 ## Pedidos
@@ -45,6 +44,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Concluído
 
+- Claude (nuvem) | 2026-10-08 | Claudio: claudio-g16.pt (G16 artificial + todos os modulos: momentos criticos, fim de jogo, horizonte 50 lances, valores por fase medidos em valores_fase.py, livro de experiencia com a regra Bom do Martim em experiencia.py). 21 testes do Claudio passam. Sem medicoes (o Martim vai medir e gerar o livro no PC): README-CODEX.md seccao 5b. Reservas libertadas.
 - Claude (nuvem) | 2026-10-08 | Claudio: torneio de mutacoes por geracoes (torneio_mutacoes.py; p3: 10 geracoes a profundidade 3, campeoes cada vez mais fortes entre Claudios), fases de grupos (grupos_finais.py), geracoes artificiais (otimo ~G15), modulos novos scan_depth / ahead_draws (empate -1 ao ganhar, pela avaliacao dele) / simplify, claudio-campeao.pt (G10 + modulos), treino --learn outcomes --fresh com --anchor/--anchor-to (na nuvem a CPU so deu 200 jogos; parado a pedido do Martim, vai para a GPU). Guia para o Codex: claudio/README-CODEX.md (AGENTS.md aponta para ele). Testes do Claudio passam. Reservas libertadas.
 - Claude (nuvem) | 2026-10-06 | Claudio: opcao `reply_top`/`reply_mode`/`reply_weight` (respostas do adversario com a propria rede, desligada por omissao). Fairy 1450, 600 jogos emparelhados: g0 53,5% -> reply_top=6 reply_mode=expect 63,2% (+9,7 +- 5,6 pp); Stockfish 1800 sem diferenca. setup_cloud.sh corrigido e a correr em Linux; train_grande usa o KS do checkpoint quando o ficheiro KS nao existe; arena.py sem evolution.json; juiz com diferenca emparelhada. Testes do Claudio: 12 passaram. `python -m pytest -q`: falha ja existente em tests/test_model.py (tonkai/cognitive_agent.py:945 tem 1/3/3/5/9 como fallback), ficheiro nao tocado. Nenhum treino lancado. Reservas libertadas.
 - Claude (nuvem) | 2026-10-07 | Claudio, mais medicoes das respostas (so resultados + ESTADO.md): Fairy 1700 g0 17,5% -> 6/expect 23,5% (+6,0 +- 4,7 pp); reply_weight 0,5 = 57,2%, 1 = 63,2%, 2 = 53,3% (peso 1 e o melhor). Nenhum treino lancado. Sem reservas ativas.

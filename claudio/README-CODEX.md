@@ -43,6 +43,7 @@ Como decide um lance (por ordem):
 | `claudio-grande-g0-respostas.pt` | + `reply_top=6 reply_mode=expect` | Fairy 1450: 63,2% · Fairy 1700: 24,5% |
 | `claudio-grande-g0-forte.pt` | + `tactic_depth=5` | Fairy 1700: 32,7% · **SF1800: 15,2% (26% dos pontos, ~1620)** |
 | `claudio-campeao.pt` | campeão G10 do torneio + módulos (ver 5) | ganha aos outros Claudios; ainda não medido contra motores |
+| **`claudio-g16.pt`** | G16 artificial + **todos os módulos** (ver 5b) | **ainda não medido** (pedido do Martim: G16 sem treino, só módulos) |
 
 Vitórias contra motores: 600 jogos (Fairy) ou 400 (Stockfish), aberturas emparelhadas.
 
@@ -107,6 +108,64 @@ Módulos novos (pedidos pelo Martim, desligados por omissão; ligados no `campea
 `simplify_weight=0.05` (trocas que não perdem nada quando está à frente). **Ainda não medidos
 um a um contra motores.**
 
+## 5b. O G16 com todos os módulos (`claudio-g16.pt`, sem treino)
+
+O pedido do Martim: o G16 artificial com todos os módulos orgânicos, sem treino. Tudo em
+`claudio_agent.py` (`ClaudioConfig`), desligado por omissão, ligado neste checkpoint:
+
+| Módulo | Definições no G16 | O que faz |
+|---|---|---|
+| tendência G16 | `safety_weight=1.8069 tactic_top=10 tactic_rounds=7 mate_gate=0.23761 king_weight=0.02181` | a tendência do torneio prolongada |
+| limites do forte | `exchange_nodes=200000 tactic_nodes=2000000 mate_nodes=20000` | a descida no torneio era artefacto do desempate por tempo |
+| varrimento | `scan_depth=2` | todos os lances calculados a 2 meios-lances (ataques descobertos, garfos) |
+| empate −1 ao ganhar | `ahead_draws=true ahead_value=0.62 draw_ahead=-1` | pela avaliação dele (valor do melhor lance), não pelo material |
+| simplificar | `simplify_weight=0.05` | trocas que não perdem nada quando está à frente |
+| **momentos críticos** | `critical_depth=6 critical_gap=0.0032 critical_spread=0.0163` | profundidade 6 quando os 2 melhores estão quase iguais ou as 5 cabeças da rede discordam (~27% dos lances) |
+| **fim de jogo** | `endgame_pieces=8 endgame_mate=6 endgame_depth=7 endgame_nodes=400000` | com ≤ 8 peças: mates até 6 lances (sem o limiar do rei) e cálculo a 7 (promoções forçadas incluídas) |
+| **horizonte dos 50 lances** | `fifty_horizon=10` | a ganhar, nos últimos 10 meios-lances antes do limite, um lance que não reinicia a contagem é empate (−1) |
+| **valores por fase** | `phase_values=...` (abertura; meio-jogo; final) | medidos com `claudio/valores_fase.py` em 11 324 jogos dele (regra K/D do Martim, por fase): ver `results/valores-fase-claudio.json` |
+| **livro de experiência** | `book=claudio/experiencia.json book_weight=0.3 book_min=8 book_plies=16` | **por gerar** (ver abaixo) |
+
+Tempo: ~124 ms por lance (mediana 57) com tudo, contra 65 ms só com a tendência.
+
+Valores por fase medidos (P = 1): abertura C 1,52 B 1,65 T 5,48 D 7,52 (poucas mortes de torres e
+damas: pouco fiável); meio-jogo C 1,64 B 2,18 T 3,65 D 4,97; **final C 5,59 B 6,96 T 11,0 D 22,0**
+(nos finais morrem muitos peões, por isso o peão vale pouco face às peças - pode levá-lo a dar
+peões no final: medir com e sem).
+
+**Nada disto está medido ainda.** A fazer: cada módulo sozinho (desligando os outros com `--set`)
+e o G16 completo, contra o G16 só com a tendência (`grupos_finais.py`) e contra o Fairy 1700 e o
+Stockfish 1800 (`vs_engine.py`, secção 7), **com os resultados separados por cor** (o campo `white`
+de cada jogo). Exemplo do G16 só com a tendência:
+`claudio/claudio-g16.pt@critical_depth=0,endgame_pieces=0,fifty_horizon=0,phase_values=`.
+
+### Livro de experiência (a regra do Martim)
+
+Um lance de abertura é **Bom** num jogo quando **6 lances depois** (12 meios-lances) a posição está
+**igual ou melhor** para quem o jogou - a rede dele avalia-a pelo menos tão bem do lado de quem
+jogou como do lado do adversário - **E** essa cor ganhou o jogo. O livro guarda, por posição e por
+lance, (jogos, jogos Bons), brancas e pretas separadas (cada posição é de quem está a jogar).
+
+1. Gerar (jogos do G16 contra ele próprio a partir da posição inicial, com um pouco de variedade
+   nos primeiros 12 meios-lances):
+
+       python claudio/experiencia.py --checkpoint claudio/claudio-g16.pt --games 3000 --temperature 0.005 `
+           --set tactic_depth=3 --set critical_depth=0 --workers 6
+
+   Escreve `claudio/experiencia.json` (o livro) e `claudio/results/experiencia-relatorio.json`
+   (os jogos e as tabelas), e mostra: de brancas, cada primeiro lance (Bom %, WR brancas, WR pretas);
+   de pretas, cada resposta (Bom %, WR pretas). **Isto é trabalho de CPU** (jogar = cálculo C++ e
+   avaliações pequenas da rede): mais workers/núcleos aceleram, a GPU quase não. Na nuvem (4 núcleos)
+   não chegou a 100 jogos em 12 min: conta com várias horas para 3000 com 6 workers.
+   `--temperature`: 0,03 era demais (jogava 1.e3, 1.Na3...); 0,005 varia só entre lances quase iguais.
+2. Refazer o livro com outra regra sem voltar a jogar: `python claudio/experiencia.py --rebuild`
+   (relê os jogos de `experiencia-relatorio.json`; `--later 12` = 6 lances).
+3. Usar: `--set book=claudio/experiencia.json --set book_weight=0.3` (ou pô-lo no checkpoint).
+   Cada lance com ≥ `book_min` jogos ganha `book_weight × (taxa de Bom − média da posição)`,
+   a taxa puxada para a média enquanto há poucos jogos. Só nos primeiros `book_plies` meios-lances.
+4. Medir a partir da **posição inicial** (as medições normais começam com 4 lances aleatórios e o
+   livro quase nunca seria usado): `vs_engine.py ... --random-plies 0`, com e sem `book_weight`.
+
 ## 6. Treino na GPU (o que o Martim quer fazer agora)
 
 Na nuvem o treino com `--learn outcomes --fresh` era limitado pela aprendizagem na CPU
@@ -152,6 +211,7 @@ copiar de `results/engine-nuvem-*.json` (campo `list`, chave `game`). Com 600 jo
 
 ## 8. Próximos passos sugeridos
 
+0. Medir o `claudio-g16.pt` (secção 5b): cada módulo sozinho e o conjunto; gerar e medir o livro.
 1. Medir `claudio-campeao.pt` e o G15 contra Fairy 1700 (600) e Stockfish 1800 (400), contra os
    números do `forte` (32,7% / 15,2%). Ganhar aos outros Claudios não garante ganhar a motores.
 2. Medir cada módulo novo sozinho (scan, empate −1, simplificar) da mesma forma.

@@ -241,3 +241,10 @@ Resumo completo e comandos em [README-CODEX.md](README-CODEX.md). Em curto: o to
 ("gerações artificiais") ajuda até ~G15-G16 e piora a partir do G20. `claudio-campeao.pt` = G10 +
 módulos novos (`scan_depth`, `ahead_draws`, `simplify_weight`). Falta medir campeão e G15 contra
 motores e treinar na GPU (o learner na CPU da nuvem faz ~5 s/passo).
+
+## G16 com todos os módulos (2026-10-08)
+
+`claudio-g16.pt`: o G16 artificial + limites de nós do forte + módulos novos (momentos críticos,
+fim de jogo, horizonte dos 50 lances, valores por fase, livro de experiência com a regra "Bom" do
+Martim). Sem treino e **ainda sem medições**: ver [README-CODEX.md](README-CODEX.md) secção 5b para
+as definições, os valores por fase medidos e como gerar e usar o livro no PC do Martim.
