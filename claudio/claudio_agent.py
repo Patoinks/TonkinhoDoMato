@@ -64,6 +64,22 @@ class ClaudioConfig:
     ahead_draws: bool = False       # while its own evaluation (the network's value of its best move) is at least
     ahead_value: float = 0.62       # ahead_value, a draw is worth draw_ahead (the owner: -1, below every real
     draw_ahead: float = -1.0        # move: it does not repeat or trade away a position it thinks it is winning)
+    critical_depth: int = 0         # >0: in a critical moment the calculation goes this deep instead of tactic_depth:
+    critical_gap: float = 0.0       # the two best moves this close in score, or its own network unsure (the spread
+    critical_spread: float = 0.0    # of its value heads on the best move above critical_spread)
+    endgame_pieces: int = 0         # >0: with this many pieces or fewer on the board (kings and pawns included):
+    endgame_mate: int = 0           # its own forced mates this long (no king-safety gate),
+    endgame_depth: int = 0          # the calculation this deep (forced promotions included),
+    endgame_nodes: int = 400_000    # and this node budget for the mate searches
+    fifty_horizon: int = 0          # >0: thinking it is winning, a move that does not reset the fifty-move count
+                                    # this close to 100 half-moves is a draw (a pawn move or a capture is not)
+    phase_values: str = ""          # its own piece values by phase, "P,N,B,R,Q;P,N,B,R,Q;P,N,B,R,Q"
+    phase_opening: int = 20         # (opening up to this many half-moves of the game, ending at
+    phase_ending: int = 12          # this many pieces or fewer, middlegame otherwise; claudio/valores_fase.py)
+    book: str = ""                  # its own opening experience (claudio/experiencia.py): win rate of each move
+    book_weight: float = 0.0        # in its own games, weighted this much, for the side to move
+    book_min: int = 8               # a move needs this many games to count
+    book_plies: int = 16            # only this deep in the game
     simplify_weight: float = 0.0    # ahead in its own material values: trades that lose nothing score higher
     simplify_margin: float = 1.0    # lead (own units) from which it simplifies; the full bonus 3 units later
     repeat_as_draw: bool = False    # going back to a position of this game scores as a draw
@@ -108,6 +124,20 @@ def _key(fast):
     return fast.fen().rsplit(" ", 2)[0]      # placement, turn, castling, en passant
 
 
+_BOOKS = {}
+
+
+def _load_book(path):
+    """{position key: {uci: (games, wins of the side to move)}} from claudio/experiencia.py (loaded once)."""
+    if path not in _BOOKS:
+        import json
+        from pathlib import Path
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        _BOOKS[path] = {key: {uci: (int(row[0]), int(row[1])) for uci, row in moves.items()}
+                        for key, moves in data["positions"].items()}
+    return _BOOKS[path]
+
+
 class Claudio:
     """choose(board) -> chess.Move. Keeps its own boards and memory in step with
     the real game, so each decision only processes the new plies."""
@@ -117,6 +147,14 @@ class Claudio:
         self.cfg = cfg or ClaudioConfig()
         # [0, pawn, knight, bishop, rook, queen] in its own measured units
         self.values = [0.0] + [float(values[kind]) for kind in range(1, 6)]
+        self.base_values = list(self.values)
+        self.phase_table = None
+        if self.cfg.phase_values:
+            rows = [[float(x) for x in part.split(",")] for part in self.cfg.phase_values.split(";")]
+            if len(rows) != 3 or any(len(row) != 5 for row in rows):
+                raise ValueError("phase_values needs three phases of five values")
+            self.phase_table = {name: [0.0] + row for name, row in zip(("opening", "middlegame", "ending"), rows)}
+        self.book_moves = _load_book(self.cfg.book) if self.cfg.book and self.cfg.book_weight else None
         self.rng = rng or np.random.default_rng()
         self.king_model = king_model
         self.clock = None               # {section: seconds} when profiling
@@ -188,7 +226,7 @@ class Claudio:
         and the main line after each move (empty when aborted)."""
         cfg = self.cfg
         try:
-            found = self.fast.deep_after_moves(codes, self.values, cfg.tactic_depth, cfg.exchange_depth,
+            found = self.fast.deep_after_moves(codes, self.values, self._depth, cfg.exchange_depth,
                                                cfg.tactic_nodes, True)
             return [loss for loss, _ in found], [line for _, line in found]
         except RuntimeError:
@@ -231,6 +269,22 @@ class Claudio:
         scores[found] += cfg.safety_weight * (np.tanh(deep[found] / 3.0) - np.tanh(nets[found] / 3.0))
         nets[found] = deep[found]
 
+    def _book(self, fast, codes, moves, scores, known):
+        """Moves it has played here in its own games: their win rate for the side to move (draws count 0,
+        the owner's rule), pulled towards the position's mean while there are few games, against that mean."""
+        cfg = self.cfg
+        seen = self.book_moves.get(_key(fast))
+        if not seen:
+            return
+        games = sum(g for g, _ in seen.values())
+        mean = sum(w for _, w in seen.values()) / max(1, games)
+        for index, move in enumerate(moves):
+            row = seen.get(move.uci())
+            if row is None or row[0] < cfg.book_min or known[index]:
+                continue
+            rate = (row[1] + cfg.book_min * mean) / (row[0] + cfg.book_min)
+            scores[index] += cfg.book_weight * (rate - mean)
+
     def _recount(self, index, loss, gains, nets, scores):
         if loss == loss:
             new = gains[index] - loss
@@ -248,7 +302,7 @@ class Claudio:
         try:
             _, best_score, losses, status = self.fast.root_search(
                 [codes[i] for i in top], base, [float(gains[i]) for i in top], w, floor, self.values,
-                cfg.tactic_depth, cfg.exchange_depth, cfg.tactic_nodes)
+                self._depth, cfg.exchange_depth, cfg.tactic_nodes)
         except RuntimeError:
             return
         beaten = []
@@ -432,21 +486,32 @@ class Claudio:
             return move_of(codes[0])
         moves = [move_of(code) for code in codes]
 
+        # The phase of the game: its own piece values for it; the endgame, where calculating is cheap.
+        pieces = chess.popcount(board.occupied)
+        phase = ("opening" if board.ply() < cfg.phase_opening else
+                 "ending" if pieces <= cfg.phase_ending else "middlegame")
+        self.values = self.phase_table[phase] if self.phase_table else self.base_values
+        endgame = cfg.endgame_pieces > 0 and pieces <= cfg.endgame_pieces
+        self._depth = max(cfg.tactic_depth, cfg.endgame_depth) if endgame else cfg.tactic_depth
+
         # Own forced mate, by the rules: play the first move of the shortest one.
-        # Long searches only when its own sense of king safety says the enemy king is exposed.
-        attack = cfg.mate_attack
-        if attack > 2 and cfg.mate_gate > 0 and self.king_model is not None:
+        # Long searches only when its own sense of king safety says the enemy king is exposed
+        # (in the endgame, with few pieces, always: the search is cheap and finds the long mates).
+        attack, mate_nodes = cfg.mate_attack, cfg.mate_nodes
+        if endgame and cfg.endgame_mate > attack:
+            attack, mate_nodes = cfg.endgame_mate, max(cfg.mate_nodes, cfg.endgame_nodes)
+        elif attack > 2 and cfg.mate_gate > 0 and self.king_model is not None:
             if float(self.king_model.ks_rows(np.asarray(fast.encode_here(not me)))[0]) >= cfg.mate_gate:
                 attack = 2
         if attack > 0:
-            found = fast.forced_mate(me, attack, cfg.mate_nodes, cfg.pawn_reach)[0]
+            found = fast.forced_mate(me, attack, mate_nodes, cfg.pawn_reach)[0]
             if found:
                 mated = fast_rules.WHITE_WINS if me else fast_rules.BLACK_WINS
                 for code, move in zip(codes, moves):
                     fast.push(code)
                     ending = fast.terminal_strict()
                     wins = ending == mated or (ending == fast_rules.NONE and found > 1 and
-                                               fast.forced_mate(me, found - 1, cfg.mate_nodes, cfg.pawn_reach)[0])
+                                               fast.forced_mate(me, found - 1, mate_nodes, cfg.pawn_reach)[0])
                     fast.pop()
                     if wins:
                         return move
@@ -515,13 +580,38 @@ class Claudio:
             fast.pop()
         self._lap("endings")
 
+        # Thinking it is winning, the fifty-move rule is a draw coming: near it, a move that does not reset
+        # the count is one (when a pawn move or a capture is there to play).
+        if cfg.fifty_horizon > 0 and self._draw < cfg.draw_value:
+            resets = np.array([board.is_zeroing(move) for move in moves])
+            if resets.any() and board.halfmove_clock + 1 >= 100 - cfg.fifty_horizon:
+                for index in np.flatnonzero(~resets & ~known):
+                    scores[index], known[index] = self._draw, True
+
+        # Its own opening experience: the win rate of each move in its own games, for the side to move.
+        if self.book_moves is not None and board.ply() < cfg.book_plies:
+            self._book(fast, codes, moves, scores, known)
+
         # One reply further with its own intuition, for the best candidates.
         if cfg.reply_top > 0:
             self._replies(fast, codes, me, after, values, scores, known, earlier, centre, stretch, encoded)
             self._lap("replies")
 
+        # A critical moment - the two best moves almost level, or its own network unsure of the best one:
+        # the calculation goes deeper for this move.
+        if cfg.critical_depth > self._depth and (cfg.critical_gap > 0 or cfg.critical_spread > 0):
+            open_ = np.flatnonzero(~known)
+            if len(open_) >= 2:
+                ranked = open_[np.argsort(scores[open_])[::-1]]
+                gap = float(scores[ranked[0]] - scores[ranked[1]])
+                unsure = float(heads[ranked[0]].std()) if self.head is None else 0.0
+                self.last_moment = (gap, unsure)
+                if gap < cfg.critical_gap or (cfg.critical_spread > 0 and unsure > cfg.critical_spread):
+                    self._depth = cfg.critical_depth
+                    self.critical_moves = getattr(self, "critical_moves", 0) + 1
+
         # Calculation: the best candidates first, together.
-        if nets is not None and cfg.tactic_depth > 0 and cfg.tactic_top > 1:
+        if nets is not None and self._depth > 0 and cfg.tactic_top > 1:
             top = [int(i) for i in np.argsort(scores)[::-1] if not known[i]][:cfg.tactic_top]
             if cfg.root_pvs and top and not cfg.leaf_weight:
                 self._root(top, codes, gains, nets, scores, known)
@@ -557,7 +647,7 @@ class Claudio:
                 if len(checked) >= len(codes):
                     return moves[int(np.argmax(scores))]
                 continue
-            if not known[best] and nets is not None and cfg.tactic_depth > 0 and rounds < cfg.tactic_rounds:
+            if not known[best] and nets is not None and self._depth > 0 and rounds < cfg.tactic_rounds:
                 rounds += 1
                 losses, lines = self._deep_lines([code])
                 self._recount(best, losses[0], gains, nets, scores)

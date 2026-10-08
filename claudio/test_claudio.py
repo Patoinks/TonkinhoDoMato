@@ -115,6 +115,51 @@ def test_a_draw_is_worth_less_when_it_thinks_it_is_winning():
         assert me._draw == expected
 
 
+def test_endgame_finds_a_longer_mate():
+    # King and rook against king: mate in 5, which a 3-move search cannot see.
+    board = chess.Board("8/k3K3/8/8/8/8/1R6/8 w - - 0 1")
+    me = player(mate_attack=3, endgame_pieces=6, endgame_mate=5)
+    move = me.choose(board)
+    board.push(move)
+    fast = fast_rules.board(board)
+    assert board.is_checkmate() or fast.forced_mate(True, 4, 400_000, 1)[0] > 0
+
+
+def test_phase_values_follow_the_game():
+    me = player(mate_attack=0, phase_values="1,2,3,4,5;1,3,3,5,9;1,6,7,11,22")
+    me.choose(chess.Board())
+    assert me.values[1:] == [1, 2, 3, 4, 5]                          # opening
+    me.choose(chess.Board("6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 30"))
+    assert me.values[1:] == [1, 6, 7, 11, 22]                        # ending (8 pieces)
+
+
+def test_fifty_horizon_resets_the_count_when_winning():
+    board = chess.Board("6k1/8/8/8/8/8/P4Q2/6K1 w - - 96 80")        # a queen up, 4 half-moves to the draw
+    me = player(mate_attack=0, ahead_draws=True, ahead_value=0.0, fifty_horizon=10)
+    assert board.is_zeroing(me.choose(board))
+
+
+def test_book_prefers_the_move_that_won_in_its_own_games(tmp_path):
+    import json
+    from claudio_agent import _key
+    fast = fast_rules.board(chess.Board())
+    book = {"positions": {_key(fast): {"e2e4": [40, 32], "d2d4": [40, 4]}}}
+    path = tmp_path / "book.json"
+    path.write_text(json.dumps(book))
+    assert player(mate_attack=0, book=str(path), book_weight=5.0).choose(chess.Board()).uci() == "e2e4"
+    book["positions"][_key(fast)] = {"e2e4": [40, 4], "d2d4": [40, 32]}
+    path2 = tmp_path / "book2.json"
+    path2.write_text(json.dumps(book))
+    assert player(mate_attack=0, book=str(path2), book_weight=5.0).choose(chess.Board()).uci() == "d2d4"
+
+
+def test_critical_moment_calculates_deeper():
+    board = chess.Board("r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3")
+    me = player(mate_attack=0, critical_depth=5, critical_gap=1e9)
+    me.choose(board)
+    assert me.critical_moves == 1 and me._depth == 5
+
+
 def test_does_not_leave_its_queen_to_a_pawn():
     board = chess.Board("4k3/8/8/8/2p5/3Q4/8/4K3 w - - 0 1")      # ...c4 attacks the queen on d3
     move = player(mate_attack=0).choose(board)
