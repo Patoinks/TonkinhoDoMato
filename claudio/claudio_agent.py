@@ -321,16 +321,24 @@ class Claudio:
         """{index: exact value} of the moves (from the position on `fast`) that end the game or go back
         to a position of this game (a draw: the opponent can simply repeat)."""
         cfg, ends = self.cfg, {}
+        # The native batch performs the identical push/terminal_strict/pop
+        # sequence, avoiding two Python/C++ crossings for every reply.
+        batched = (fast.terminal_after_moves(moves)
+                   if earlier is None and hasattr(fast, "terminal_after_moves") else None)
         for j, move in enumerate(moves):
-            fast.push(move)
-            ending = fast.terminal_strict()
+            if batched is None:
+                fast.push(move)
+                ending = fast.terminal_strict()
+            else:
+                ending = batched[j]
             if ending == fast_rules.DRAW:
                 ends[j] = self._draw
             elif ending != fast_rules.NONE:
                 ends[j] = WIN if (ending == fast_rules.WHITE_WINS) == me else LOSS
             elif earlier is not None and _key(fast) in earlier:
                 ends[j] = self._draw
-            fast.pop()
+            if batched is None:
+                fast.pop()
         return ends
 
     def _value(self, contexts, centre, stretch):
@@ -569,16 +577,22 @@ class Claudio:
         known = np.zeros(len(codes), dtype=bool)
         earlier = (set(self.keys[self.since:]) if cfg.repeat_as_draw and len(self.keys) - self.since >= 4
                    else None)
+        batched = (fast.terminal_after_moves(codes)
+                   if earlier is None and hasattr(fast, "terminal_after_moves") else None)
         for index, code in enumerate(codes):
-            fast.push(code)
-            ending = fast.terminal_strict()
+            if batched is None:
+                fast.push(code)
+                ending = fast.terminal_strict()
+            else:
+                ending = batched[index]
             if ending == fast_rules.DRAW:
                 scores[index], known[index] = self._draw, True
             elif ending != fast_rules.NONE:
                 scores[index], known[index] = (WIN if (ending == fast_rules.WHITE_WINS) == me else LOSS), True
             elif earlier is not None and not board.is_zeroing(moves[index]) and _key(fast) in earlier:
                 scores[index], known[index] = self._draw, True
-            fast.pop()
+            if batched is None:
+                fast.pop()
         self._lap("endings")
 
         # Thinking it is winning, the fifty-move rule is a draw coming: near it, a move that does not reset
