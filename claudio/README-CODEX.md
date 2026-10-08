@@ -43,7 +43,7 @@ Como decide um lance (por ordem):
 | `claudio-grande-g0-respostas.pt` | + `reply_top=6 reply_mode=expect` | Fairy 1450: 63,2% · Fairy 1700: 24,5% |
 | `claudio-grande-g0-forte.pt` | + `tactic_depth=5` | Fairy 1700: 32,7% · **SF1800: 15,2% (26% dos pontos, ~1620)** |
 | `claudio-campeao.pt` | campeão G10 do torneio + módulos (ver 5) | ganha aos outros Claudios; ainda não medido contra motores |
-| **`claudio-g16.pt`** | G16 artificial + **todos os módulos** (ver 5b) | **ainda não medido** (pedido do Martim: G16 sem treino, só módulos) |
+| **`claudio-g16.pt`** | G16 artificial + **todos os módulos** (ver 5b) | BO30 vs G15 treinado: 13 vitórias, 2 empates, 8 derrotas, 7 inacabados |
 
 Vitórias contra motores: 600 jogos (Fairy) ou 400 (Stockfish), aberturas emparelhadas.
 
@@ -126,17 +126,17 @@ O pedido do Martim: o G16 artificial com todos os módulos orgânicos, sem trein
 | **valores por fase** | `phase_values=...` (abertura; meio-jogo; final) | medidos com `claudio/valores_fase.py` em 11 324 jogos dele (regra K/D do Martim, por fase): ver `results/valores-fase-claudio.json` |
 | **livro de experiência** | `book=claudio/experiencia.json book_weight=0.3 book_min=8 book_plies=16` | **por gerar** (ver abaixo) |
 
-Tempo: ~124 ms por lance (mediana 57) com tudo, contra 65 ms só com a tendência.
+No perfil isolado anterior: ~124 ms por lance (mediana 57) com tudo, contra 65 ms só com a tendência. No BO30 real, o G16 gastou **149,3 ms/decisão**, contra **30,7 ms** do G15 treinado. A partida completa demorou 4 min 26 s com 2 workers.
 
 Valores por fase medidos (P = 1): abertura C 1,52 B 1,65 T 5,48 D 7,52 (poucas mortes de torres e
 damas: pouco fiável); meio-jogo C 1,64 B 2,18 T 3,65 D 4,97; **final C 5,59 B 6,96 T 11,0 D 22,0**
 (nos finais morrem muitos peões, por isso o peão vale pouco face às peças - pode levá-lo a dar
 peões no final: medir com e sem).
 
-**Nada disto está medido ainda.** A fazer: cada módulo sozinho (desligando os outros com `--set`)
-e o G16 completo, contra o G16 só com a tendência (`grupos_finais.py`) e contra o Fairy 1700 e o
-Stockfish 1800 (`vs_engine.py`, secção 7), **com os resultados separados por cor** (o campo `white`
-de cada jogo). Exemplo do G16 só com a tendência:
+O G16 completo já foi medido em BO15 e BO30 contra o G15 treinado. Ainda falta medir cada módulo
+sozinho, comparar o G16 com os módulos desligados e testar contra Fairy 1700 e Stockfish 1800
+(`vs_engine.py`, secção 7), **com os resultados separados por cor** (o campo `white` de cada jogo).
+Exemplo do G16 só com a tendência:
 `claudio/claudio-g16.pt@critical_depth=0,endgame_pieces=0,fifty_horizon=0,phase_values=`.
 
 ### Livro de experiência (a regra do Martim)
@@ -165,6 +165,28 @@ lance, (jogos, jogos Bons), brancas e pretas separadas (cada posição é de que
    a taxa puxada para a média enquanto há poucos jogos. Só nos primeiros `book_plies` meios-lances.
 4. Medir a partir da **posição inicial** (as medições normais começam com 4 lances aleatórios e o
    livro quase nunca seria usado): `vs_engine.py ... --random-plies 0`, com e sem `book_weight`.
+
+### Resultado e tempos do BO30
+
+O BO30 terminou com 13 vitórias, 2 empates, 8 derrotas e 7 partidas inacabadas para o G16; o G15
+treinado fez 8 vitórias, 2 empates, 13 derrotas e 7 inacabadas. Os tempos acumulados foram 14,27 s
+por jogo para o G16 e 2,92 s para o G15. O G16 levou **4,9× mais por decisão**. Nas 12 partidas
+com 250 ou mais meios-lances, subiu para 170,9 ms/decisão, coerente com as pesquisas mais fundas
+que o G16 ativa em posições críticas e no final. O torneio guarda os tempos por partida em
+[`g16-vs-g15-100-bo30.jsonl`](results/matches/g16-vs-g15-100-bo30.jsonl) e a tabela em
+[`g16-vs-g15-100-bo30.md`](results/matches/g16-vs-g15-100-bo30.md). O tempo não foi separado por
+módulo, por isso não há uma percentagem exata de custo para cada um.
+
+### Pipeline para as próximas batalhas
+
+Os comandos, os 15 participantes registados, a retoma e os resultados estão em
+[`battle-pipeline/README.md`](battle-pipeline/README.md). O comando mais usado é:
+
+    .\claudio\battle-pipeline\battle.ps1 -A G16 -B G15Treinado -Games 30
+
+O runner usa 2 workers de prioridade baixa por omissão; os resultados ficam na pasta ignorada
+`claudio/battle-pipeline/runs/`. A otimização C++ validada e as medições ABBA estão em
+[`docs/claudio-performance.md`](../docs/claudio-performance.md).
 
 ## 6. Treino na GPU (o que o Martim quer fazer agora)
 
@@ -211,7 +233,7 @@ copiar de `results/engine-nuvem-*.json` (campo `list`, chave `game`). Com 600 jo
 
 ## 8. Próximos passos sugeridos
 
-0. Medir o `claudio-g16.pt` (secção 5b): cada módulo sozinho e o conjunto; gerar e medir o livro.
+0. Medir cada módulo do G16 sozinho e comparar com a configuração completa; gerar e medir o livro.
 1. Medir `claudio-campeao.pt` e o G15 contra Fairy 1700 (600) e Stockfish 1800 (400), contra os
    números do `forte` (32,7% / 15,2%). Ganhar aos outros Claudios não garante ganhar a motores.
 2. Medir cada módulo novo sozinho (scan, empate −1, simplificar) da mesma forma.

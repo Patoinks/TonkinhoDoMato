@@ -1,0 +1,226 @@
+{
+  "repository": ".",
+  "code_commit": "3d860e5bccfc301006f49adfbe9a8cc1fe979441",
+  "players": [
+    {
+      "id": "sf-max",
+      "name": "Stockfish Max",
+      "kind": "engine",
+      "elo": null,
+      "engine": {
+        "path": "engines/stockfish-11/stockfish-11-win/Windows/stockfish_20011801_x64_bmi2.exe",
+        "sha256": "271b62dce0226789433a86cbad8a5a14a1dd06e846974d9501cfd82dd1da5b02"
+      }
+    },
+    {
+      "id": "sf1800",
+      "name": "Stockfish 1800",
+      "kind": "engine",
+      "elo": 1800,
+      "engine": {
+        "path": "engines/stockfish-11/stockfish-11-win/Windows/stockfish_20011801_x64_bmi2.exe",
+        "sha256": "271b62dce0226789433a86cbad8a5a14a1dd06e846974d9501cfd82dd1da5b02"
+      }
+    },
+    {
+      "id": "claudio",
+      "name": "Claudio original",
+      "kind": "claudio",
+      "checkpoints": [
+        {
+          "path": "claudio/claudio.pt",
+          "sha256": "5c58ed33eefffed2bdd677f0f4e2e87193b9421e6755fb663c77b60382d298b7"
+        }
+      ]
+    },
+    {
+      "id": "g0",
+      "name": "Grande g0",
+      "kind": "claudio",
+      "checkpoints": [
+        {
+          "path": "claudio/claudio-grande-g0.pt",
+          "sha256": "250729d31aec12a80038d4e1f66142294677949a5f640c3450e49c864f88ceed"
+        }
+      ]
+    },
+    {
+      "id": "respostas",
+      "name": "Grande Respostas",
+      "kind": "claudio",
+      "checkpoints": [
+        {
+          "path": "claudio/claudio-grande-g0-respostas.pt",
+          "sha256": "d28226cc38dad8f0cac3fcf65131b9282955bd603a809697a3219b875882aeb3"
+        }
+      ]
+    },
+    {
+      "id": "forte",
+      "name": "Grande Forte",
+      "kind": "claudio",
+      "checkpoints": [
+        {
+          "path": "claudio/claudio-grande-g0-forte.pt",
+          "sha256": "f681b12acb9165c974b09195e1c06918fd9d3f6affd0084fd53ab9493d077881"
+        }
+      ]
+    },
+    {
+      "id": "grande1550",
+      "name": "Grande treino 1550",
+      "kind": "claudio",
+      "checkpoints": [
+        {
+          "path": "claudio/train-1550/claudio-grande-last.pt",
+          "sha256": "1b909db92e0a728e3280ab608ab96f42fe20cfeaf0d3fab7bcf98549058c6483"
+        }
+      ]
+    },
+    {
+      "id": "g10",
+      "name": "G10 campeao",
+      "kind": "claudio",
+      "checkpoints": [
+        {
+          "path": "claudio/claudio-campeao.pt",
+          "sha256": "2aa78cc83e3d06bb993623f15986ca20651e9151d1e9e1c6bece3bab670c1ceb"
+        }
+      ]
+    },
+    {
+      "id": "g15",
+      "name": "G15 sem treino",
+      "kind": "claudio",
+      "checkpoints": [
+        {
+          "path": "claudio/checkpoints/g15-initial.pt",
+          "sha256": "91feae2758e80174750c4c18fc176da3f513f80d32566a68970288bb3af2b85e"
+        }
+      ]
+    },
+    {
+      "id": "g15-100",
+      "name": "G15 treinado 100 vs SF1800",
+      "kind": "claudio",
+      "checkpoints": [
+        {
+          "path": "claudio/checkpoints/g15-sf1800-100.pt",
+          "sha256": "a74702805b2418d6ff34356ff0bd732ec38ee372ae6b6b727b3822d861c26072"
+        }
+      ]
+    },
+    {
+      "id": "g16",
+      "name": "G16 com modulos",
+      "kind": "claudio",
+      "checkpoints": [
+        {
+          "path": "claudio/claudio-g16.pt",
+          "sha256": "9a67bb52dd4153f4101bd63a1b385d66e4c6a92453f5ac40ea1be4804fe3f48e"
+        }
+      ]
+    },
+    {
+      "id": "timdgei",
+      "name": "Timdgei",
+      "kind": "timdgei",
+      "checkpoint": {
+        "path": "checkpoints/obj-max-continuo/latest.pt",
+        "sha256": "16f86376edf9d5605f905c98b6d845da81ad47480ea976778978d2bc4800a974"
+      },
+      "genes": {
+        "path": "claudio/checkpoints/timdgei-evolution.json",
+        "sha256": "319a9eb5e6ca4630c7d4d24d4e0f73f5ef8861f44f40841112b0086148842d69"
+      },
+      "king_model": {
+        "path": "claudio/checkpoints/timdgei-king-safety.pt",
+        "sha256": "c7c574579d25b3dac33c1bd9ca38c5fdb68139c513000b5fd741499d6e230d4d"
+      },
+      "source_games": 93741,
+      "source_model_name": "Tonkinho do Mato v4"
+    },
+    {
+      "id": "cores",
+      "name": "Especialistas brancas+pretas",
+      "kind": "claudio",
+      "checkpoints": [
+        {
+          "path": "claudio/checkpoints/specialists/cores-white.pt",
+          "sha256": "6c550edd668f3300fa42a2a83b18ef54200a26cc1f1baa47e8fb886a5257afdc"
+        },
+        {
+          "path": "claudio/checkpoints/specialists/cores-black.pt",
+          "sha256": "1699e560fdff69d22e5e598c40915c4ab99491df2454fab96e1fef019d2daf8f"
+        }
+      ],
+      "specialists": "white checkpoint only when White, black checkpoint only when Black",
+      "selection": "best checkpoint of each colour family"
+    },
+    {
+      "id": "cores-notas",
+      "name": "Especialistas so-notas",
+      "kind": "claudio",
+      "checkpoints": [
+        {
+          "path": "claudio/checkpoints/specialists/cores-notas-white.pt",
+          "sha256": "7fb7fe668898df2937d0d943f4b327d477f0b2da0c3dcff7edf86dbae8e3b4e2"
+        },
+        {
+          "path": "claudio/checkpoints/specialists/cores-notas-black.pt",
+          "sha256": "59d5bed815eea982e9662d2587f77e4172de85b2556a24c8bf29a4605ca51df7"
+        }
+      ],
+      "specialists": "white checkpoint only when White, black checkpoint only when Black",
+      "selection": "best checkpoint of each colour family"
+    },
+    {
+      "id": "cores-rev5",
+      "name": "Especialistas revisao 5",
+      "kind": "claudio",
+      "checkpoints": [
+        {
+          "path": "claudio/checkpoints/specialists/cores-rev5-white.pt",
+          "sha256": "5ea2301d0000777b36a9ff7e8d3e3efb83f7468e04fd369293bb6d7869f33f13"
+        },
+        {
+          "path": "claudio/checkpoints/specialists/cores-rev5-black.pt",
+          "sha256": "e23d8668480f1501117cc3f67eabaf7a3fea46081ccc2d6a166afccaf79bdeba"
+        }
+      ],
+      "specialists": "white checkpoint only when White, black checkpoint only when Black",
+      "selection": "best checkpoint of each colour family"
+    }
+  ],
+  "games_per_pair": 20,
+  "workers": 2,
+  "seed": 2027,
+  "random_plies": 4,
+  "max_plies": 300,
+  "engine_time_seconds": 0.002,
+  "engine_threads": 1,
+  "engine_hash_mb": 16,
+  "full_engine_strength": "UCI_LimitStrength=false; Skill Level=max, same 2ms budget as SF1800",
+  "training": false,
+  "pairs": 105,
+  "total_games": 2100,
+  "source_code_commit": "3d860e5bccfc301006f49adfbe9a8cc1fe979441",
+  "aliases": {
+    "G16": "g16",
+    "G15": "g15",
+    "G15Treinado": "g15-100",
+    "G10": "g10",
+    "g0": "g0",
+    "Grande": "g0",
+    "Forte": "forte",
+    "Respostas": "respostas",
+    "Claudio": "claudio",
+    "Grande1550": "grande1550",
+    "Timdgei": "timdgei",
+    "StockfishMax": "sf-max",
+    "Stockfish1800": "sf1800",
+    "Cores": "cores",
+    "CoresNotas": "cores-notas",
+    "CoresRev5": "cores-rev5"
+  }
+}

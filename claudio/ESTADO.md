@@ -246,5 +246,20 @@ motores e treinar na GPU (o learner na CPU da nuvem faz ~5 s/passo).
 
 `claudio-g16.pt`: o G16 artificial + limites de nós do forte + módulos novos (momentos críticos,
 fim de jogo, horizonte dos 50 lances, valores por fase, livro de experiência com a regra "Bom" do
-Martim). Sem treino e **ainda sem medições**: ver [README-CODEX.md](README-CODEX.md) secção 5b para
-as definições, os valores por fase medidos e como gerar e usar o livro no PC do Martim.
+Martim). Foi medido contra o G15 treinado em BO15 e BO30; continua por medir cada módulo separado
+e contra motores. Os resultados e tempos do BO30 estão em
+[`results/matches/g16-vs-g15-100-bo30.md`](results/matches/g16-vs-g15-100-bo30.md).
+
+## Otimização, treino e pipeline local (2026-10-08)
+
+- A otimização nativa C++ conservou os lances nas comparações e reduziu o tempo em 7,05% no G15 e
+  5,24% no pequeno perfil G16. Ver [`../docs/claudio-performance.md`](../docs/claudio-performance.md).
+- O G15 treinado em 100 jogos contra Stockfish 11 nominal 1800 ficou em 33 vitórias, 25 empates,
+  41 derrotas e 1 jogo truncado. O checkpoint está em
+  `checkpoints/g15-sf1800-100.pt`; o resumo do treino está em
+  `results/training/g15-sf1800-100.json`.
+- No BO30, G16: 13 vitórias, 2 empates, 8 derrotas, 7 inacabados; G15 treinado: 8, 2, 13, 7.
+  O G16 gastou 149,3 ms/decisão e o G15 30,7 ms/decisão. O limite de 300 meios-lances explica os
+  jogos inacabados; eles não são empates.
+- A pipeline reutilizável para os 15 participantes está em `battle-pipeline/`; arranca com dois
+  workers de prioridade baixa e retoma partidas interrompidas sem repetir jogos já guardados.

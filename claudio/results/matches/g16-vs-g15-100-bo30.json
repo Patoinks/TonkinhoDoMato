@@ -1,0 +1,102 @@
+{
+  "event": "G16 com modulos vs G15 treinado 100 jogos Stockfish 1800",
+  "date": "2026-10-08",
+  "games": 30,
+  "workers": 2,
+  "seed": 2027,
+  "random_plies": 4,
+  "max_plies": 300,
+  "wall_seconds": 265.59731589999865,
+  "games_per_second": 0.11295294870862116,
+  "rate_definition": "wins / all games; unfinished stays separate",
+  "checkpoint_sha256": {
+    "g16": "9a67bb52dd4153f4101bd63a1b385d66e4c6a92453f5ac40ea1be4804fe3f48e",
+    "g15_trained": "a74702805b2418d6ff34356ff0bd732ec38ee372ae6b6b727b3822d861c26072"
+  },
+  "standings": {
+    "g16": {
+      "name": "G16 com modulos",
+      "games": 30,
+      "wins": 13,
+      "draws": 2,
+      "losses": 8,
+      "unfinished": 7,
+      "win_rate": 0.43333333333333335,
+      "white": {
+        "games": 15,
+        "wins": 5,
+        "draws": 2,
+        "losses": 5,
+        "unfinished": 3,
+        "win_rate": 0.3333333333333333
+      },
+      "black": {
+        "games": 15,
+        "wins": 8,
+        "draws": 0,
+        "losses": 3,
+        "unfinished": 4,
+        "win_rate": 0.5333333333333333
+      },
+      "calculation_seconds": 427.9718094000418,
+      "decisions": 2866,
+      "seconds_per_game": 14.265726980001395,
+      "ms_per_decision": 149.32721891138934
+    },
+    "g15_trained": {
+      "name": "G15 treinado 100 vs SF1800",
+      "games": 30,
+      "wins": 8,
+      "draws": 2,
+      "losses": 13,
+      "unfinished": 7,
+      "win_rate": 0.26666666666666666,
+      "white": {
+        "games": 15,
+        "wins": 3,
+        "draws": 0,
+        "losses": 8,
+        "unfinished": 4,
+        "win_rate": 0.2
+      },
+      "black": {
+        "games": 15,
+        "wins": 5,
+        "draws": 2,
+        "losses": 5,
+        "unfinished": 3,
+        "win_rate": 0.3333333333333333
+      },
+      "calculation_seconds": 87.73556200004532,
+      "decisions": 2862,
+      "seconds_per_game": 2.924518733334844,
+      "ms_per_decision": 30.65533263453715
+    }
+  },
+  "timing_by_game_length": [
+    {
+      "plies": "<150",
+      "games": 10,
+      "g16_seconds_per_game": 5.299,
+      "g16_ms_per_decision": 120.7,
+      "g15_seconds_per_game": 2.586,
+      "g15_ms_per_decision": 58.8
+    },
+    {
+      "plies": "150-249",
+      "games": 8,
+      "g16_seconds_per_game": 10.688,
+      "g16_ms_per_decision": 116.6,
+      "g15_seconds_per_game": 3.51,
+      "g15_ms_per_decision": 38.3
+    },
+    {
+      "plies": "250+",
+      "games": 12,
+      "g16_seconds_per_game": 24.124,
+      "g16_ms_per_decision": 170.9,
+      "g15_seconds_per_game": 2.816,
+      "g15_ms_per_decision": 20.0
+    }
+  ]
+}

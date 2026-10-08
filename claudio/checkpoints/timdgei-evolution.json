@@ -1,0 +1,4773 @@
+{
+  "base_file": "checkpoints\\obj-max-continuo\\latest.pt",
+  "base_genes": {
+    "temperature": 0.1379082335254832,
+    "memory_weight": 0.18063696348922267,
+    "information_bonus": 0.011713458709919158,
+    "planning_candidates": 1,
+    "planning_replies": 2,
+    "planning_nodes": 71,
+    "planning_uncertainty": 0.07345297296692446,
+    "planning_gap": 0.2,
+    "robust_weight": 0.4513849993253386,
+    "skill_bonus": 0.0,
+    "piece_safety_weight": 0.2,
+    "piece_exchange_tolerance": 0.21289753701988345,
+    "king_safety_weight": 0.04679613775293547,
+    "kd_weight": 0.17304461792996828,
+    "mate_search_moves": 3,
+    "mate_defense_moves": 2,
+    "avoid_repetition_margin": 1.2958544327908663,
+    "exchange_depth": 5,
+    "endgame_pieces": 0,
+    "mate_pawn_reach": 1,
+    "passed_pawn_bonus": 0.05
+  },
+  "generations": [
+    {
+      "generation": 1,
+      "population": [
+        {
+          "id": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.18063696348922267,
+            "information_bonus": 0.011713458709919158,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.21289753701988345,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.17304461792996828,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "parent": null
+        },
+        {
+          "id": "G1-M1",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1341391372078807,
+            "memory_weight": 0.019225190461192032,
+            "information_bonus": 0.004484012334983241,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 73,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.21289753701988345,
+            "king_safety_weight": 0.13780912479476207,
+            "kd_weight": 0.17304461792996828,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G1-M2",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.19760835142404867,
+            "memory_weight": 0.21717733716766735,
+            "information_bonus": 0.04678462828526771,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 65,
+            "planning_uncertainty": 0.09677917568053013,
+            "planning_gap": 0.2,
+            "robust_weight": 0.281956510070194,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1495605754026859,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.0,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        },
+        {
+          "id": "G1-M3",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.11334801927758985,
+            "memory_weight": 0.18063696348922267,
+            "information_bonus": 0.011713458709919158,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 101,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.1800714082034461,
+            "robust_weight": 0.3083032292268708,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.21289753701988345,
+            "king_safety_weight": 0.04149871459702182,
+            "kd_weight": 0.17304461792996828,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 2.597463085215847,
+            "exchange_depth": 4,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G1-M4",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.18063696348922267,
+            "information_bonus": 0.011713458709919158,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.005314924317791384,
+            "piece_safety_weight": 0.1264959814220189,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.08260171500133337,
+            "kd_weight": 0.6122171065622697,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 0.7628136136756518,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G1-M5",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.2,
+            "memory_weight": 0.2638181409689246,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 75,
+            "planning_uncertainty": 0.06733050392790774,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.033379991217057106,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.5525498339469264,
+            "king_safety_weight": 0.09739704778619594,
+            "kd_weight": 0.17304461792996828,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.0,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G1-M6",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.1151760700038637,
+            "information_bonus": 0.011713458709919158,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.17950616482223491,
+            "robust_weight": 0.4014090016085274,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.3073635489532908,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.347619589156258,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 4,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        },
+        {
+          "id": "G1-M7",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.10860911842732535,
+            "memory_weight": 0.24729902100406753,
+            "information_bonus": 0.011713458709919158,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 57,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.16757265013668798,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.17947935879497343,
+            "piece_exchange_tolerance": 0.21289753701988345,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.27584482363657903,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 2.7779552711827327,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G1-M8",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.136154627659764,
+            "memory_weight": 0.18063696348922267,
+            "information_bonus": 0.04497873620505072,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 117,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.4326532409730235,
+            "king_safety_weight": 0.041065824009358765,
+            "kd_weight": 0.12268900590121921,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 3.910254295954978,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G1-M9",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.18063696348922267,
+            "information_bonus": 0.02350924162933153,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.003997243727992952,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.6362269819012609,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.17304461792996828,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G1-M10",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.13378275241785934,
+            "memory_weight": 0.18063696348922267,
+            "information_bonus": 0.011713458709919158,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.11173822279790906,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.12705611596033584,
+            "king_safety_weight": 0.10838934708132551,
+            "kd_weight": 0.09886474571414831,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.3910385548549091,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G1-M11",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.14823686360846128,
+            "information_bonus": 0.011713458709919158,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 37,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.015007734030767939,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.17304461792996828,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G1-M12",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 4
+        },
+        {
+          "id": "G1-M13",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.12176333837143338,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.17835227061513376,
+            "robust_weight": 0.31090515314863115,
+            "skill_bonus": 0.0014188911623565486,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.21289753701988345,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.17304461792996828,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.5381004247522222,
+            "exchange_depth": 4,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G1-M14",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.3,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.2,
+            "robust_weight": 0.1486408976252706,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.5090916164638484,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.4247147330322688,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 2.085194347501786,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G1-M15",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.17324102181132395,
+            "memory_weight": 0.23481978609682125,
+            "information_bonus": 0.011713458709919158,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 51,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2316390623385276,
+            "skill_bonus": 0.02372658145800721,
+            "piece_safety_weight": 0.19640947964015254,
+            "piece_exchange_tolerance": 0.1583623865763984,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.0,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 2.03898205463864,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G1-M16",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.09034476967660866,
+            "memory_weight": 0.24437776508384323,
+            "information_bonus": 0.048548040687121846,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 113,
+            "planning_uncertainty": 0.18758614582090805,
+            "planning_gap": 0.2,
+            "robust_weight": 0.563454565789886,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.0,
+            "kd_weight": 0.45509156627440744,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.7794545233964505,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G1-M17",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.029532276995942422,
+            "memory_weight": 0.0521879566645036,
+            "information_bonus": 0.021104074633014558,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.21289753701988345,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.45055756473590813,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 2.2707356145590913,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        },
+        {
+          "id": "G1-M18",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.18063696348922267,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 46,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.21289753701988345,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.17304461792996828,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.7665854276881021,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G1-M19",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.18778802117931065,
+            "information_bonus": 0.011713458709919158,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 34,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.15538213104255075,
+            "piece_exchange_tolerance": 0.40635476975722173,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.21796280710596988,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G1-M20",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.18063696348922267,
+            "information_bonus": 0.021442222451682397,
+            "planning_candidates": 2,
+            "planning_replies": 3,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.1331292566344944,
+            "planning_gap": 0.19528775347773555,
+            "robust_weight": 0.33834588704717516,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.29957025923443165,
+            "king_safety_weight": 0.01799832019672547,
+            "kd_weight": 0.17304461792996828,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G1-M21",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.18063696348922267,
+            "information_bonus": 0.003881520068211318,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 121,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 1.0,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.20097672110438444,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.608418746807364,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G1-M22",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.20091353809665596,
+            "information_bonus": 0.011713458709919158,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 50,
+            "planning_uncertainty": 0.07340230549472712,
+            "planning_gap": 0.2,
+            "robust_weight": 0.5929238291570295,
+            "skill_bonus": 0.021758124104183818,
+            "piece_safety_weight": 0.16123055634443967,
+            "piece_exchange_tolerance": 0.337854205671711,
+            "king_safety_weight": 0.04552698196965977,
+            "kd_weight": 0.17304461792996828,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 4,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G1-M23",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.1379082335254832,
+            "memory_weight": 0.11137354492028877,
+            "information_bonus": 0.011713458709919158,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.18604011763010025,
+            "piece_exchange_tolerance": 0.21289753701988345,
+            "king_safety_weight": 0.007479181130495539,
+            "kd_weight": 0.17304461792996828,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        }
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "players": 24,
+          "matches": [
+            {
+              "a": "G1-M23",
+              "b": "G1-M6",
+              "points": [
+                0.0,
+                5.0
+              ],
+              "games": 5,
+              "survivor": "G1-M6"
+            },
+            {
+              "a": "G1-M22",
+              "b": "G1-M9",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G1-M22"
+            },
+            {
+              "a": "G1-M5",
+              "b": "Timdgei",
+              "points": [
+                2.5,
+                2.5
+              ],
+              "games": 5,
+              "survivor": null
+            },
+            {
+              "a": "G1-M18",
+              "b": "G1-M8",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G1-M18"
+            },
+            {
+              "a": "G1-M2",
+              "b": "G1-M21",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G1-M2"
+            },
+            {
+              "a": "G1-M13",
+              "b": "G1-M17",
+              "points": [
+                1.5,
+                3.5
+              ],
+              "games": 5,
+              "survivor": "G1-M17"
+            },
+            {
+              "a": "G1-M12",
+              "b": "G1-M1",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G1-M12"
+            },
+            {
+              "a": "G1-M10",
+              "b": "G1-M4",
+              "points": [
+                4.5,
+                0.5
+              ],
+              "games": 5,
+              "survivor": "G1-M10"
+            },
+            {
+              "a": "G1-M11",
+              "b": "G1-M3",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G1-M11"
+            },
+            {
+              "a": "G1-M16",
+              "b": "G1-M15",
+              "points": [
+                4.0,
+                1.0
+              ],
+              "games": 5,
+              "survivor": "G1-M16"
+            },
+            {
+              "a": "G1-M19",
+              "b": "G1-M7",
+              "points": [
+                1.5,
+                3.5
+              ],
+              "games": 5,
+              "survivor": "G1-M7"
+            },
+            {
+              "a": "G1-M20",
+              "b": "G1-M14",
+              "points": [
+                1.0,
+                4.0
+              ],
+              "games": 5,
+              "survivor": "G1-M14"
+            }
+          ],
+          "survivors": [
+            "G1-M6",
+            "G1-M22",
+            "G1-M18",
+            "G1-M2",
+            "G1-M17",
+            "G1-M12",
+            "G1-M10",
+            "G1-M11",
+            "G1-M16",
+            "G1-M7",
+            "G1-M14"
+          ]
+        },
+        {
+          "round": 2,
+          "players": 11,
+          "matches": [
+            {
+              "a": "G1-M14",
+              "b": "G1-M7",
+              "points": [
+                2.5,
+                2.5
+              ],
+              "games": 5,
+              "survivor": null
+            },
+            {
+              "a": "G1-M16",
+              "b": "G1-M18",
+              "points": [
+                2.5,
+                2.5
+              ],
+              "games": 5,
+              "survivor": null
+            },
+            {
+              "a": "G1-M22",
+              "b": "G1-M6",
+              "points": [
+                1.0,
+                4.0
+              ],
+              "games": 5,
+              "survivor": "G1-M6"
+            },
+            {
+              "a": "G1-M11",
+              "b": "G1-M12",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G1-M12"
+            },
+            {
+              "a": "G1-M2",
+              "b": "G1-M10",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G1-M2"
+            }
+          ],
+          "survivors": [
+            "G1-M17",
+            "G1-M6",
+            "G1-M12",
+            "G1-M2"
+          ]
+        },
+        {
+          "round": 3,
+          "players": 4,
+          "matches": [
+            {
+              "a": "G1-M6",
+              "b": "G1-M12",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G1-M12"
+            },
+            {
+              "a": "G1-M2",
+              "b": "G1-M17",
+              "points": [
+                0.0,
+                5.0
+              ],
+              "games": 5,
+              "survivor": "G1-M17"
+            }
+          ],
+          "survivors": [
+            "G1-M12",
+            "G1-M17"
+          ]
+        },
+        {
+          "round": 4,
+          "players": 2,
+          "matches": [
+            {
+              "a": "G1-M17",
+              "b": "G1-M12",
+              "points": [
+                1.5,
+                3.5
+              ],
+              "games": 5,
+              "survivor": "G1-M12"
+            }
+          ],
+          "survivors": [
+            "G1-M12"
+          ]
+        }
+      ],
+      "champion": "G1-M12"
+    },
+    {
+      "generation": 2,
+      "population": [
+        {
+          "id": "G1-M12",
+          "parent": "Timdgei",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 6
+        },
+        {
+          "id": "G2-M1",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.0696794988979359,
+            "memory_weight": 0.19735418871615473,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 97,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.10727226382502936,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G2-M2",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.08097106116061698,
+            "memory_weight": 0.16406486986201976,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 118,
+            "planning_uncertainty": 0.09749193446347974,
+            "planning_gap": 0.2,
+            "robust_weight": 0.19532357211162543,
+            "skill_bonus": 0.050459603531325004,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1483566006114724,
+            "king_safety_weight": 0.017798278995864017,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G2-M3",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.025007111770024196,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 40,
+            "planning_uncertainty": 0.13877114044644268,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.04032707478571937,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.08487746859473491,
+            "kd_weight": 0.23094974862008394,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 3,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G2-M4",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.0,
+            "planning_candidates": 2,
+            "planning_replies": 1,
+            "planning_nodes": 24,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.0181831349478338,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G2-M5",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.12029539216660715,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.0130981407828989,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 4,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G2-M6",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 93,
+            "planning_uncertainty": 0.04670684563504588,
+            "planning_gap": 0.15140299274855973,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.01484346536805409,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.10535193328935108,
+            "kd_weight": 0.13373656660627375,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 4,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G2-M7",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.01281401352366359,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 57,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.7500021559060737,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.037181344387964436,
+            "kd_weight": 0.7386137918447979,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.20708125839275326,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        },
+        {
+          "id": "G2-M8",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.2710538750896576,
+            "information_bonus": 0.024381912952458513,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.010045898364997889,
+            "piece_safety_weight": 0.10461003704385723,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.9535571197778909,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G2-M9",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.015917384921366233,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 97,
+            "planning_uncertainty": 0.03977673095887848,
+            "planning_gap": 0.15436798037165272,
+            "robust_weight": 0.5969337561558414,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.774532964550791,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G2-M10",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.14757617029924613,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 54,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.13676732722554386,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.0,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2884880082337262,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G2-M11",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.09792704850261841,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 38,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.24243077814991368,
+            "king_safety_weight": 0.04344844746456445,
+            "kd_weight": 0.2582843919288892,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 2.7307658221547104,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        },
+        {
+          "id": "G2-M12",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.011397834480218829,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.15383561016922528,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 4,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G2-M13",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 81,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.6321408082060611,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.17985588675429076,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.013873798400771575,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 4,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G2-M14",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06176840932644828,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 59,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.1843743446281152,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.019687110144334018,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04551555291118196,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 4
+        },
+        {
+          "id": "G2-M15",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 4
+        },
+        {
+          "id": "G2-M16",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.027063916805816643,
+            "memory_weight": 0.11479050848686018,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.09914595949496034,
+            "planning_gap": 0.2,
+            "robust_weight": 0.43475963172726484,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1802322481222797,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.3673580014030326,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 4,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G2-M17",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.08330010933829858,
+            "memory_weight": 0.16617901325447793,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.14636475787028816,
+            "robust_weight": 0.20898194162458003,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.15213427187705367,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 3,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G2-M18",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.016457445304624313,
+            "planning_candidates": 2,
+            "planning_replies": 1,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.10958743918116833,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.014423186804830557,
+            "piece_safety_weight": 0.1417277272642486,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.09553896472106421,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 0.4507876499600614,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G2-M19",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.1138805613968184,
+            "memory_weight": 0.1299835866697013,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 108,
+            "planning_uncertainty": 0.08242019417551684,
+            "planning_gap": 0.2,
+            "robust_weight": 0.5355581209939528,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.035327477848095756,
+            "kd_weight": 0.6207896679720315,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G2-M20",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.1373637784216871,
+            "information_bonus": 0.0,
+            "planning_candidates": 2,
+            "planning_replies": 1,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.1891693718303419,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04679613775293547,
+            "kd_weight": 0.2669011301200237,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 2.247581349760538,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G2-M21",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.07864337253830533,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 2.2058027189544824,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G2-M22",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.09583342346695475,
+            "planning_gap": 0.2,
+            "robust_weight": 0.3723985200271005,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.02262632268076462,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 2.252497250766442,
+            "exchange_depth": 4,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G2-M23",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.0656721488057123,
+            "memory_weight": 0.16651193528928604,
+            "information_bonus": 0.00040633384310339964,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 71,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4513849993253386,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.1767859877379469,
+            "piece_exchange_tolerance": 0.13915083119581484,
+            "king_safety_weight": 0.027328401280797516,
+            "kd_weight": 0.0,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.5444177420398089,
+            "exchange_depth": 4,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        }
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "players": 24,
+          "matches": [
+            {
+              "a": "G2-M6",
+              "b": "G2-M19",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G2-M6"
+            },
+            {
+              "a": "G2-M10",
+              "b": "G2-M17",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G2-M10"
+            },
+            {
+              "a": "G2-M14",
+              "b": "G2-M20",
+              "points": [
+                4.0,
+                1.0
+              ],
+              "games": 5,
+              "survivor": "G2-M14"
+            },
+            {
+              "a": "G1-M12",
+              "b": "G2-M1",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G1-M12"
+            },
+            {
+              "a": "G2-M18",
+              "b": "G2-M11",
+              "points": [
+                1.0,
+                4.0
+              ],
+              "games": 5,
+              "survivor": "G2-M11"
+            },
+            {
+              "a": "G2-M3",
+              "b": "G2-M4",
+              "points": [
+                4.0,
+                1.0
+              ],
+              "games": 5,
+              "survivor": "G2-M3"
+            },
+            {
+              "a": "G2-M23",
+              "b": "G2-M12",
+              "points": [
+                1.5,
+                3.5
+              ],
+              "games": 5,
+              "survivor": "G2-M12"
+            },
+            {
+              "a": "G2-M16",
+              "b": "G2-M7",
+              "points": [
+                1.0,
+                4.0
+              ],
+              "games": 5,
+              "survivor": "G2-M7"
+            },
+            {
+              "a": "G2-M9",
+              "b": "G2-M8",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G2-M9"
+            },
+            {
+              "a": "G2-M5",
+              "b": "G2-M13",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G2-M5"
+            },
+            {
+              "a": "G2-M21",
+              "b": "G2-M15",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G2-M15"
+            },
+            {
+              "a": "G2-M22",
+              "b": "G2-M2",
+              "points": [
+                4.0,
+                1.0
+              ],
+              "games": 5,
+              "survivor": "G2-M22"
+            }
+          ],
+          "survivors": [
+            "G2-M6",
+            "G2-M10",
+            "G2-M14",
+            "G1-M12",
+            "G2-M11",
+            "G2-M3",
+            "G2-M12",
+            "G2-M7",
+            "G2-M9",
+            "G2-M5",
+            "G2-M15",
+            "G2-M22"
+          ]
+        },
+        {
+          "round": 2,
+          "players": 12,
+          "matches": [
+            {
+              "a": "G2-M11",
+              "b": "G2-M6",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G2-M11"
+            },
+            {
+              "a": "G2-M5",
+              "b": "G2-M7",
+              "points": [
+                0.5,
+                4.5
+              ],
+              "games": 5,
+              "survivor": "G2-M7"
+            },
+            {
+              "a": "G2-M12",
+              "b": "G1-M12",
+              "points": [
+                0.5,
+                4.5
+              ],
+              "games": 5,
+              "survivor": "G1-M12"
+            },
+            {
+              "a": "G2-M22",
+              "b": "G2-M9",
+              "points": [
+                2.5,
+                2.5
+              ],
+              "games": 5,
+              "survivor": null
+            },
+            {
+              "a": "G2-M14",
+              "b": "G2-M3",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G2-M14"
+            },
+            {
+              "a": "G2-M15",
+              "b": "G2-M10",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G2-M15"
+            }
+          ],
+          "survivors": [
+            "G2-M11",
+            "G2-M7",
+            "G1-M12",
+            "G2-M14",
+            "G2-M15"
+          ]
+        },
+        {
+          "round": 3,
+          "players": 5,
+          "matches": [
+            {
+              "a": "G2-M15",
+              "b": "G2-M11",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G2-M15"
+            },
+            {
+              "a": "G2-M7",
+              "b": "G2-M14",
+              "points": [
+                1.0,
+                4.0
+              ],
+              "games": 5,
+              "survivor": "G2-M14"
+            }
+          ],
+          "survivors": [
+            "G1-M12",
+            "G2-M15",
+            "G2-M14"
+          ]
+        },
+        {
+          "round": 4,
+          "players": 3,
+          "matches": [
+            {
+              "a": "G1-M12",
+              "b": "G2-M14",
+              "points": [
+                1.0,
+                4.0
+              ],
+              "games": 5,
+              "survivor": "G2-M14"
+            }
+          ],
+          "survivors": [
+            "G2-M15",
+            "G2-M14"
+          ]
+        },
+        {
+          "round": 5,
+          "players": 2,
+          "matches": [
+            {
+              "a": "G2-M14",
+              "b": "G2-M15",
+              "points": [
+                1.0,
+                4.0
+              ],
+              "games": 5,
+              "survivor": "G2-M15"
+            }
+          ],
+          "survivors": [
+            "G2-M15"
+          ]
+        }
+      ],
+      "champion": "G2-M15"
+    },
+    {
+      "generation": 3,
+      "population": [
+        {
+          "id": "G2-M15",
+          "parent": "G1-M12",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 4
+        },
+        {
+          "id": "G3-M1",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.15178107110146852,
+            "robust_weight": 0.18278624301096713,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.21023501339441425,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.0,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G3-M2",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.0,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.025287667665588077,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.8547101776244364,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G3-M3",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.09874438154439856,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.5782898874591834,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G3-M4",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.12491570535206879,
+            "information_bonus": 0.012935731856228302,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.19170650363369926,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.025817965365218274,
+            "piece_safety_weight": 0.18914055429991258,
+            "piece_exchange_tolerance": 0.17936110674214148,
+            "king_safety_weight": 0.043486403095269154,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.0,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G3-M5",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.11112413413510448,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.0,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 81,
+            "planning_uncertainty": 0.0557776164773368,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.022001140534771743,
+            "piece_safety_weight": 0.12823781656428748,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 3.703648912795174,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G3-M6",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.18753497162728056,
+            "robust_weight": 0.0,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.04213651335848813,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        },
+        {
+          "id": "G3-M7",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.05487759817456778,
+            "information_bonus": 0.0,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.08648583552667118,
+            "planning_gap": 0.2,
+            "robust_weight": 0.6098536336190692,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 2.677844935794207,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G3-M8",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.06989871699108442,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.02095285412686816,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.031078272529877805,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.9574588801976924,
+            "exchange_depth": 4,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G3-M9",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.009987784988698716,
+            "piece_safety_weight": 0.18763936101040193,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 4
+        },
+        {
+          "id": "G3-M10",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.07573306720196225,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.019304710798982994,
+            "planning_candidates": 2,
+            "planning_replies": 1,
+            "planning_nodes": 24,
+            "planning_uncertainty": 0.09453185610762398,
+            "planning_gap": 0.2,
+            "robust_weight": 0.4302836107317489,
+            "skill_bonus": 0.04489399422904712,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.03461938488970625,
+            "kd_weight": 0.06015723435925242,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 2.6467341462315552,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G3-M11",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.06447703162017772,
+            "information_bonus": 0.018019176439648472,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 24,
+            "planning_uncertainty": 0.12497066566826293,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.022619208534050278,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 3
+        },
+        {
+          "id": "G3-M12",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.11771633656968195,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.07546420911732907,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.0986262392357847,
+            "kd_weight": 0.33356668880524326,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 0.8934753923113032,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G3-M13",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.012735333212092886,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.07672178598624968,
+            "planning_gap": 0.17386594309147999,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.1792950400205134,
+            "piece_exchange_tolerance": 0.26816215641944363,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G3-M14",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2331011392809476,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 0.8618425697087302,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G3-M15",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.09685894637907375,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 24,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.156940917008681,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.18090025973407897,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        },
+        {
+          "id": "G3-M16",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.06739806896924261,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.45277300743705917,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G3-M17",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08178416556132866,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.09988596879288326,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.02052827667122713,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.06617122829875245,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G3-M18",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.060761629944536,
+            "information_bonus": 0.01260735369959802,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.054759871760756265,
+            "planning_gap": 0.2,
+            "robust_weight": 0.46387855139133805,
+            "skill_bonus": 0.026995178514251345,
+            "piece_safety_weight": 0.14622346389875449,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.9449703492394175,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G3-M19",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.023733607642403804,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.537493967103655,
+            "king_safety_weight": 0.061613441841982905,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.5213467241426486,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G3-M20",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.12477136550628007,
+            "planning_gap": 0.2,
+            "robust_weight": 0.5267184307774533,
+            "skill_bonus": 0.012030970680031748,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.20245417218213002,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G3-M21",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.08743758662063136,
+            "memory_weight": 0.06263563778475137,
+            "information_bonus": 0.004739006696052886,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 38,
+            "planning_uncertainty": 0.03513705485914635,
+            "planning_gap": 0.2,
+            "robust_weight": 0.6096867974523343,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.014727976125838687,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G3-M22",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.04032925868395877,
+            "memory_weight": 0.030909270585652918,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.15519005451695073,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.0008425764905125449,
+            "kd_weight": 0.0,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.8956421057876744,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G3-M23",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.07127088637512392,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 49,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.1879619517912911,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.022508420795282584,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.034169901203276336,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        }
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "players": 24,
+          "matches": [
+            {
+              "a": "G3-M9",
+              "b": "G3-M19",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G3-M9"
+            },
+            {
+              "a": "G2-M15",
+              "b": "G3-M14",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G3-M14"
+            },
+            {
+              "a": "G3-M11",
+              "b": "G3-M3",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G3-M11"
+            },
+            {
+              "a": "G3-M23",
+              "b": "G3-M8",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G3-M8"
+            },
+            {
+              "a": "G3-M22",
+              "b": "G3-M6",
+              "points": [
+                1.0,
+                4.0
+              ],
+              "games": 5,
+              "survivor": "G3-M6"
+            },
+            {
+              "a": "G3-M10",
+              "b": "G3-M15",
+              "points": [
+                0.5,
+                4.5
+              ],
+              "games": 5,
+              "survivor": "G3-M15"
+            },
+            {
+              "a": "G3-M20",
+              "b": "G3-M1",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G3-M1"
+            },
+            {
+              "a": "G3-M13",
+              "b": "G3-M21",
+              "points": [
+                1.5,
+                3.5
+              ],
+              "games": 5,
+              "survivor": "G3-M21"
+            },
+            {
+              "a": "G3-M7",
+              "b": "G3-M5",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G3-M7"
+            },
+            {
+              "a": "G3-M18",
+              "b": "G3-M4",
+              "points": [
+                2.5,
+                2.5
+              ],
+              "games": 5,
+              "survivor": null
+            },
+            {
+              "a": "G3-M2",
+              "b": "G3-M16",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G3-M16"
+            },
+            {
+              "a": "G3-M12",
+              "b": "G3-M17",
+              "points": [
+                2.5,
+                2.5
+              ],
+              "games": 5,
+              "survivor": null
+            }
+          ],
+          "survivors": [
+            "G3-M9",
+            "G3-M14",
+            "G3-M11",
+            "G3-M8",
+            "G3-M6",
+            "G3-M15",
+            "G3-M1",
+            "G3-M21",
+            "G3-M7",
+            "G3-M16"
+          ]
+        },
+        {
+          "round": 2,
+          "players": 10,
+          "matches": [
+            {
+              "a": "G3-M16",
+              "b": "G3-M1",
+              "points": [
+                2.5,
+                2.5
+              ],
+              "games": 5,
+              "survivor": null
+            },
+            {
+              "a": "G3-M9",
+              "b": "G3-M14",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G3-M9"
+            },
+            {
+              "a": "G3-M7",
+              "b": "G3-M15",
+              "points": [
+                1.0,
+                4.0
+              ],
+              "games": 5,
+              "survivor": "G3-M15"
+            },
+            {
+              "a": "G3-M6",
+              "b": "G3-M21",
+              "points": [
+                4.5,
+                0.5
+              ],
+              "games": 5,
+              "survivor": "G3-M6"
+            },
+            {
+              "a": "G3-M8",
+              "b": "G3-M11",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G3-M11"
+            }
+          ],
+          "survivors": [
+            "G3-M9",
+            "G3-M15",
+            "G3-M6",
+            "G3-M11"
+          ]
+        },
+        {
+          "round": 3,
+          "players": 4,
+          "matches": [
+            {
+              "a": "G3-M9",
+              "b": "G3-M6",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G3-M9"
+            },
+            {
+              "a": "G3-M15",
+              "b": "G3-M11",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G3-M11"
+            }
+          ],
+          "survivors": [
+            "G3-M9",
+            "G3-M11"
+          ]
+        },
+        {
+          "round": 4,
+          "players": 2,
+          "matches": [
+            {
+              "a": "G3-M11",
+              "b": "G3-M9",
+              "points": [
+                0.5,
+                4.5
+              ],
+              "games": 5,
+              "survivor": "G3-M9"
+            }
+          ],
+          "survivors": [
+            "G3-M9"
+          ]
+        }
+      ],
+      "champion": "G3-M9"
+    },
+    {
+      "generation": 4,
+      "population": [
+        {
+          "id": "G3-M9",
+          "parent": "G2-M15",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.009987784988698716,
+            "piece_safety_weight": 0.18763936101040193,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 6
+        },
+        {
+          "id": "G4-M1",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.04255638038303158,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.25771601294333457,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2693301528531652,
+            "skill_bonus": 0.009987784988698716,
+            "piece_safety_weight": 0.1881211929381702,
+            "piece_exchange_tolerance": 0.21693111137012364,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G4-M2",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.030371477519742757,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 106,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.11144466573382472,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.019572389093259222,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G4-M3",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.013337468636361802,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 24,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.02908234281886179,
+            "piece_safety_weight": 0.18763936101040193,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.06084496996377947,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G4-M4",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.025616351894839323,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.10022063552694611,
+            "planning_gap": 0.19575781609909815,
+            "robust_weight": 0.3045096595304652,
+            "skill_bonus": 0.009987784988698716,
+            "piece_safety_weight": 0.18763936101040193,
+            "piece_exchange_tolerance": 0.1854092913679643,
+            "king_safety_weight": 0.038087272128731954,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.020462792937976,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G4-M5",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.1860598692049184,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.05432554845765004,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.03035952534226622,
+            "piece_safety_weight": 0.19682711910659265,
+            "piece_exchange_tolerance": 0.4903364301197993,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 4
+        },
+        {
+          "id": "G4-M6",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.13261590495176045,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.11438715892339843,
+            "robust_weight": 0.4349634810549544,
+            "skill_bonus": 0.009987784988698716,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        },
+        {
+          "id": "G4-M7",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.10847195868203083,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.049443695446146296,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2699450398561928,
+            "skill_bonus": 0.02501068766969764,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.02271245302199965,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G4-M8",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.13939252257145143,
+            "information_bonus": 0.014537302493572917,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.004320960054675088,
+            "piece_safety_weight": 0.18763936101040193,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.012875403778129665,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G4-M9",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.101800532684195,
+            "memory_weight": 0.11775247439428274,
+            "information_bonus": 0.0,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.02584195359150287,
+            "planning_gap": 0.2,
+            "robust_weight": 0.48332860234196756,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.18763936101040193,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G4-M10",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 53,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.19790785466669242,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.009311704954829329,
+            "piece_safety_weight": 0.1521554050581873,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.4660748564062391,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G4-M11",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.012897778973931899,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.07345297296692446,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.18763936101040193,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.07081021574954556,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G4-M12",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 3,
+            "planning_nodes": 39,
+            "planning_uncertainty": 0.11126127308525571,
+            "planning_gap": 0.19337455109092885,
+            "robust_weight": 0.0,
+            "skill_bonus": 0.005069562752794969,
+            "piece_safety_weight": 0.18763936101040193,
+            "piece_exchange_tolerance": 0.1639563222989356,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.8060162444736307,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G4-M13",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.15534943997257952,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.18588060023213815,
+            "robust_weight": 0.28950376272877154,
+            "skill_bonus": 0.01033055469918735,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.06774085702462684,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.944118917412898,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G4-M14",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.1332265670087614,
+            "planning_gap": 0.2,
+            "robust_weight": 0.013666382007145705,
+            "skill_bonus": 0.010971667361142736,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.16627357773722867,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G4-M15",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.0,
+            "information_bonus": 0.005558108882663414,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 39,
+            "planning_uncertainty": 0.27970731414690597,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.18763936101040193,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.01512808891427092,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.0,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G4-M16",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.13315813335322382,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.001982950868140556,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 33,
+            "planning_uncertainty": 0.1277746889487227,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.009987784988698716,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.19768161739123719,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.0,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G4-M17",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.05000990796765237,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.18516955393492146,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.024608536772500668,
+            "piece_safety_weight": 0.16285194044815546,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.05530155843404827,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.5827474409114526,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G4-M18",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.08182482178827201,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 29,
+            "planning_uncertainty": 0.10723931663326797,
+            "planning_gap": 0.2,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.01671665206048687,
+            "piece_safety_weight": 0.18763936101040193,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.0,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G4-M19",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.06569434084018447,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.1393099948176227,
+            "planning_gap": 0.17245746717570692,
+            "robust_weight": 0.26539534752814964,
+            "skill_bonus": 0.0015496399743877773,
+            "piece_safety_weight": 0.09079570496080348,
+            "piece_exchange_tolerance": 0.1916780224163659,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G4-M20",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.06488131694706961,
+            "memory_weight": 0.05338157853854822,
+            "information_bonus": 0.05856704370584451,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 24,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.2,
+            "robust_weight": 0.09723858320032028,
+            "skill_bonus": 0.022811860116876158,
+            "piece_safety_weight": 0.18763936101040193,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.06515685974394948,
+            "kd_weight": 0.2574471242456301,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G4-M21",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.025643622123345824,
+            "memory_weight": 0.0,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.05024374731844983,
+            "planning_gap": 0.2,
+            "robust_weight": 0.0,
+            "skill_bonus": 0.009987784988698716,
+            "piece_safety_weight": 0.1381792373681203,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0984810622549545,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G4-M22",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.021905077665089805,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.07126275948815831,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.0031105333222472657,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 4
+        },
+        {
+          "id": "G4-M23",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.0862037440818493,
+            "memory_weight": 0.028325477117270896,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 66,
+            "planning_uncertainty": 0.051400078632987935,
+            "planning_gap": 0.12830327835954802,
+            "robust_weight": 0.2979992080514551,
+            "skill_bonus": 0.009987784988698716,
+            "piece_safety_weight": 0.18763936101040193,
+            "piece_exchange_tolerance": 0.1558188489703589,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.20824998167449404,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        }
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "players": 24,
+          "matches": [
+            {
+              "a": "G4-M10",
+              "b": "G4-M9",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G4-M10"
+            },
+            {
+              "a": "G4-M20",
+              "b": "G4-M16",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G4-M16"
+            },
+            {
+              "a": "G4-M13",
+              "b": "G3-M9",
+              "points": [
+                1.5,
+                3.5
+              ],
+              "games": 5,
+              "survivor": "G3-M9"
+            },
+            {
+              "a": "G4-M7",
+              "b": "G4-M12",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G4-M7"
+            },
+            {
+              "a": "G4-M15",
+              "b": "G4-M2",
+              "points": [
+                1.5,
+                3.5
+              ],
+              "games": 5,
+              "survivor": "G4-M2"
+            },
+            {
+              "a": "G4-M6",
+              "b": "G4-M19",
+              "points": [
+                4.5,
+                0.5
+              ],
+              "games": 5,
+              "survivor": "G4-M6"
+            },
+            {
+              "a": "G4-M14",
+              "b": "G4-M22",
+              "points": [
+                1.0,
+                4.0
+              ],
+              "games": 5,
+              "survivor": "G4-M22"
+            },
+            {
+              "a": "G4-M11",
+              "b": "G4-M23",
+              "points": [
+                1.5,
+                3.5
+              ],
+              "games": 5,
+              "survivor": "G4-M23"
+            },
+            {
+              "a": "G4-M4",
+              "b": "G4-M8",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G4-M4"
+            },
+            {
+              "a": "G4-M17",
+              "b": "G4-M18",
+              "points": [
+                1.0,
+                4.0
+              ],
+              "games": 5,
+              "survivor": "G4-M18"
+            },
+            {
+              "a": "G4-M5",
+              "b": "G4-M3",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G4-M5"
+            },
+            {
+              "a": "G4-M21",
+              "b": "G4-M1",
+              "points": [
+                1.5,
+                3.5
+              ],
+              "games": 5,
+              "survivor": "G4-M1"
+            }
+          ],
+          "survivors": [
+            "G4-M10",
+            "G4-M16",
+            "G3-M9",
+            "G4-M7",
+            "G4-M2",
+            "G4-M6",
+            "G4-M22",
+            "G4-M23",
+            "G4-M4",
+            "G4-M18",
+            "G4-M5",
+            "G4-M1"
+          ]
+        },
+        {
+          "round": 2,
+          "players": 12,
+          "matches": [
+            {
+              "a": "G4-M2",
+              "b": "G3-M9",
+              "points": [
+                1.5,
+                3.5
+              ],
+              "games": 5,
+              "survivor": "G3-M9"
+            },
+            {
+              "a": "G4-M22",
+              "b": "G4-M4",
+              "points": [
+                4.0,
+                1.0
+              ],
+              "games": 5,
+              "survivor": "G4-M22"
+            },
+            {
+              "a": "G4-M7",
+              "b": "G4-M18",
+              "points": [
+                2.5,
+                2.5
+              ],
+              "games": 5,
+              "survivor": null
+            },
+            {
+              "a": "G4-M1",
+              "b": "G4-M5",
+              "points": [
+                1.0,
+                4.0
+              ],
+              "games": 5,
+              "survivor": "G4-M5"
+            },
+            {
+              "a": "G4-M23",
+              "b": "G4-M16",
+              "points": [
+                4.0,
+                1.0
+              ],
+              "games": 5,
+              "survivor": "G4-M23"
+            },
+            {
+              "a": "G4-M6",
+              "b": "G4-M10",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G4-M6"
+            }
+          ],
+          "survivors": [
+            "G3-M9",
+            "G4-M22",
+            "G4-M5",
+            "G4-M23",
+            "G4-M6"
+          ]
+        },
+        {
+          "round": 3,
+          "players": 5,
+          "matches": [
+            {
+              "a": "G4-M22",
+              "b": "G4-M23",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G4-M22"
+            },
+            {
+              "a": "G4-M5",
+              "b": "G3-M9",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G4-M5"
+            }
+          ],
+          "survivors": [
+            "G4-M6",
+            "G4-M22",
+            "G4-M5"
+          ]
+        },
+        {
+          "round": 4,
+          "players": 3,
+          "matches": [
+            {
+              "a": "G4-M5",
+              "b": "G4-M6",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G4-M5"
+            }
+          ],
+          "survivors": [
+            "G4-M22",
+            "G4-M5"
+          ]
+        },
+        {
+          "round": 5,
+          "players": 2,
+          "matches": [
+            {
+              "a": "G4-M22",
+              "b": "G4-M5",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G4-M22"
+            }
+          ],
+          "survivors": [
+            "G4-M22"
+          ]
+        }
+      ],
+      "champion": "G4-M22"
+    },
+    {
+      "generation": 5,
+      "population": [
+        {
+          "id": "G4-M22",
+          "parent": "G3-M9",
+          "genes": {
+            "temperature": 0.021905077665089805,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.07126275948815831,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.0031105333222472657,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 4
+        },
+        {
+          "id": "G5-M1",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.021905077665089805,
+            "memory_weight": 0.10444154865071605,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8315656362255958,
+            "skill_bonus": 0.011950697565591641,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M2",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.021905077665089805,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.007755437669158885,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 94,
+            "planning_uncertainty": 0.03738504032343412,
+            "planning_gap": 0.19431768827713355,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.0031105333222472657,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.02745282294535741,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.465509814824974,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M3",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.021905077665089805,
+            "memory_weight": 0.26485704677494104,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 110,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.020353069545971235,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        },
+        {
+          "id": "G5-M4",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.021905077665089805,
+            "memory_weight": 0.05427762623038379,
+            "information_bonus": 0.0,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 24,
+            "planning_uncertainty": 0.07126275948815831,
+            "planning_gap": 0.2,
+            "robust_weight": 0.5932568950974427,
+            "skill_bonus": 0.0031105333222472657,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.039773951503926756,
+            "kd_weight": 0.08025179205846468,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M5",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 109,
+            "planning_uncertainty": 0.07126275948815831,
+            "planning_gap": 0.2,
+            "robust_weight": 0.6606904333490933,
+            "skill_bonus": 0.0031105333222472657,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.21040924644545334,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 3.060391867434455,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M6",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.021905077665089805,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.14449371815806197,
+            "planning_gap": 0.2,
+            "robust_weight": 0.5745943162723124,
+            "skill_bonus": 0.014106429853774097,
+            "piece_safety_weight": 0.13849325581469935,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 0.21974050066789053,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M7",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.07995253592807605,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.019855393071205672,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.06348784549426109,
+            "planning_gap": 0.2,
+            "robust_weight": 1.0,
+            "skill_bonus": 0.03290250644187104,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        },
+        {
+          "id": "G5-M8",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.05756731362519198,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.06644504792924558,
+            "planning_gap": 0.2,
+            "robust_weight": 1.0,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.15513906622875073,
+            "piece_exchange_tolerance": 0.6176071010962764,
+            "king_safety_weight": 0.07541034948912101,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M9",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.1253061741900347,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 94,
+            "planning_uncertainty": 0.07126275948815831,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.0031105333222472657,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.05911794261617044,
+            "kd_weight": 0.0,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 2.2023041925536244,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        },
+        {
+          "id": "G5-M10",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.012861483347460363,
+            "planning_candidates": 2,
+            "planning_replies": 1,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.13968904484452038,
+            "planning_gap": 0.2,
+            "robust_weight": 0.7116408360176817,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.1480503313940432,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.6191575663621243,
+            "exchange_depth": 5,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M11",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.021905077665089805,
+            "memory_weight": 0.1738598755242725,
+            "information_bonus": 0.016559125026773445,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.07126275948815831,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8018884458053636,
+            "skill_bonus": 0.0031105333222472657,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.0,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.3118627887531538,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M12",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.021905077665089805,
+            "memory_weight": 0.18627244451639507,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 24,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.0031105333222472657,
+            "piece_safety_weight": 0.14288232224571024,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 2.854279406224097,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M13",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.021905077665089805,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.018027934049718135,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 70,
+            "planning_uncertainty": 0.10270360758346622,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.029380273161116084,
+            "kd_weight": 0.12749089148603843,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M14",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.05965537428029776,
+            "memory_weight": 0.038271835703153095,
+            "information_bonus": 0.0020291518694553635,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.14395195040682898,
+            "king_safety_weight": 0.02692774032941754,
+            "kd_weight": 0.5386783024295977,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G5-M15",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.02235851306128829,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 2,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.10656227850575477,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.02953349093248622,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 2.920313545754674,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G5-M16",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.013446628907705416,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 38,
+            "planning_uncertainty": 0.022309187507207028,
+            "planning_gap": 0.2,
+            "robust_weight": 0.7396591301233241,
+            "skill_bonus": 0.0031105333222472657,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.4321034084278834,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 0.0,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 2
+        },
+        {
+          "id": "G5-M17",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.0402243106387912,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.022382249671219333,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 103,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.2,
+            "robust_weight": 0.5167393982047764,
+            "skill_bonus": 0.009245898155804433,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.0848142802233545,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 1.6143392889936141,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G5-M18",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.021905077665089805,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.017393145571210966,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 51,
+            "planning_uncertainty": 0.09951649501373544,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.0031105333222472657,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 0.8324309453242391,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M19",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.021002070217775427,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 36,
+            "planning_uncertainty": 0.05057721895417026,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.0,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.21251716836288204,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.0,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 1
+        },
+        {
+          "id": "G5-M20",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.021905077665089805,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 2,
+            "planning_replies": 2,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.06701978604475597,
+            "planning_gap": 0.2,
+            "robust_weight": 0.7989308498647638,
+            "skill_bonus": 0.018079295092640366,
+            "piece_safety_weight": 0.1907992204226154,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.8255441445959998,
+            "mate_search_moves": 2,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 2.3293899742653386,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M21",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.26919170324339986,
+            "information_bonus": 0.008055428556412393,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.07126275948815831,
+            "planning_gap": 0.1558300667069493,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.004114459551536383,
+            "piece_safety_weight": 0.13116148667887642,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.18498052563438694,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 1.2958544327908663,
+            "exchange_depth": 7,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M22",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.06999477553088074,
+            "memory_weight": 0.16803740628740338,
+            "information_bonus": 0.0,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 24,
+            "planning_uncertainty": 0.07126275948815831,
+            "planning_gap": 0.2,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.0031105333222472657,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.07283614230064642,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 2,
+            "avoid_repetition_margin": 2.4465121114115007,
+            "exchange_depth": 8,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          }
+        },
+        {
+          "id": "G5-M23",
+          "parent": "G4-M22",
+          "genes": {
+            "temperature": 0.02,
+            "memory_weight": 0.2731306703449376,
+            "information_bonus": 0.009935397608757123,
+            "planning_candidates": 1,
+            "planning_replies": 1,
+            "planning_nodes": 63,
+            "planning_uncertainty": 0.02,
+            "planning_gap": 0.08985711318243172,
+            "robust_weight": 0.8075807258315193,
+            "skill_bonus": 0.0031105333222472657,
+            "piece_safety_weight": 0.2,
+            "piece_exchange_tolerance": 0.1,
+            "king_safety_weight": 0.052056715564024914,
+            "kd_weight": 0.06820526120513701,
+            "mate_search_moves": 3,
+            "mate_defense_moves": 1,
+            "avoid_repetition_margin": 2.310527646743221,
+            "exchange_depth": 6,
+            "endgame_pieces": 0,
+            "mate_pawn_reach": 1,
+            "passed_pawn_bonus": 0.05
+          },
+          "wins": 3
+        }
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "players": 24,
+          "matches": [
+            {
+              "a": "G5-M10",
+              "b": "G5-M15",
+              "points": [
+                1.5,
+                3.5
+              ],
+              "games": 5,
+              "survivor": "G5-M15"
+            },
+            {
+              "a": "G5-M7",
+              "b": "G5-M21",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G5-M7"
+            },
+            {
+              "a": "G5-M20",
+              "b": "G5-M19",
+              "points": [
+                1.5,
+                3.5
+              ],
+              "games": 5,
+              "survivor": "G5-M19"
+            },
+            {
+              "a": "G5-M12",
+              "b": "G5-M9",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G5-M9"
+            },
+            {
+              "a": "G5-M22",
+              "b": "G5-M13",
+              "points": [
+                2.5,
+                2.5
+              ],
+              "games": 5,
+              "survivor": null
+            },
+            {
+              "a": "G4-M22",
+              "b": "G5-M1",
+              "points": [
+                2.5,
+                2.5
+              ],
+              "games": 5,
+              "survivor": null
+            },
+            {
+              "a": "G5-M14",
+              "b": "G5-M6",
+              "points": [
+                5.0,
+                0.0
+              ],
+              "games": 5,
+              "survivor": "G5-M14"
+            },
+            {
+              "a": "G5-M11",
+              "b": "G5-M3",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G5-M3"
+            },
+            {
+              "a": "G5-M2",
+              "b": "G5-M4",
+              "points": [
+                2.5,
+                2.5
+              ],
+              "games": 5,
+              "survivor": null
+            },
+            {
+              "a": "G5-M18",
+              "b": "G5-M17",
+              "points": [
+                2.0,
+                3.0
+              ],
+              "games": 5,
+              "survivor": "G5-M17"
+            },
+            {
+              "a": "G5-M23",
+              "b": "G5-M5",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G5-M23"
+            },
+            {
+              "a": "G5-M16",
+              "b": "G5-M8",
+              "points": [
+                5.0,
+                0.0
+              ],
+              "games": 5,
+              "survivor": "G5-M16"
+            }
+          ],
+          "survivors": [
+            "G5-M15",
+            "G5-M7",
+            "G5-M19",
+            "G5-M9",
+            "G5-M14",
+            "G5-M3",
+            "G5-M17",
+            "G5-M23",
+            "G5-M16"
+          ]
+        },
+        {
+          "round": 2,
+          "players": 9,
+          "matches": [
+            {
+              "a": "G5-M9",
+              "b": "G5-M17",
+              "points": [
+                3.5,
+                1.5
+              ],
+              "games": 5,
+              "survivor": "G5-M9"
+            },
+            {
+              "a": "G5-M3",
+              "b": "G5-M15",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G5-M3"
+            },
+            {
+              "a": "G5-M7",
+              "b": "G5-M14",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G5-M7"
+            },
+            {
+              "a": "G5-M23",
+              "b": "G5-M19",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G5-M23"
+            }
+          ],
+          "survivors": [
+            "G5-M16",
+            "G5-M9",
+            "G5-M3",
+            "G5-M7",
+            "G5-M23"
+          ]
+        },
+        {
+          "round": 3,
+          "players": 5,
+          "matches": [
+            {
+              "a": "G5-M16",
+              "b": "G5-M7",
+              "points": [
+                3.0,
+                2.0
+              ],
+              "games": 5,
+              "survivor": "G5-M16"
+            },
+            {
+              "a": "G5-M3",
+              "b": "G5-M9",
+              "points": [
+                2.5,
+                2.5
+              ],
+              "games": 5,
+              "survivor": null
+            }
+          ],
+          "survivors": [
+            "G5-M23",
+            "G5-M16"
+          ]
+        },
+        {
+          "round": 4,
+          "players": 2,
+          "matches": [
+            {
+              "a": "G5-M23",
+              "b": "G5-M16",
+              "points": [
+                4.5,
+                0.5
+              ],
+              "games": 5,
+              "survivor": "G5-M23"
+            }
+          ],
+          "survivors": [
+            "G5-M23"
+          ]
+        }
+      ],
+      "champion": "G5-M23"
+    }
+  ],
+  "fixed": {
+    "endgame_pieces": 0,
+    "mate_pawn_reach": 1,
+    "passed_pawn_bonus": 0.05
+  },
+  "tonkao_jr": {
+    "id": "G5-M23",
+    "genes": {
+      "temperature": 0.02,
+      "memory_weight": 0.2731306703449376,
+      "information_bonus": 0.009935397608757123,
+      "planning_candidates": 1,
+      "planning_replies": 1,
+      "planning_nodes": 63,
+      "planning_uncertainty": 0.02,
+      "planning_gap": 0.08985711318243172,
+      "robust_weight": 0.8075807258315193,
+      "skill_bonus": 0.0031105333222472657,
+      "piece_safety_weight": 0.2,
+      "piece_exchange_tolerance": 0.1,
+      "king_safety_weight": 0.052056715564024914,
+      "kd_weight": 0.06820526120513701,
+      "mate_search_moves": 3,
+      "mate_defense_moves": 1,
+      "avoid_repetition_margin": 2.310527646743221,
+      "exchange_depth": 6,
+      "endgame_pieces": 0,
+      "mate_pawn_reach": 1,
+      "passed_pawn_bonus": 0.05
+    },
+    "changed": {
+      "temperature": [
+        0.1379082335254832,
+        0.02
+      ],
+      "memory_weight": [
+        0.18063696348922267,
+        0.2731306703449376
+      ],
+      "information_bonus": [
+        0.011713458709919158,
+        0.009935397608757123
+      ],
+      "planning_replies": [
+        2,
+        1
+      ],
+      "planning_nodes": [
+        71,
+        63
+      ],
+      "planning_uncertainty": [
+        0.07345297296692446,
+        0.02
+      ],
+      "planning_gap": [
+        0.2,
+        0.08985711318243172
+      ],
+      "robust_weight": [
+        0.4513849993253386,
+        0.8075807258315193
+      ],
+      "skill_bonus": [
+        0.0,
+        0.0031105333222472657
+      ],
+      "piece_exchange_tolerance": [
+        0.21289753701988345,
+        0.1
+      ],
+      "king_safety_weight": [
+        0.04679613775293547,
+        0.052056715564024914
+      ],
+      "kd_weight": [
+        0.17304461792996828,
+        0.06820526120513701
+      ],
+      "mate_defense_moves": [
+        2,
+        1
+      ],
+      "avoid_repetition_margin": [
+        1.2958544327908663,
+        2.310527646743221
+      ],
+      "exchange_depth": [
+        5,
+        6
+      ]
+    }
+  },
+  "final": {
+    "games": 100,
+    "stalled": 0,
+    "wins": 24,
+    "draws": 29,
+    "losses": 47,
+    "score": 0.385,
+    "score_95": [
+      0.30515932278986024,
+      0.4648406772101398
+    ]
+  }
+}

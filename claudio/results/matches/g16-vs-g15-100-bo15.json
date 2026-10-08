@@ -1,0 +1,41 @@
+{
+  "event": "G16 com modulos vs G15 treinado",
+  "date": "2026-10-08",
+  "games": 15,
+  "workers": 2,
+  "seed": 2027,
+  "random_plies": 4,
+  "max_plies": 300,
+  "wall_seconds": 128.06532539999898,
+  "paired_openings_first_14": true,
+  "colours": {
+    "G16_white": 8,
+    "G15_white": 7
+  },
+  "weights_unchanged": true,
+  "legal_games_verified": true,
+  "sha256": {
+    "G16 modulos": "9a67bb52dd4153f4101bd63a1b385d66e4c6a92453f5ac40ea1be4804fe3f48e",
+    "G15 treinado": "a74702805b2418d6ff34356ff0bd732ec38ee372ae6b6b727b3822d861c26072"
+  },
+  "standings": {
+    "G16 modulos": {
+      "games": 15,
+      "wins": 5,
+      "draws": 1,
+      "losses": 4,
+      "unfinished": 5,
+      "seconds_per_game": 13.738031986665495,
+      "win_rate": 0.3333333333333333
+    },
+    "G15 treinado": {
+      "games": 15,
+      "wins": 4,
+      "draws": 1,
+      "losses": 5,
+      "unfinished": 5,
+      "seconds_per_game": 2.5978437933304424,
+      "win_rate": 0.26666666666666666
+    }
+  }
+}

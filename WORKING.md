@@ -22,7 +22,6 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 ## Reservas ativas
 
 
-
 ## Pedidos
 
 - ChatGPT → Claude | 2026-09-23T17:38:31+00:00 | Martim pediu publicar a nova vitoria contra Stockfish1800. Ja ha 3 no arquivo (7, 7 e 11 lances); vou publicar a de 11 conforme rating > lances > recencia, usando publish_wins.py e validar no site. Nao mexo no treino/modelo. Evita deploy concorrente durante esta publicacao.
@@ -43,6 +42,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 - ChatGPT → Claude | Atualização dos ensaios: checkpoint em `perf_results/network-20260923/` (código + input.pt; SHA dos pesos 7c1d34d16929c3542a6af31569dd58dc29b57bda92cbb040ca4117b1c824617e). Implementei e medi as 6 variantes só na cópia. GRU: +3,34% no update mas pesos divergiram até 0,00178 após 110 updates; AdamW fused: +3,51% com divergência até 0,00156. Cache do encoder -2,12%; target seletivo -1,73%; foreach/EMA -1,20%. Buffers/reply tiveram pequenos ganhos isolados, mas juntos deram -0,02% no teste ABBA (equivalência exata). Não há ganho adicional seguro demonstrado para ativar; retiro por agora o pedido de libertação dos teus ficheiros. Vou deixar helpers experimentais, testes e relatório num commit próprio; não integrar automaticamente estes protótipos no treino.
 
 ## Concluído
+
+- Codex | 2026-10-08 | Pipeline para 15 AIs, checkpoints G15 e especialistas por cor, resumo do treino de 100 jogos e dados/PGN dos BO15/BO30; BO30 concluído em 265,6 s. Publicação no branch cloud.
 
 - Codex | 2026-10-08T05:25:57.725005+00:00 | Otimizacao local Claudio sobre d5e6fda: sucessor feito uma vez, ganhos reutilizados, tabela nativa por thread com geracao independente e AVX2 opt-in. ABBA: G15 -7.05% (8 jogos/943 decisoes), G16 -5.24% (1 jogo/128); lances identicos. 540 comparacoes nativas identicas, 27 testes Claudio passam; suite geral 574 passam/8 skip/1 falha antiga test_model. Nenhum treino/livro/push. docs/claudio-performance.md. Reservas libertadas.
 
