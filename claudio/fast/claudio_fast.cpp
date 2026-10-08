@@ -165,10 +165,20 @@ struct Pos {
         return k ? msb(k) : -1;
     }
     void remove(int s) {
-        U64 m = ~bit(s);
-        for (int t = PAWN; t <= KING; ++t) bb[t] &= m;
-        occ[0] &= m;
-        occ[1] &= m;
+        const U64 square = bit(s);
+        // Most successor squares are empty. The old code masked all six
+        // piece boards (and both colours) even then, on every searched ply.
+        // Piece bitboards are disjoint, so only the occupied piece's board
+        // needs clearing. No changes to move ordering or search limits.
+        if (!(occupied() & square)) return;
+        for (int t = PAWN; t <= KING; ++t) {
+            if (bb[t] & square) {
+                bb[t] &= ~square;
+                break;
+            }
+        }
+        occ[0] &= ~square;
+        occ[1] &= ~square;
     }
     void put(int type, int colour, int s) {
         remove(s);

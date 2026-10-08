@@ -43,6 +43,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Concluído
 
+- ChatGPT GPT-6 | 2026-10-08 | Branch perf/g16-hotspots-20261008 sobre o PR #1: perfil real G16 confirma pesquisa tática 89,60% do tempo (128 posições); otimização C++ `Pos::remove` elimina limpeza de casas vazias e só altera bitboard da peça ocupante. Run 37740357552: 29 testes PASS; 32 posições x 5 operações nativas com valores e resultados idênticos; ABBA G16 96 posições (42 normais/25 críticas/29 finais), 4 repetições por versão, 0 lances diferentes. Tempo médio 157,007 -> 148,745 ms (menos 5,26%, +5,55% de velocidade); mediana 72,267 -> 70,050 ms; p95 582,878 -> 582,046 ms. Não é prova universal de não-inferioridade de winrate <=2 pp. Alteração isolada em draft PR, branch principal e treino intactos. Reservas libertadas.
+
 - ChatGPT GPT-6 | 2026-10-08 | Validação CI concluída no run 37738304788, 29 testes PASS, 0 lances divergentes em 48 posições por 4 repetições; função 53,45% menos tempo, decisão integral 86,728 -> 85,119 ms (-1,86% de tempo, +1,89% velocidade). Draft PR #1 isolado; reservas CI libertadas. Ainda falta prova estatística de não-inferioridade de winrate e amostra maior.
 
 - ChatGPT GPT-6 | 2026-10-08 | Branch perf/g16-batch-terminal-20261008: protótipo de verificação terminal em lote C++ para o G16, integrado no agente em raiz e respostas; dois testes de equivalência e benchmark ABBA adicionados. Código de produção/branch Claude inalterado. **Ainda NÃO executado/validado:** extensão nativa não pode ser compilada nesta sessão, sem benchmark real nem ensaios de força. PR em rascunho; não incorporar antes de validar latência e equivalência. Reservas libertadas.
