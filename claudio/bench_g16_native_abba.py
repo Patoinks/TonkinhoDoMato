@@ -186,6 +186,10 @@ def main():
     loaded = net, values, cfg, king
     rows = real_positions(args.positions)
     compare_native(rows)
+    # Warm both native paths and the shared network outside timed samples.
+    for label in ("baseline", "candidate", "candidate", "baseline"):
+        evaluate(rows[:8], loaded, REFERENCES[label])
+    print("WARMUP: 8 real BO30 positions, 2 passes per implementation", flush=True)
     expected = None
     timings = defaultdict(list)
     group_counts = None
