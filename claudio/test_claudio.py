@@ -107,11 +107,10 @@ def test_the_scan_calculates_every_move():
     np.testing.assert_allclose(nets, deep)
 
 
-def test_a_draw_is_worth_less_when_it_is_clearly_ahead():
-    ahead = chess.Board("6k1/8/8/8/8/8/5Q2/6K1 w - - 0 1")          # a queen up
-    level = chess.Board("6k1/5q2/8/8/8/8/5Q2/6K1 w - - 0 1")
-    for board, expected in ((ahead, -1.0), (level, 0.4)):
-        me = player(mate_attack=0, ahead_draws=True)
+def test_a_draw_is_worth_less_when_it_thinks_it_is_winning():
+    board = chess.Board("6k1/8/8/8/8/8/5Q2/6K1 w - - 0 1")
+    for threshold, expected in ((0.0, -1.0), (1.01, 0.4)):          # its evaluation is always in [0, 1]
+        me = player(mate_attack=0, ahead_draws=True, ahead_value=threshold)
         me.choose(board)
         assert me._draw == expected
 

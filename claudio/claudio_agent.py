@@ -61,9 +61,9 @@ class ClaudioConfig:
     king_weight: float = 0.0        # learned king safety: weight of KS(own) - KS(enemy)
     scan_depth: int = 0             # >0: every legal move, not only the best ones, gets the material calculation at
                                     # this depth: discovered attacks, forks, pieces it wins by force
-    ahead_draws: bool = False       # while ahead by ahead_margin in its own material a draw is worth draw_ahead
-    draw_ahead: float = -1.0        # (the owner: -1, below every real move: it does not repeat a won position away)
-    ahead_margin: float = 2.0
+    ahead_draws: bool = False       # while its own evaluation (the network's value of its best move) is at least
+    ahead_value: float = 0.62       # ahead_value, a draw is worth draw_ahead (the owner: -1, below every real
+    draw_ahead: float = -1.0        # move: it does not repeat or trade away a position it thinks it is winning)
     simplify_weight: float = 0.0    # ahead in its own material values: trades that lose nothing score higher
     simplify_margin: float = 1.0    # lead (own units) from which it simplifies; the full bonus 3 units later
     repeat_as_draw: bool = False    # going back to a position of this game scores as a draw
@@ -486,14 +486,13 @@ class Claudio:
                 nets = None
         if cfg.scan_depth > 0 and nets is not None:
             self._scan(fast, codes, gains, nets, scores)
-        lead = None
-        if cfg.simplify_weight or cfg.ahead_draws:
-            lead = sum(self.values[p.piece_type] * (1 if p.color == me else -1)
-                       for p in board.piece_map().values() if p.piece_type != chess.KING)
-        # A draw is worth less while it is clearly ahead by its own measure of material.
-        self._draw = cfg.draw_ahead if cfg.ahead_draws and lead >= cfg.ahead_margin else cfg.draw_value
+        # A draw is worth less while it thinks it is winning (its own evaluation of the position).
+        self._draw = (cfg.draw_ahead if cfg.ahead_draws and float(values.max()) >= cfg.ahead_value
+                      else cfg.draw_value)
         if cfg.simplify_weight and nets is not None:
             # Ahead by its own measure of material: trading down what it does not lose brings the end closer.
+            lead = sum(self.values[p.piece_type] * (1 if p.color == me else -1)
+                       for p in board.piece_map().values() if p.piece_type != chess.KING)
             share = min(1.0, max(0.0, (lead - cfg.simplify_margin) / 3.0))
             if share > 0:
                 trades = (gains > 0) & (nets >= -1e-9)
