@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - perf/g16-capture-generator-20261008
+      - perf/g16-extended-validation-20261008
   workflow_dispatch:
 
 permissions:
@@ -64,4 +65,4 @@ jobs:
           python claudio/bench_g16_profile.py --positions 128
       - name: Exact native reference and G16 decisions ABBA
         run: |
-          python claudio/bench_g16_native_abba.py --positions 96 --repeats 2
+          python claudio/bench_g16_native_abba.py --positions 128 --repeats 2
