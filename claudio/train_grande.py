@@ -43,6 +43,10 @@ is taught 0. Only Claudio's own games and values - no old replay, no outcomes, n
 opponent. --anchor pulls the weights back towards the starting network after every step, so it
 cannot forget what it knew. Needs reply_top > 0 (e.g. the claudio-grande-g0-respostas.pt checkpoint).
 
+--learn outcomes --fresh (AlphaZero style): TonkAI's usual learning from the results of the
+games, but only from Claudio's own new games (Timdgei's old replay, played by another player,
+is not loaded), and --anchor pulls the weights back towards the starting network after every step.
+
 Progress is written for the training tracker app (history/<run>/launch.json +
 history/<run>.jsonl, the same records train_cognitive.py writes).
 
@@ -291,12 +295,16 @@ def make_trainer_class():
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.net.parameters(), self.cfg.grad_clip)
             self.optimizer.step()
-            if anchor > 0:
-                with torch.no_grad():               # back towards the starting network: it cannot forget
-                    for parameter, start in zip(self.net.parameters(), self.start_parameters):
-                        parameter.sub_(anchor * (parameter - start))
+            self.pull_back(anchor)
             self.steps += 1
             return float(loss.detach())
+
+        def pull_back(self, anchor):
+            """Back towards the starting network after a step: it cannot forget what it knew."""
+            if anchor > 0:
+                with torch.no_grad():
+                    for parameter, start in zip(self.net.parameters(), self.start_parameters):
+                        parameter.sub_(anchor * (parameter - start))
 
     return ClaudioTrainer
 
@@ -576,7 +584,9 @@ def main():
     parser.add_argument("--review-weight", type=float, default=0.5, help="review: weight of the good/bad move notes")
     parser.add_argument("--search-rows", type=int, default=512, help="search: candidate rows per learner step")
     parser.add_argument("--anchor", type=float, default=1e-3,
-                        help="search: pull towards the starting weights after every step (0 = none)")
+                        help="search, or outcomes with --fresh: pull towards the starting weights after every step")
+    parser.add_argument("--fresh", action="store_true",
+                        help="outcomes: learn from Claudio's own new games only (not Timdgei's old replay), anchored")
     parser.add_argument("--learn", choices=("outcomes", "winners", "review", "notes", "search"), default="outcomes",
                         help="outcomes: TonkAI's usual learning; winners: only the winning side's moves, as better")
     parser.add_argument("--winner-updates", type=int, default=2, help="winners: learner steps per decided game")
@@ -659,7 +669,7 @@ def main():
     net.requires_grad_(True).train()
     net.rnd_target.requires_grad_(False)                             # the fixed random target stays fixed
     trainer = Trainer(cfg, net=net)
-    if args.learn != "search":
+    if args.learn != "search" and not args.fresh:
         trainer.replay.load_state_dict(state["replay"])             # the experience Claudio grew up with
     trainer.replay.capacity_positions = max(trainer.replay.capacity_positions, args.replay_capacity)
     trainer.games, trainer.steps = state["games"], state["steps"]
@@ -671,6 +681,8 @@ def main():
     if taught is not None:
         if not config.get("reply_top"):
             raise SystemExit("--learn search needs reply_top > 0 (e.g. --set reply_top=6 --set reply_mode=expect)")
+    anchored = taught is not None or (args.fresh and args.learn == "outcomes")
+    if anchored:
         trainer.start_parameters = [p.detach().clone() for p in trainer.net.parameters()]
 
     def publish(version):
@@ -788,6 +800,8 @@ def main():
                 for _ in range(args.updates):
                     out = trainer.update()
                     if out is not None:
+                        if anchored:
+                            trainer.pull_back(args.anchor)
                         updates += 1
                         losses.append((out.get("value_loss", 0.0), out.get("reply_loss", 0.0),
                                        getattr(trainer, "last_choice_loss", 0.0)))
