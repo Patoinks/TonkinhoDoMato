@@ -91,6 +91,31 @@ def test_leaf_value_still_never_leaves_its_queen_to_a_pawn():
     assert (1.0 if board.is_capture(move) else 0.0) - loss >= 0
 
 
+def test_the_scan_calculates_every_move():
+    # Every legal move gets the calculation at scan_depth, not only the best candidates.
+    board = chess.Board("r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3")
+    me = player(scan_depth=2)
+    fast = fast_rules.board(board)
+    codes = list(fast.legal_moves())
+    values = [0.0] + [VALUES[k] for k in range(1, 6)]
+    gains = np.array([values[board.piece_type_at(move.to_square) or 0] if board.is_capture(move) else 0.0
+                      for move in map(move_of, codes)])
+    nets = gains - np.asarray(fast.exchange_after_moves(codes, values, 5, 200_000))
+    scores = np.zeros(len(codes))
+    me._scan(fast, codes, gains, nets, scores)
+    deep = gains - np.array([loss for loss, _ in fast.deep_after_moves(codes, values, 2, 5, 2_000_000, True)])
+    np.testing.assert_allclose(nets, deep)
+
+
+def test_a_draw_is_worth_less_when_it_is_clearly_ahead():
+    ahead = chess.Board("6k1/8/8/8/8/8/5Q2/6K1 w - - 0 1")          # a queen up
+    level = chess.Board("6k1/5q2/8/8/8/8/5Q2/6K1 w - - 0 1")
+    for board, expected in ((ahead, -1.0), (level, 0.4)):
+        me = player(mate_attack=0, ahead_draws=True)
+        me.choose(board)
+        assert me._draw == expected
+
+
 def test_does_not_leave_its_queen_to_a_pawn():
     board = chess.Board("4k3/8/8/8/2p5/3Q4/8/4K3 w - - 0 1")      # ...c4 attacks the queen on d3
     move = player(mate_attack=0).choose(board)

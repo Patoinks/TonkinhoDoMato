@@ -59,6 +59,11 @@ class ClaudioConfig:
     mate_nodes: int = 20_000
     pawn_reach: int = 1             # mate searches skip the attacker's pawns this far from the king
     king_weight: float = 0.0        # learned king safety: weight of KS(own) - KS(enemy)
+    scan_depth: int = 0             # >0: every legal move, not only the best ones, gets the material calculation at
+                                    # this depth: discovered attacks, forks, pieces it wins by force
+    ahead_draws: bool = False       # while ahead by ahead_margin in its own material a draw is worth draw_ahead
+    draw_ahead: float = -1.0        # (the owner: -1, below every real move: it does not repeat a won position away)
+    ahead_margin: float = 2.0
     simplify_weight: float = 0.0    # ahead in its own material values: trades that lose nothing score higher
     simplify_margin: float = 1.0    # lead (own units) from which it simplifies; the full bonus 3 units later
     repeat_as_draw: bool = False    # going back to a position of this game scores as a draw
@@ -212,6 +217,20 @@ class Claudio:
         for index, value in zip(which, self._value(contexts, centre, stretch)):
             scores[index] += self.cfg.leaf_weight * (value - values[index])
 
+    def _scan(self, fast, codes, gains, nets, scores):
+        """Every move, calculated a little further (scan_depth): a quiet move that wins material by force
+        - a discovered attack, a fork, an undefended piece that cannot get away - is seen, not only the
+        capture sequence. nets and scores are updated in place."""
+        cfg = self.cfg
+        try:
+            deep = gains - np.array([loss for loss, _ in fast.deep_after_moves(
+                codes, self.values, cfg.scan_depth, cfg.exchange_depth, cfg.tactic_nodes, True)])
+        except RuntimeError:
+            return
+        found = ~np.isnan(deep)
+        scores[found] += cfg.safety_weight * (np.tanh(deep[found] / 3.0) - np.tanh(nets[found] / 3.0))
+        nets[found] = deep[found]
+
     def _recount(self, index, loss, gains, nets, scores):
         if loss == loss:
             new = gains[index] - loss
@@ -251,11 +270,11 @@ class Claudio:
             fast.push(move)
             ending = fast.terminal_strict()
             if ending == fast_rules.DRAW:
-                ends[j] = cfg.draw_value
+                ends[j] = self._draw
             elif ending != fast_rules.NONE:
                 ends[j] = WIN if (ending == fast_rules.WHITE_WINS) == me else LOSS
             elif earlier is not None and _key(fast) in earlier:
-                ends[j] = cfg.draw_value
+                ends[j] = self._draw
             fast.pop()
         return ends
 
@@ -465,10 +484,16 @@ class Claudio:
                 scores += cfg.safety_weight * np.tanh(nets / 3.0)
             except RuntimeError:
                 nets = None
-        if cfg.simplify_weight and nets is not None:
-            # Ahead by its own measure of material: trading down what it does not lose brings the end closer.
+        if cfg.scan_depth > 0 and nets is not None:
+            self._scan(fast, codes, gains, nets, scores)
+        lead = None
+        if cfg.simplify_weight or cfg.ahead_draws:
             lead = sum(self.values[p.piece_type] * (1 if p.color == me else -1)
                        for p in board.piece_map().values() if p.piece_type != chess.KING)
+        # A draw is worth less while it is clearly ahead by its own measure of material.
+        self._draw = cfg.draw_ahead if cfg.ahead_draws and lead >= cfg.ahead_margin else cfg.draw_value
+        if cfg.simplify_weight and nets is not None:
+            # Ahead by its own measure of material: trading down what it does not lose brings the end closer.
             share = min(1.0, max(0.0, (lead - cfg.simplify_margin) / 3.0))
             if share > 0:
                 trades = (gains > 0) & (nets >= -1e-9)
@@ -483,11 +508,11 @@ class Claudio:
             fast.push(code)
             ending = fast.terminal_strict()
             if ending == fast_rules.DRAW:
-                scores[index], known[index] = cfg.draw_value, True
+                scores[index], known[index] = self._draw, True
             elif ending != fast_rules.NONE:
                 scores[index], known[index] = (WIN if (ending == fast_rules.WHITE_WINS) == me else LOSS), True
             elif earlier is not None and not board.is_zeroing(moves[index]) and _key(fast) in earlier:
-                scores[index], known[index] = cfg.draw_value, True
+                scores[index], known[index] = self._draw, True
             fast.pop()
         self._lap("endings")
 
