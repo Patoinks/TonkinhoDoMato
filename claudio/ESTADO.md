@@ -232,3 +232,12 @@ as mesmas 100 posições reais (40 na profundidade 8), 1 núcleo, ms por lance:
 
 Até 3 o tempo é quase só a rede (~10 ms); cada meio-lance a mais depois custa ~3-4x. Aos 8 o
 limite de nós (2M) corta muitas vezes e o cálculo deixa de contar. O ponto ótimo medido é o 5.
+
+## Torneio de mutações, módulos e passagem para a GPU (2026-10-08)
+
+Resumo completo e comandos em [README-CODEX.md](README-CODEX.md). Em curto: o torneio p3
+(10 gerações, profundidade 3) deu campeões cada vez mais fortes entre Claudios (G10 > G9 > G8 >
+… > original); tendência: mais peso ao material e mais candidatos a fundo. Prolongar a tendência
+("gerações artificiais") ajuda até ~G15-G16 e piora a partir do G20. `claudio-campeao.pt` = G10 +
+módulos novos (`scan_depth`, `ahead_draws`, `simplify_weight`). Falta medir campeão e G15 contra
+motores e treinar na GPU (o learner na CPU da nuvem faz ~5 s/passo).

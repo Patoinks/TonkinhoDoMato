@@ -21,7 +21,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
-- Claude (nuvem) | claudio/claudio-grande-g0-respostas.pt, claudio/claudio-grande-g0-forte.pt, claudio/claudio-campeao.pt, claudio/claudio_agent.py, claudio/test_claudio.py, claudio/ESTADO.md, claudio/train_grande.py, claudio/test_search_learning.py, claudio/torneio_mutacoes.py, claudio/grupos_finais.py, claudio/results/torneio-*, claudio/results/grupos-*, claudio/train-campeao*/, claudio/train-busca*/, claudio/results/engine-nuvem-*, history/claudio-* | mais calculo organico + treino na nuvem (aprender com o proprio calculo, autorizado pelo Martim 2026-10-07) | 2026-10-07
+- Claude (nuvem) | claudio/README-CODEX.md, AGENTS.md, claudio/claudio-grande-g0-respostas.pt, claudio/claudio-grande-g0-forte.pt, claudio/claudio-campeao.pt, claudio/claudio_agent.py, claudio/test_claudio.py, claudio/ESTADO.md, claudio/train_grande.py, claudio/test_search_learning.py, claudio/torneio_mutacoes.py, claudio/grupos_finais.py, claudio/results/torneio-*, claudio/results/grupos-*, claudio/train-campeao*/, claudio/train-busca*/, claudio/results/engine-nuvem-*, history/claudio-* | mais calculo organico + treino na nuvem (aprender com o proprio calculo, autorizado pelo Martim 2026-10-07) | 2026-10-07
 
 
 ## Pedidos
