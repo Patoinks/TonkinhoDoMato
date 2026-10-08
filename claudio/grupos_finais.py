@@ -106,8 +106,14 @@ def main():
             jobs.append((a, b, players[a], players[b], g % 2 == 0, args.seed, p * 100 + g // 2,
                          args.random_plies, args.max_plies))
     print(f"{len(players)} jogadores, {len(jobs)} jogos (cada par melhor de {args.games})", flush=True)
+    games, started = [], time.perf_counter()
     with ProcessPoolExecutor(args.workers, mp_context=get_context("spawn"), initializer=_init) as pool:
-        games = list(pool.map(play, *zip(*jobs), chunksize=1))
+        for game in pool.map(play, *zip(*jobs), chunksize=1):
+            games.append(game)
+            if len(games) % 25 == 0 or len(games) == len(jobs):
+                spent = time.perf_counter() - started
+                left = spent / len(games) * (len(jobs) - len(games))
+                print(f"  {len(games)}/{len(jobs)} jogos, {spent / 60:.0f} min, faltam ~{left / 60:.0f} min", flush=True)
     table = {n: {"jogos": 0, "V": 0, "E": 0, "D": 0, "s": 0.0} for n in players}
     pairs = {}
     for game in games:
