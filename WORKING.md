@@ -21,6 +21,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
+- Claude (nuvem) | claudio/claudio_agent.py, claudio/test_claudio.py, claudio/valores_fase.py, claudio/experiencia.py, claudio/experiencia.json, claudio/claudio-g16.pt, claudio/ESTADO.md, claudio/README-CODEX.md, claudio/results/*nuvem*, claudio/results/grupos-*, claudio/results/valores-fase*.json | G16 com todos os modulos novos (sem treino), pedido do Martim | 2026-10-08
 
 
 ## Pedidos
