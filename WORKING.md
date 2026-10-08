@@ -21,6 +21,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
+- Claude (nuvem) | `claudio/fast/claudio_fast.cpp`, `claudio/claudio_agent.py`, `claudio/test_tactics.py` (novo), `claudio/claudio-g16.pt`, `claudio/battle-pipeline/registry.json` (só o sha256 do g16), `claudio/results/tatico-*.json` (novos), `docs/claudio-performance.md`, `claudio/ESTADO.md`, `claudio/README-CODEX.md` | Cálculo tático do G16: A exato, B tabela partilhada, C promoções/xeques (pedido do Martim) | 2026-10-08 23:40 UTC
+
 
 
 
