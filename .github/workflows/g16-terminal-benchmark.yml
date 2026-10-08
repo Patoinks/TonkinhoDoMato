@@ -1,0 +1,53 @@
+name: G16 native terminal optimization validation
+on:
+  push:
+    branches:
+      - perf/g16-batch-terminal-20261008
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-g16:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      TORCH_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install project dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -r requirements.txt
+      - name: Build original frozen and optimized C++ modules
+        run: |
+          python setup.py build_ext --inplace
+          cp tiny_opponent*.so claudio/base/
+          (cd claudio/base && python setup_claudio.py build_ext --inplace)
+          (cd claudio/fast && python setup.py build_ext --inplace)
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, "claudio")
+          import paths
+          import tonkai_fast, claudio_fast
+          assert hasattr(claudio_fast.Board, "terminal_after_moves")
+          print("G16 C++ extensions compiled successfully")
+          PY
+      - name: Claudio regression and exact terminal equivalence
+        run: |
+          python -m pytest claudio/test_claudio.py claudio/test_inference_fastpaths.py claudio/test_search_learning.py claudio/test_winners.py claudio/test_review.py -q
+      - name: A/B/B/A native terminal microbenchmark
+        run: |
+          python claudio/bench_terminal_batch.py --positions 128 --repeats 4
+      - name: A/B/B/A true G16 checkpoint decision equivalence and timing
+        run: |
+          python claudio/bench_g16_decisions.py --positions 48 --repeats 2

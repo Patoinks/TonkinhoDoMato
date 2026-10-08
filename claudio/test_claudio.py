@@ -29,6 +29,76 @@ def player(**settings):
     return Claudio(SurvivalNet(None), VALUES, cfg, rng=np.random.default_rng(0))
 
 
+def test_native_batched_terminals_equal_individual_calls():
+    # Includes real move history, checks, castling, en passant, promotion,
+    # fifty-move claims and repetitions. No state may escape the batch.
+    from claudio_agent import native_board
+
+    rng = np.random.default_rng(987)
+    positions = [
+        chess.Board(),
+        chess.Board("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1"),
+        chess.Board("8/8/8/8/3pP3/8/4K3/7k b - e3 0 1"),
+        chess.Board("7k/P7/8/8/8/8/8/K7 w - - 0 1"),
+        chess.Board("6k1/8/8/8/8/8/5Q2/6K1 w - - 96 80"),
+        chess.Board("6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1"),
+    ]
+    repetition = chess.Board()
+    for uci in ("g1f3", "g8f6", "f3g1", "f6g8") * 2:
+        repetition.push_uci(uci)
+    positions.append(repetition)
+    for _ in range(24):
+        board = chess.Board()
+        for _ in range(int(rng.integers(1, 95))):
+            moves = list(board.legal_moves)
+            if not moves or board.is_game_over():
+                break
+            board.push(moves[int(rng.integers(len(moves)))])
+        if not board.is_game_over():
+            positions.append(board)
+
+    for board in positions:
+        fast = native_board(board)
+        if not hasattr(fast, "terminal_after_moves"):
+            pytest.skip("claudio_fast was not rebuilt with terminal_after_moves")
+        codes = list(fast.legal_moves())
+        fen_before = fast.fen()
+        individual = []
+        for code in codes:
+            fast.push(code)
+            individual.append(fast.terminal_strict())
+            fast.pop()
+        assert fast.terminal_after_moves(codes) == individual
+        assert fast.fen() == fen_before
+        assert list(fast.legal_moves()) == codes
+
+
+def test_batched_endings_keep_the_original_choice():
+    # Force both paths on exactly the same positions and network weights.
+    # No batched method means the original per-candidate push/pop loop.
+    class OriginalTerminalCalls:
+        def __init__(self, wrapped):
+            self.wrapped = wrapped
+
+        def __getattr__(self, name):
+            if name == "terminal_after_moves":
+                raise AttributeError(name)
+            return getattr(self.wrapped, name)
+
+    board = chess.Board("r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3")
+    settings = dict(mate_attack=0, mate_defence=0, reply_top=6,
+                    reply_mode="expect", tactic_top=4, tactic_depth=3,
+                    scan_depth=2)
+    optimized = player(**settings)
+    original = player(**settings)
+    optimized._catch_up(board)
+    original._catch_up(board)
+    if not hasattr(optimized.fast, "terminal_after_moves"):
+        pytest.skip("claudio_fast was not rebuilt with terminal_after_moves")
+    original.fast = OriginalTerminalCalls(original.fast)
+    assert optimized.choose(board) == original.choose(board)
+
+
 def test_rules_moves_are_the_legal_moves():
     rng = np.random.default_rng(1)
     for _ in range(30):

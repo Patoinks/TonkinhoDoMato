@@ -165,10 +165,20 @@ struct Pos {
         return k ? msb(k) : -1;
     }
     void remove(int s) {
-        U64 m = ~bit(s);
-        for (int t = PAWN; t <= KING; ++t) bb[t] &= m;
-        occ[0] &= m;
-        occ[1] &= m;
+        const U64 square = bit(s);
+        // Most successor squares are empty. The old code masked all six
+        // piece boards (and both colours) even then, on every searched ply.
+        // Piece bitboards are disjoint, so only the occupied piece's board
+        // needs clearing. No changes to move ordering or search limits.
+        if (!(occupied() & square)) return;
+        for (int t = PAWN; t <= KING; ++t) {
+            if (bb[t] & square) {
+                bb[t] &= ~square;
+                break;
+            }
+        }
+        occ[0] &= ~square;
+        occ[1] &= ~square;
     }
     void put(int type, int colour, int s) {
         remove(s);
@@ -316,6 +326,31 @@ struct Pos {
                 add(one);
                 int start = us == WHITE ? 1 : 6, two = one + step;
                 if (rank_of(from) == start && !(all & bit(two))) out.push_back(mv(from, two));
+            }
+        }
+        ep_moves(out);
+    }
+    // Pseudo-captures in the exact same order as pseudo(), omitting quiet
+    // moves and castles before the quiescence search's legality filter.
+    // This does not change any capture, en passant, underpromotion or order.
+    void pseudo_captures(std::vector<int>& out) const {
+        const int us = turn;
+        const U64 own = occ[us], enemy = occ[us ^ 1];
+        for (U64 pieces = own & ~bb[PAWN]; pieces; pieces &= pieces - 1) {
+            const int from = lsb(pieces);
+            for (U64 targets = attacks_mask(from) & enemy; targets; targets &= targets - 1)
+                out.push_back(mv(from, lsb(targets)));
+        }
+        for (U64 pawns = own & bb[PAWN]; pawns; pawns &= pawns - 1) {
+            const int from = lsb(pawns);
+            for (U64 caps = T.pawn[us][from] & enemy; caps; caps &= caps - 1) {
+                const int to = lsb(caps);
+                if (rank_of(to) == 0 || rank_of(to) == 7) {
+                    for (int p : {QUEEN, ROOK, BISHOP, KNIGHT})
+                        out.push_back(mv(from, to, p));
+                } else {
+                    out.push_back(mv(from, to));
+                }
             }
         }
         ep_moves(out);
@@ -818,11 +853,12 @@ struct ExchangeSearch {
         if (depth == 0) return 0.0;
 
         if (!check) {
-            // Only captures matter here: test legality for them alone (same moves, same order
-            // as filtering all legal moves, without making every quiet move first).
-            p.pseudo(moves);
+            // Only captures matter here. Generate the exact capture subsequence
+            // of pseudo() directly, avoiding quiet moves and castling entirely.
+            // The legal filter preserves their original stable order.
+            p.pseudo_captures(moves);
             moves.erase(std::remove_if(moves.begin(), moves.end(), [&](int m) {
-                return !(p.occ[p.turn ^ 1] & bit(p.captured_square(m))) || !p.legal(m);
+                return !p.legal(m);
             }), moves.end());
         }
         // MVV-LVA, with stable move order for equal scores: an insertion sort
@@ -1178,6 +1214,24 @@ public:
         if (pos.halfmove >= 100) return 0;
         if (repetition(3)) return 0;
         return -1;
+    }
+    // Exactly terminal_strict() after each candidate, including real game history.
+    // Keep push/pop inside C++ instead of crossing the Python boundary twice
+    // per candidate (especially for the reply search's ~200 positions).
+    std::vector<int> terminal_after_moves(const std::vector<int>& codes) {
+        std::vector<int> results;
+        results.reserve(codes.size());
+        for (int code : codes) {
+            push(code);
+            try {
+                results.push_back(terminal_strict());
+            } catch (...) {
+                pop();
+                throw;
+            }
+            pop();
+        }
+        return results;
     }
 
     std::pair<double, double> king_risks() const {
@@ -1778,6 +1832,7 @@ PYBIND11_MODULE(claudio_fast, m) {
         .def_property_readonly("ply", &Board::ply)
         .def("terminal", &Board::terminal)
         .def("terminal_strict", &Board::terminal_strict)
+        .def("terminal_after_moves", &Board::terminal_after_moves, py::arg("codes"))
         .def("king_risks", &Board::king_risks)
         .def("king_detail", &Board::king_detail)
         .def("piece_risks", &Board::piece_risks_py, py::arg("values"), py::arg("promotion"), py::arg("tolerance"),

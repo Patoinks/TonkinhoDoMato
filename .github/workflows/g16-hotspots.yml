@@ -1,0 +1,67 @@
+name: G16 cumulative optimizations vs original
+on:
+  push:
+    branches:
+      - perf/g16-capture-generator-20261008
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  g16-profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      TORCH_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -r requirements.txt
+      - name: Compile project and G16 native modules
+        run: |
+          python setup.py build_ext --inplace
+          cp tiny_opponent*.so claudio/base/
+          (cd claudio/base && python setup_claudio.py build_ext --inplace)
+          (cd claudio/fast && python setup.py build_ext --inplace)
+      - name: Build unchanged native G16 reference from pinned commit
+        run: |
+          git fetch --depth=1 origin 2c0bf4df137604a0a62bd8f1de9f592d9e0fabf7
+          git show 2c0bf4df137604a0a62bd8f1de9f592d9e0fabf7:claudio/fast/claudio_fast.cpp |
+            sed 's/PYBIND11_MODULE(claudio_fast, m)/PYBIND11_MODULE(claudio_fast_ref, m)/' > claudio/fast/claudio_fast_ref.cpp
+          (cd claudio/fast && python - <<'PY'
+          from setuptools import setup
+          from pybind11.setup_helpers import Pybind11Extension, build_ext
+          setup(
+              name="g16-reference",
+              ext_modules=[Pybind11Extension(
+                  "claudio_fast_ref", ["claudio_fast_ref.cpp"],
+                  cxx_std=20, extra_compile_args=["-ffp-contract=off"])],
+              cmdclass={"build_ext": build_ext},
+              script_args=["build_ext", "--inplace"],
+          )
+          PY
+          )
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, "claudio/fast")
+          import claudio_fast_ref, claudio_fast
+          print("Original", claudio_fast_ref.__file__, "optimized", claudio_fast.__file__)
+          PY
+      - name: Existing G16 tests
+        run: |
+          python -m pytest claudio/test_claudio.py claudio/test_inference_fastpaths.py claudio/test_search_learning.py claudio/test_winners.py claudio/test_review.py -q
+      - name: G16 CPU profiling on saved games
+        run: |
+          python claudio/bench_g16_profile.py --positions 128
+      - name: Exact native reference and G16 decisions ABBA
+        run: |
+          python claudio/bench_g16_native_abba.py --positions 96 --repeats 2
