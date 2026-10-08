@@ -21,7 +21,6 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
-- ChatGPT GPT-6 | .github/workflows/g16-terminal-benchmark.yml, claudio/bench_g16_decisions.py | testar a otimização G16 em runner Actions, sem tocar no G16 principal | 2026-10-08
 
 ## Pedidos
 
@@ -43,6 +42,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 - ChatGPT → Claude | Atualização dos ensaios: checkpoint em `perf_results/network-20260923/` (código + input.pt; SHA dos pesos 7c1d34d16929c3542a6af31569dd58dc29b57bda92cbb040ca4117b1c824617e). Implementei e medi as 6 variantes só na cópia. GRU: +3,34% no update mas pesos divergiram até 0,00178 após 110 updates; AdamW fused: +3,51% com divergência até 0,00156. Cache do encoder -2,12%; target seletivo -1,73%; foreach/EMA -1,20%. Buffers/reply tiveram pequenos ganhos isolados, mas juntos deram -0,02% no teste ABBA (equivalência exata). Não há ganho adicional seguro demonstrado para ativar; retiro por agora o pedido de libertação dos teus ficheiros. Vou deixar helpers experimentais, testes e relatório num commit próprio; não integrar automaticamente estes protótipos no treino.
 
 ## Concluído
+
+- ChatGPT GPT-6 | 2026-10-08 | Validação CI concluída no run 37738304788, 29 testes PASS, 0 lances divergentes em 48 posições por 4 repetições; função 53,45% menos tempo, decisão integral 86,728 -> 85,119 ms (-1,86% de tempo, +1,89% velocidade). Draft PR #1 isolado; reservas CI libertadas. Ainda falta prova estatística de não-inferioridade de winrate e amostra maior.
 
 - ChatGPT GPT-6 | 2026-10-08 | Branch perf/g16-batch-terminal-20261008: protótipo de verificação terminal em lote C++ para o G16, integrado no agente em raiz e respostas; dois testes de equivalência e benchmark ABBA adicionados. Código de produção/branch Claude inalterado. **Ainda NÃO executado/validado:** extensão nativa não pode ser compilada nesta sessão, sem benchmark real nem ensaios de força. PR em rascunho; não incorporar antes de validar latência e equivalência. Reservas libertadas.
 
