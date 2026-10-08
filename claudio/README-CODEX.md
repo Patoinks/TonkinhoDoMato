@@ -121,7 +121,7 @@ O pedido do Martim: o G16 artificial com todos os módulos orgânicos, sem trein
 | empate −1 ao ganhar | `ahead_draws=true ahead_value=0.62 draw_ahead=-1` | pela avaliação dele (valor do melhor lance), não pelo material |
 | simplificar | `simplify_weight=0.05` | trocas que não perdem nada quando está à frente |
 | **momentos críticos** | `critical_depth=6 critical_gap=0.0032 critical_spread=0.0163` | profundidade 6 quando os 2 melhores estão quase iguais ou as 5 cabeças da rede discordam (~27% dos lances) |
-| **fim de jogo** | `endgame_pieces=8 endgame_mate=6 endgame_depth=7 endgame_nodes=400000` | com ≤ 8 peças: mates até 6 lances (sem o limiar do rei) e cálculo a 7 (promoções forçadas incluídas) |
+| **fim de jogo** | `endgame_pieces=8 endgame_mate=4 endgame_depth=7 endgame_nodes=400000` | com ≤ 8 peças: mates até 4 lances (sem o limiar do rei) e cálculo a 7 (promoções forçadas incluídas). Era `endgame_mate=6`: os mates a 5–6 lances repetiam o cálculo a 7 e gastavam 38% do tempo; nos 30 jogos do BO30 só 5 de 5848 lances mudam (`results/duplicados-g16.json`) |
 | **horizonte dos 50 lances** | `fifty_horizon=10` | a ganhar, nos últimos 10 meios-lances antes do limite, um lance que não reinicia a contagem é empate (−1) |
 | **valores por fase** | `phase_values=...` (abertura; meio-jogo; final) | medidos com `claudio/valores_fase.py` em 11 324 jogos dele (regra K/D do Martim, por fase): ver `results/valores-fase-claudio.json` |
 | **livro de experiência** | `book=claudio/experiencia.json book_weight=0.3 book_min=8 book_plies=16` | **por gerar** (ver abaixo) |

@@ -270,3 +270,12 @@ Só o C++ (`fast/claudio_fast.cpp`, sobre os PRs #1–#3 do ChatGPT): 168,1 → 
 41,9 → 11,1 s por jogo, 0 lances diferentes em 5848 decisões. O `test_fast_exactness.py` compara com
 as respostas gravadas do C++ original (inclui contagens de nós). Medir: `bench_velocidade.py`.
 Detalhes em [`../docs/claudio-performance.md`](../docs/claudio-performance.md).
+
+## G16 sem duplicados (2026-10-08, nuvem, pedido do Martim)
+
+Desliguei cada módulo e contei os lances que mudam nos jogos do BO30 (`results/duplicados-g16.json`).
+O duplicado era a pesquisa de mates do final a 6 lances: o cálculo a 7 do final já vê os mates até 4.
+`claudio-g16.pt` passou a `endgame_mate=4`: 51,2 → 31,8 ms por decisão (3 jogos com finais longos);
+nos 30 jogos mudam 5 de 5848 lances (4 continuam a dar mate, 2 mais depressa; 1 perde um mate em 5,
+com o G16 a ganhar em material). O resto não é duplicado (muda dezenas de lances) ou não custa nada
+(defesa de mates: 0,1 ms). O BO15/BO30 antigos foram jogados com `endgame_mate=6`.

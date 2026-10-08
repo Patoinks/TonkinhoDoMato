@@ -1,0 +1,51 @@
+{
+ "what": "G16 with one module changed, deciding at every ply of the BO30 G16 vs G15-100 games (memory follows the real game)",
+ "three_games_0_3": {
+  "decisions": 745,
+  "base_ms_per_decision": 51.2,
+  "off": {
+   "mate_defence=0": {
+    "changed_moves": 4,
+    "ms_per_decision": 51.1
+   },
+   "scan_depth=0": {
+    "changed_moves": 39,
+    "ms_per_decision": 49.1
+   },
+   "critical_depth=0": {
+    "changed_moves": 40,
+    "ms_per_decision": 43.4
+   },
+   "king_weight=0": {
+    "changed_moves": 13,
+    "ms_per_decision": 51.8
+   },
+   "endgame_mate=0": {
+    "changed_moves": 0,
+    "ms_per_decision": 31.2
+   },
+   "endgame_mate=4": {
+    "changed_moves": 0,
+    "ms_per_decision": 31.8
+   },
+   "endgame_nodes=100000": {
+    "changed_moves": 0,
+    "ms_per_decision": 36.9
+   },
+   "mate_attack=2 endgame_mate=0": {
+    "changed_moves": 1,
+    "ms_per_decision": 31.6
+   },
+   "endgame_pieces=0": {
+    "changed_moves": 2,
+    "ms_per_decision": 29.4
+   }
+  }
+ },
+ "thirty_games_changed_moves_of_5848": {
+  "endgame_mate=0": 27,
+  "endgame_mate=4": 5,
+  "endgame_nodes=100000": 6
+ },
+ "chosen": "endgame_mate=4 (claudio-g16.pt, 2026-10-08)"
+}
