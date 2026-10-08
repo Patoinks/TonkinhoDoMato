@@ -33978,6 +33978,4034 @@
      "draw_value": 0.311559
     }
    }
+  },
+  {
+   "generation": 10,
+   "champion": "G10-m127",
+   "champion_changes": {
+    "safety_weight": 0.791545,
+    "exchange_nodes": 69277,
+    "tactic_top": 8,
+    "tactic_rounds": 6,
+    "tactic_nodes": 559745,
+    "reply_top": 5,
+    "reply_branch": 2,
+    "mate_defence": 3,
+    "mate_gate": 0.374607,
+    "mate_nodes": 9241,
+    "king_weight": 0.029085,
+    "simplify_margin": 0.614364,
+    "draw_value": 0.408655
+   },
+   "from_parent": {
+    "safety_weight": 0.791545,
+    "exchange_nodes": 69277,
+    "tactic_rounds": 6,
+    "tactic_nodes": 559745,
+    "reply_top": 5,
+    "reply_branch": 2,
+    "mate_attack": 3
+   },
+   "final": {
+    "a": "G10-m127",
+    "b": "G10-m057",
+    "wins": [
+     2,
+     1
+    ],
+    "draws": 2,
+    "seconds": [
+     7.1,
+     8.1
+    ],
+    "winner": "G10-m127",
+    "by_time": false
+   },
+   "rounds": [
+    [
+     {
+      "a": "G10-m086",
+      "b": "G10-m017",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       9.6,
+       9.6
+      ],
+      "winner": "G10-m086",
+      "by_time": false
+     },
+     {
+      "a": "G10-m100",
+      "b": "G10-m116",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       5.5,
+       5.9
+      ],
+      "winner": "G10-m116",
+      "by_time": false
+     },
+     {
+      "a": "G10-m024",
+      "b": "G10-m063",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       8.6,
+       7.9
+      ],
+      "winner": "G10-m063",
+      "by_time": false
+     },
+     {
+      "a": "G10-m104",
+      "b": "G10-m087",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       10.1,
+       10.1
+      ],
+      "winner": "G10-m087",
+      "by_time": false
+     },
+     {
+      "a": "G10-m120",
+      "b": "G10-m047",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 4,
+      "seconds": [
+       9.7,
+       10.4
+      ],
+      "winner": "G10-m120",
+      "by_time": false
+     },
+     {
+      "a": "G10-m081",
+      "b": "G10-m078",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       7.0,
+       5.7
+      ],
+      "winner": "G10-m081",
+      "by_time": false
+     },
+     {
+      "a": "G10-m065",
+      "b": "G10-m093",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 2,
+      "seconds": [
+       9.3,
+       6.9
+      ],
+      "winner": "G10-m093",
+      "by_time": false
+     },
+     {
+      "a": "G10-m122",
+      "b": "G10-m117",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       8.5,
+       9.0
+      ],
+      "winner": "G10-m117",
+      "by_time": false
+     },
+     {
+      "a": "G10-m003",
+      "b": "G10-m019",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       9.0,
+       8.6
+      ],
+      "winner": "G10-m019",
+      "by_time": false
+     },
+     {
+      "a": "G10-m124",
+      "b": "G10-m048",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 5,
+      "seconds": [
+       6.9,
+       7.3
+      ],
+      "winner": "G10-m048",
+      "by_time": false
+     },
+     {
+      "a": "G10-m064",
+      "b": "G10-m039",
+      "wins": [
+       3,
+       0
+      ],
+      "draws": 2,
+      "seconds": [
+       6.2,
+       6.4
+      ],
+      "winner": "G10-m064",
+      "by_time": false
+     },
+     {
+      "a": "G10-m096",
+      "b": "G10-m033",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       10.7,
+       10.1
+      ],
+      "winner": "G10-m033",
+      "by_time": false
+     },
+     {
+      "a": "G10-m079",
+      "b": "G10-m071",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       6.2,
+       7.5
+      ],
+      "winner": "G10-m079",
+      "by_time": false
+     },
+     {
+      "a": "G10-m038",
+      "b": "G10-m127",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 6,
+      "seconds": [
+       11.7,
+       13.2
+      ],
+      "winner": "G10-m127",
+      "by_time": false
+     },
+     {
+      "a": "G10-m105",
+      "b": "G10-m018",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 4,
+      "seconds": [
+       10.0,
+       8.5
+      ],
+      "winner": "G10-m105",
+      "by_time": false
+     },
+     {
+      "a": "G10-m074",
+      "b": "G10-m043",
+      "wins": [
+       1,
+       4
+      ],
+      "draws": 0,
+      "seconds": [
+       6.2,
+       5.2
+      ],
+      "winner": "G10-m043",
+      "by_time": false
+     },
+     {
+      "a": "G10-m075",
+      "b": "G10-m082",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 4,
+      "seconds": [
+       7.2,
+       7.4
+      ],
+      "winner": "G10-m075",
+      "by_time": false
+     },
+     {
+      "a": "G10-m119",
+      "b": "G10-m077",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       9.4,
+       10.5
+      ],
+      "winner": "G10-m077",
+      "by_time": false
+     },
+     {
+      "a": "G10-m123",
+      "b": "G10-m080",
+      "wins": [
+       0,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       4.7,
+       5.8
+      ],
+      "winner": "G10-m080",
+      "by_time": false
+     },
+     {
+      "a": "G10-m089",
+      "b": "G10-m114",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       4.0,
+       4.7
+      ],
+      "winner": "G10-m089",
+      "by_time": false
+     },
+     {
+      "a": "G10-m111",
+      "b": "G10-m006",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 2,
+      "seconds": [
+       8.2,
+       8.4
+      ],
+      "winner": "G10-m006",
+      "by_time": false
+     },
+     {
+      "a": "G10-m084",
+      "b": "G10-m112",
+      "wins": [
+       1,
+       1
+      ],
+      "draws": 7,
+      "seconds": [
+       15.5,
+       14.9
+      ],
+      "winner": "G10-m112",
+      "by_time": true
+     },
+     {
+      "a": "G10-m008",
+      "b": "G10-m099",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 5,
+      "seconds": [
+       11.5,
+       11.6
+      ],
+      "winner": "G10-m099",
+      "by_time": false
+     },
+     {
+      "a": "G10-m060",
+      "b": "G10-m110",
+      "wins": [
+       0,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       5.7,
+       5.4
+      ],
+      "winner": "G10-m110",
+      "by_time": false
+     },
+     {
+      "a": "G10-m092",
+      "b": "G10-m002",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       9.0,
+       8.7
+      ],
+      "winner": "G10-m002",
+      "by_time": false
+     },
+     {
+      "a": "G10-m126",
+      "b": "G10-m041",
+      "wins": [
+       0,
+       3
+      ],
+      "draws": 2,
+      "seconds": [
+       4.5,
+       4.9
+      ],
+      "winner": "G10-m041",
+      "by_time": false
+     },
+     {
+      "a": "G10-m062",
+      "b": "G10-m118",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 7,
+      "seconds": [
+       13.3,
+       14.2
+      ],
+      "winner": "G10-m118",
+      "by_time": false
+     },
+     {
+      "a": "G10-m058",
+      "b": "G10-m022",
+      "wins": [
+       3,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       11.5,
+       11.5
+      ],
+      "winner": "G10-m058",
+      "by_time": false
+     },
+     {
+      "a": "G10-m012",
+      "b": "G10-m101",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 4,
+      "seconds": [
+       8.0,
+       7.9
+      ],
+      "winner": "G10-m012",
+      "by_time": false
+     },
+     {
+      "a": "G10-m050",
+      "b": "G10-m036",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       6.1,
+       7.1
+      ],
+      "winner": "G10-m050",
+      "by_time": false
+     },
+     {
+      "a": "G10-m042",
+      "b": "G10-m040",
+      "wins": [
+       0,
+       3
+      ],
+      "draws": 2,
+      "seconds": [
+       8.4,
+       7.5
+      ],
+      "winner": "G10-m040",
+      "by_time": false
+     },
+     {
+      "a": "G10-m102",
+      "b": "G10-m030",
+      "wins": [
+       3,
+       0
+      ],
+      "draws": 2,
+      "seconds": [
+       6.8,
+       6.8
+      ],
+      "winner": "G10-m102",
+      "by_time": false
+     },
+     {
+      "a": "G10-m059",
+      "b": "G10-m094",
+      "wins": [
+       0,
+       0
+      ],
+      "draws": 9,
+      "seconds": [
+       13.9,
+       12.0
+      ],
+      "winner": "G10-m094",
+      "by_time": true
+     },
+     {
+      "a": "G10-m083",
+      "b": "G10-m016",
+      "wins": [
+       2,
+       0
+      ],
+      "draws": 3,
+      "seconds": [
+       7.2,
+       7.8
+      ],
+      "winner": "G10-m083",
+      "by_time": false
+     },
+     {
+      "a": "G10-m052",
+      "b": "G10-m026",
+      "wins": [
+       0,
+       0
+      ],
+      "draws": 9,
+      "seconds": [
+       15.0,
+       13.6
+      ],
+      "winner": "G10-m026",
+      "by_time": true
+     },
+     {
+      "a": "G10-m115",
+      "b": "G10-m045",
+      "wins": [
+       0,
+       0
+      ],
+      "draws": 9,
+      "seconds": [
+       13.8,
+       13.8
+      ],
+      "winner": "G10-m045",
+      "by_time": true
+     },
+     {
+      "a": "G10-m088",
+      "b": "G10-m034",
+      "wins": [
+       1,
+       3
+      ],
+      "draws": 1,
+      "seconds": [
+       6.8,
+       6.5
+      ],
+      "winner": "G10-m034",
+      "by_time": false
+     },
+     {
+      "a": "G10-m125",
+      "b": "G10-m072",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       9.0,
+       9.1
+      ],
+      "winner": "G10-m072",
+      "by_time": false
+     },
+     {
+      "a": "G10-m025",
+      "b": "G10-m056",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       5.9,
+       5.5
+      ],
+      "winner": "G10-m056",
+      "by_time": false
+     },
+     {
+      "a": "G10-m007",
+      "b": "G10-m054",
+      "wins": [
+       3,
+       1
+      ],
+      "draws": 1,
+      "seconds": [
+       7.2,
+       6.7
+      ],
+      "winner": "G10-m007",
+      "by_time": false
+     },
+     {
+      "a": "G10-m005",
+      "b": "G10-pai",
+      "wins": [
+       0,
+       0
+      ],
+      "draws": 9,
+      "seconds": [
+       17.9,
+       17.8
+      ],
+      "winner": "G10-pai",
+      "by_time": true
+     },
+     {
+      "a": "G10-m010",
+      "b": "G10-m028",
+      "wins": [
+       3,
+       1
+      ],
+      "draws": 1,
+      "seconds": [
+       4.8,
+       6.7
+      ],
+      "winner": "G10-m010",
+      "by_time": false
+     },
+     {
+      "a": "G10-m095",
+      "b": "G10-m055",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       10.0,
+       10.2
+      ],
+      "winner": "G10-m095",
+      "by_time": false
+     },
+     {
+      "a": "G10-m085",
+      "b": "G10-m068",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 2,
+      "seconds": [
+       11.9,
+       10.5
+      ],
+      "winner": "G10-m068",
+      "by_time": false
+     },
+     {
+      "a": "G10-m090",
+      "b": "G10-m107",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 7,
+      "seconds": [
+       14.1,
+       12.7
+      ],
+      "winner": "G10-m090",
+      "by_time": false
+     },
+     {
+      "a": "G10-m001",
+      "b": "G10-m109",
+      "wins": [
+       0,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       5.8,
+       5.9
+      ],
+      "winner": "G10-m109",
+      "by_time": false
+     },
+     {
+      "a": "G10-m067",
+      "b": "G10-m070",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 6,
+      "seconds": [
+       12.8,
+       13.0
+      ],
+      "winner": "G10-m070",
+      "by_time": false
+     },
+     {
+      "a": "G10-m098",
+      "b": "G10-m009",
+      "wins": [
+       2,
+       3
+      ],
+      "draws": 3,
+      "seconds": [
+       11.9,
+       12.3
+      ],
+      "winner": "G10-m009",
+      "by_time": false
+     },
+     {
+      "a": "G10-m011",
+      "b": "G10-m029",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 3,
+      "seconds": [
+       8.7,
+       7.9
+      ],
+      "winner": "G10-m011",
+      "by_time": false
+     },
+     {
+      "a": "G10-m004",
+      "b": "G10-m027",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       6.3,
+       6.3
+      ],
+      "winner": "G10-m027",
+      "by_time": false
+     },
+     {
+      "a": "G10-m044",
+      "b": "G10-m014",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       8.3,
+       8.6
+      ],
+      "winner": "G10-m014",
+      "by_time": false
+     },
+     {
+      "a": "G10-m091",
+      "b": "G10-m021",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       6.3,
+       6.7
+      ],
+      "winner": "G10-m021",
+      "by_time": false
+     },
+     {
+      "a": "G10-m097",
+      "b": "G10-m049",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 6,
+      "seconds": [
+       14.6,
+       14.3
+      ],
+      "winner": "G10-m097",
+      "by_time": false
+     },
+     {
+      "a": "G10-m113",
+      "b": "G10-m015",
+      "wins": [
+       0,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       9.4,
+       7.9
+      ],
+      "winner": "G10-m015",
+      "by_time": false
+     },
+     {
+      "a": "G10-m106",
+      "b": "G10-m031",
+      "wins": [
+       1,
+       1
+      ],
+      "draws": 7,
+      "seconds": [
+       11.0,
+       12.3
+      ],
+      "winner": "G10-m106",
+      "by_time": true
+     },
+     {
+      "a": "G10-m057",
+      "b": "G10-m032",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 4,
+      "seconds": [
+       8.6,
+       8.8
+      ],
+      "winner": "G10-m057",
+      "by_time": false
+     },
+     {
+      "a": "G10-m046",
+      "b": "G10-m066",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 2,
+      "seconds": [
+       5.2,
+       5.3
+      ],
+      "winner": "G10-m066",
+      "by_time": false
+     },
+     {
+      "a": "G10-m051",
+      "b": "G10-m103",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 6,
+      "seconds": [
+       15.2,
+       15.0
+      ],
+      "winner": "G10-m103",
+      "by_time": false
+     },
+     {
+      "a": "G10-m073",
+      "b": "G10-m061",
+      "wins": [
+       2,
+       3
+      ],
+      "draws": 0,
+      "seconds": [
+       7.1,
+       6.0
+      ],
+      "winner": "G10-m061",
+      "by_time": false
+     },
+     {
+      "a": "G10-m121",
+      "b": "G10-m108",
+      "wins": [
+       0,
+       3
+      ],
+      "draws": 2,
+      "seconds": [
+       8.1,
+       8.0
+      ],
+      "winner": "G10-m108",
+      "by_time": false
+     },
+     {
+      "a": "G10-m035",
+      "b": "G10-m023",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       7.3,
+       7.3
+      ],
+      "winner": "G10-m035",
+      "by_time": false
+     },
+     {
+      "a": "G10-m037",
+      "b": "G10-m076",
+      "wins": [
+       3,
+       0
+      ],
+      "draws": 2,
+      "seconds": [
+       7.8,
+       7.4
+      ],
+      "winner": "G10-m037",
+      "by_time": false
+     },
+     {
+      "a": "G10-m069",
+      "b": "G10-m020",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 2,
+      "seconds": [
+       9.3,
+       8.0
+      ],
+      "winner": "G10-m020",
+      "by_time": false
+     },
+     {
+      "a": "G10-m053",
+      "b": "G10-m013",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 5,
+      "seconds": [
+       9.4,
+       9.6
+      ],
+      "winner": "G10-m053",
+      "by_time": false
+     }
+    ],
+    [
+     {
+      "a": "G10-m086",
+      "b": "G10-m116",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       8.6,
+       8.7
+      ],
+      "winner": "G10-m116",
+      "by_time": false
+     },
+     {
+      "a": "G10-m063",
+      "b": "G10-m087",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       9.2,
+       8.9
+      ],
+      "winner": "G10-m087",
+      "by_time": false
+     },
+     {
+      "a": "G10-m120",
+      "b": "G10-m081",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       6.7,
+       6.7
+      ],
+      "winner": "G10-m120",
+      "by_time": false
+     },
+     {
+      "a": "G10-m093",
+      "b": "G10-m117",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       7.0,
+       9.9
+      ],
+      "winner": "G10-m117",
+      "by_time": false
+     },
+     {
+      "a": "G10-m019",
+      "b": "G10-m048",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 6,
+      "seconds": [
+       10.0,
+       11.1
+      ],
+      "winner": "G10-m019",
+      "by_time": false
+     },
+     {
+      "a": "G10-m064",
+      "b": "G10-m033",
+      "wins": [
+       2,
+       0
+      ],
+      "draws": 3,
+      "seconds": [
+       8.8,
+       8.1
+      ],
+      "winner": "G10-m064",
+      "by_time": false
+     },
+     {
+      "a": "G10-m079",
+      "b": "G10-m127",
+      "wins": [
+       0,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       6.9,
+       6.3
+      ],
+      "winner": "G10-m127",
+      "by_time": false
+     },
+     {
+      "a": "G10-m105",
+      "b": "G10-m043",
+      "wins": [
+       3,
+       2
+      ],
+      "draws": 1,
+      "seconds": [
+       7.9,
+       7.8
+      ],
+      "winner": "G10-m105",
+      "by_time": false
+     },
+     {
+      "a": "G10-m075",
+      "b": "G10-m077",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       8.8,
+       8.8
+      ],
+      "winner": "G10-m075",
+      "by_time": false
+     },
+     {
+      "a": "G10-m080",
+      "b": "G10-m089",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       7.8,
+       7.3
+      ],
+      "winner": "G10-m089",
+      "by_time": false
+     },
+     {
+      "a": "G10-m006",
+      "b": "G10-m112",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 4,
+      "seconds": [
+       8.0,
+       7.2
+      ],
+      "winner": "G10-m006",
+      "by_time": false
+     },
+     {
+      "a": "G10-m099",
+      "b": "G10-m110",
+      "wins": [
+       0,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       7.8,
+       6.9
+      ],
+      "winner": "G10-m110",
+      "by_time": false
+     },
+     {
+      "a": "G10-m002",
+      "b": "G10-m041",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 6,
+      "seconds": [
+       11.0,
+       9.4
+      ],
+      "winner": "G10-m041",
+      "by_time": false
+     },
+     {
+      "a": "G10-m118",
+      "b": "G10-m058",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       8.4,
+       8.2
+      ],
+      "winner": "G10-m058",
+      "by_time": false
+     },
+     {
+      "a": "G10-m012",
+      "b": "G10-m050",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 6,
+      "seconds": [
+       13.6,
+       11.4
+      ],
+      "winner": "G10-m050",
+      "by_time": false
+     },
+     {
+      "a": "G10-m040",
+      "b": "G10-m102",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       5.9,
+       6.6
+      ],
+      "winner": "G10-m102",
+      "by_time": false
+     },
+     {
+      "a": "G10-m094",
+      "b": "G10-m083",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       4.8,
+       5.5
+      ],
+      "winner": "G10-m083",
+      "by_time": false
+     },
+     {
+      "a": "G10-m026",
+      "b": "G10-m045",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 8,
+      "seconds": [
+       12.5,
+       14.3
+      ],
+      "winner": "G10-m045",
+      "by_time": false
+     },
+     {
+      "a": "G10-m034",
+      "b": "G10-m072",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 4,
+      "seconds": [
+       8.8,
+       8.9
+      ],
+      "winner": "G10-m034",
+      "by_time": false
+     },
+     {
+      "a": "G10-m056",
+      "b": "G10-m007",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       11.5,
+       10.1
+      ],
+      "winner": "G10-m007",
+      "by_time": false
+     },
+     {
+      "a": "G10-pai",
+      "b": "G10-m010",
+      "wins": [
+       2,
+       0
+      ],
+      "draws": 3,
+      "seconds": [
+       6.1,
+       4.8
+      ],
+      "winner": "G10-pai",
+      "by_time": false
+     },
+     {
+      "a": "G10-m095",
+      "b": "G10-m068",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 3,
+      "seconds": [
+       8.4,
+       8.8
+      ],
+      "winner": "G10-m095",
+      "by_time": false
+     },
+     {
+      "a": "G10-m090",
+      "b": "G10-m109",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       5.7,
+       6.2
+      ],
+      "winner": "G10-m090",
+      "by_time": false
+     },
+     {
+      "a": "G10-m070",
+      "b": "G10-m009",
+      "wins": [
+       2,
+       0
+      ],
+      "draws": 3,
+      "seconds": [
+       7.2,
+       8.0
+      ],
+      "winner": "G10-m070",
+      "by_time": false
+     },
+     {
+      "a": "G10-m011",
+      "b": "G10-m027",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 5,
+      "seconds": [
+       8.7,
+       9.8
+      ],
+      "winner": "G10-m027",
+      "by_time": false
+     },
+     {
+      "a": "G10-m014",
+      "b": "G10-m021",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 3,
+      "seconds": [
+       9.3,
+       9.3
+      ],
+      "winner": "G10-m014",
+      "by_time": false
+     },
+     {
+      "a": "G10-m097",
+      "b": "G10-m015",
+      "wins": [
+       3,
+       0
+      ],
+      "draws": 2,
+      "seconds": [
+       6.1,
+       6.0
+      ],
+      "winner": "G10-m097",
+      "by_time": false
+     },
+     {
+      "a": "G10-m106",
+      "b": "G10-m057",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 2,
+      "seconds": [
+       7.1,
+       7.9
+      ],
+      "winner": "G10-m057",
+      "by_time": false
+     },
+     {
+      "a": "G10-m066",
+      "b": "G10-m103",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 2,
+      "seconds": [
+       8.7,
+       8.4
+      ],
+      "winner": "G10-m103",
+      "by_time": false
+     },
+     {
+      "a": "G10-m061",
+      "b": "G10-m108",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       9.6,
+       9.2
+      ],
+      "winner": "G10-m061",
+      "by_time": false
+     },
+     {
+      "a": "G10-m035",
+      "b": "G10-m037",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 2,
+      "seconds": [
+       7.9,
+       7.6
+      ],
+      "winner": "G10-m037",
+      "by_time": false
+     },
+     {
+      "a": "G10-m020",
+      "b": "G10-m053",
+      "wins": [
+       2,
+       3
+      ],
+      "draws": 2,
+      "seconds": [
+       8.3,
+       9.5
+      ],
+      "winner": "G10-m053",
+      "by_time": false
+     }
+    ],
+    [
+     {
+      "a": "G10-m116",
+      "b": "G10-m087",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 4,
+      "seconds": [
+       7.1,
+       7.1
+      ],
+      "winner": "G10-m087",
+      "by_time": false
+     },
+     {
+      "a": "G10-m120",
+      "b": "G10-m117",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 2,
+      "seconds": [
+       6.8,
+       6.8
+      ],
+      "winner": "G10-m117",
+      "by_time": false
+     },
+     {
+      "a": "G10-m019",
+      "b": "G10-m064",
+      "wins": [
+       2,
+       3
+      ],
+      "draws": 2,
+      "seconds": [
+       7.6,
+       7.8
+      ],
+      "winner": "G10-m064",
+      "by_time": false
+     },
+     {
+      "a": "G10-m127",
+      "b": "G10-m105",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       6.9,
+       7.8
+      ],
+      "winner": "G10-m127",
+      "by_time": false
+     },
+     {
+      "a": "G10-m075",
+      "b": "G10-m089",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 6,
+      "seconds": [
+       8.8,
+       7.0
+      ],
+      "winner": "G10-m075",
+      "by_time": false
+     },
+     {
+      "a": "G10-m006",
+      "b": "G10-m110",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 6,
+      "seconds": [
+       10.6,
+       11.1
+      ],
+      "winner": "G10-m006",
+      "by_time": false
+     },
+     {
+      "a": "G10-m041",
+      "b": "G10-m058",
+      "wins": [
+       3,
+       2
+      ],
+      "draws": 1,
+      "seconds": [
+       6.8,
+       8.1
+      ],
+      "winner": "G10-m041",
+      "by_time": false
+     },
+     {
+      "a": "G10-m050",
+      "b": "G10-m102",
+      "wins": [
+       2,
+       0
+      ],
+      "draws": 3,
+      "seconds": [
+       6.3,
+       7.1
+      ],
+      "winner": "G10-m050",
+      "by_time": false
+     },
+     {
+      "a": "G10-m083",
+      "b": "G10-m045",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 3,
+      "seconds": [
+       7.8,
+       8.0
+      ],
+      "winner": "G10-m083",
+      "by_time": false
+     },
+     {
+      "a": "G10-m034",
+      "b": "G10-m007",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 5,
+      "seconds": [
+       11.8,
+       11.3
+      ],
+      "winner": "G10-m007",
+      "by_time": false
+     },
+     {
+      "a": "G10-pai",
+      "b": "G10-m095",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 4,
+      "seconds": [
+       10.8,
+       10.8
+      ],
+      "winner": "G10-pai",
+      "by_time": false
+     },
+     {
+      "a": "G10-m090",
+      "b": "G10-m070",
+      "wins": [
+       0,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       6.4,
+       6.2
+      ],
+      "winner": "G10-m070",
+      "by_time": false
+     },
+     {
+      "a": "G10-m027",
+      "b": "G10-m014",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       8.9,
+       9.0
+      ],
+      "winner": "G10-m027",
+      "by_time": false
+     },
+     {
+      "a": "G10-m097",
+      "b": "G10-m057",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 5,
+      "seconds": [
+       12.4,
+       12.2
+      ],
+      "winner": "G10-m057",
+      "by_time": false
+     },
+     {
+      "a": "G10-m103",
+      "b": "G10-m061",
+      "wins": [
+       0,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       9.3,
+       8.7
+      ],
+      "winner": "G10-m061",
+      "by_time": false
+     },
+     {
+      "a": "G10-m037",
+      "b": "G10-m053",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 6,
+      "seconds": [
+       13.1,
+       13.4
+      ],
+      "winner": "G10-m037",
+      "by_time": false
+     }
+    ],
+    [
+     {
+      "a": "G10-m087",
+      "b": "G10-m117",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       6.2,
+       6.9
+      ],
+      "winner": "G10-m087",
+      "by_time": false
+     },
+     {
+      "a": "G10-m064",
+      "b": "G10-m127",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       10.4,
+       9.0
+      ],
+      "winner": "G10-m127",
+      "by_time": false
+     },
+     {
+      "a": "G10-m075",
+      "b": "G10-m006",
+      "wins": [
+       1,
+       0
+      ],
+      "draws": 4,
+      "seconds": [
+       7.2,
+       7.5
+      ],
+      "winner": "G10-m075",
+      "by_time": false
+     },
+     {
+      "a": "G10-m041",
+      "b": "G10-m050",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       5.6,
+       5.4
+      ],
+      "winner": "G10-m041",
+      "by_time": false
+     },
+     {
+      "a": "G10-m083",
+      "b": "G10-m007",
+      "wins": [
+       0,
+       3
+      ],
+      "draws": 2,
+      "seconds": [
+       7.9,
+       6.7
+      ],
+      "winner": "G10-m007",
+      "by_time": false
+     },
+     {
+      "a": "G10-pai",
+      "b": "G10-m070",
+      "wins": [
+       1,
+       1
+      ],
+      "draws": 7,
+      "seconds": [
+       14.7,
+       14.1
+      ],
+      "winner": "G10-m070",
+      "by_time": true
+     },
+     {
+      "a": "G10-m027",
+      "b": "G10-m057",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       8.9,
+       8.4
+      ],
+      "winner": "G10-m057",
+      "by_time": false
+     },
+     {
+      "a": "G10-m061",
+      "b": "G10-m037",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       7.4,
+       7.2
+      ],
+      "winner": "G10-m061",
+      "by_time": false
+     }
+    ],
+    [
+     {
+      "a": "G10-m087",
+      "b": "G10-m127",
+      "wins": [
+       1,
+       2
+      ],
+      "draws": 2,
+      "seconds": [
+       9.3,
+       9.1
+      ],
+      "winner": "G10-m127",
+      "by_time": false
+     },
+     {
+      "a": "G10-m075",
+      "b": "G10-m041",
+      "wins": [
+       0,
+       2
+      ],
+      "draws": 3,
+      "seconds": [
+       6.5,
+       5.3
+      ],
+      "winner": "G10-m041",
+      "by_time": false
+     },
+     {
+      "a": "G10-m007",
+      "b": "G10-m070",
+      "wins": [
+       0,
+       1
+      ],
+      "draws": 7,
+      "seconds": [
+       14.2,
+       14.6
+      ],
+      "winner": "G10-m070",
+      "by_time": false
+     },
+     {
+      "a": "G10-m057",
+      "b": "G10-m061",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       8.4,
+       8.7
+      ],
+      "winner": "G10-m057",
+      "by_time": false
+     }
+    ],
+    [
+     {
+      "a": "G10-m127",
+      "b": "G10-m041",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 3,
+      "seconds": [
+       7.4,
+       7.5
+      ],
+      "winner": "G10-m127",
+      "by_time": false
+     },
+     {
+      "a": "G10-m070",
+      "b": "G10-m057",
+      "wins": [
+       2,
+       3
+      ],
+      "draws": 1,
+      "seconds": [
+       7.6,
+       7.9
+      ],
+      "winner": "G10-m057",
+      "by_time": false
+     }
+    ],
+    [
+     {
+      "a": "G10-m127",
+      "b": "G10-m057",
+      "wins": [
+       2,
+       1
+      ],
+      "draws": 2,
+      "seconds": [
+       7.1,
+       8.1
+      ],
+      "winner": "G10-m127",
+      "by_time": false
+     }
+    ]
+   ],
+   "rounds_won": {
+    "G10-m086": 1,
+    "G10-m116": 2,
+    "G10-m063": 1,
+    "G10-m087": 4,
+    "G10-m120": 2,
+    "G10-m081": 1,
+    "G10-m093": 1,
+    "G10-m117": 3,
+    "G10-m019": 2,
+    "G10-m048": 1,
+    "G10-m064": 3,
+    "G10-m033": 1,
+    "G10-m079": 1,
+    "G10-m127": 7,
+    "G10-m105": 2,
+    "G10-m043": 1,
+    "G10-m075": 4,
+    "G10-m077": 1,
+    "G10-m080": 1,
+    "G10-m089": 2,
+    "G10-m006": 3,
+    "G10-m112": 1,
+    "G10-m099": 1,
+    "G10-m110": 2,
+    "G10-m002": 1,
+    "G10-m041": 5,
+    "G10-m118": 1,
+    "G10-m058": 2,
+    "G10-m012": 1,
+    "G10-m050": 3,
+    "G10-m040": 1,
+    "G10-m102": 2,
+    "G10-m094": 1,
+    "G10-m083": 3,
+    "G10-m026": 1,
+    "G10-m045": 2,
+    "G10-m034": 2,
+    "G10-m072": 1,
+    "G10-m056": 1,
+    "G10-m007": 4,
+    "G10-pai": 3,
+    "G10-m010": 1,
+    "G10-m095": 2,
+    "G10-m068": 1,
+    "G10-m090": 2,
+    "G10-m109": 1,
+    "G10-m070": 5,
+    "G10-m009": 1,
+    "G10-m011": 1,
+    "G10-m027": 3,
+    "G10-m014": 2,
+    "G10-m021": 1,
+    "G10-m097": 2,
+    "G10-m015": 1,
+    "G10-m106": 1,
+    "G10-m057": 6,
+    "G10-m066": 1,
+    "G10-m103": 2,
+    "G10-m061": 4,
+    "G10-m108": 1,
+    "G10-m035": 1,
+    "G10-m037": 3,
+    "G10-m020": 1,
+    "G10-m053": 2
+   },
+   "by_setting": {
+    "safety_weight": 0.889,
+    "tactic_rounds": 1.0,
+    "tactic_nodes": 0.846,
+    "reply_weight": 0.676,
+    "mate_attack": 1.026,
+    "mate_nodes": 0.667,
+    "pawn_reach": 1.22,
+    "reply_branch": 1.333,
+    "king_weight": 1.0,
+    "draw_value": 0.917,
+    "simplify_margin": 1.026,
+    "exchange_nodes": 1.235,
+    "mate_gate": 0.968,
+    "reply_top": 0.741,
+    "mate_defence": 0.909,
+    "tactic_top": 0.583
+   },
+   "entrants": {
+    "G10-pai": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m001": {
+     "safety_weight": 0.659484,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 6,
+     "tactic_nodes": 598282,
+     "reply_top": 9,
+     "reply_weight": 1.397501,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 6600,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m002": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 2,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.022731,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.25552
+    },
+    "G10-m003": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.316448,
+     "draw_value": 0.292114
+    },
+    "G10-m004": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 59616,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m005": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 68908,
+     "tactic_top": 8,
+     "tactic_rounds": 6,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.427304,
+     "draw_value": 0.323974
+    },
+    "G10-m006": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 128587,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_gate": 0.259083,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.883696,
+     "draw_value": 0.408655
+    },
+    "G10-m007": {
+     "safety_weight": 0.74201,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1140141,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.237872
+    },
+    "G10-m008": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.018258,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m009": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 12473,
+     "pawn_reach": 0,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m010": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 2,
+     "tactic_nodes": 814854,
+     "reply_branch": 2,
+     "mate_attack": 2,
+     "mate_gate": 0.201136,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m011": {
+     "safety_weight": 0.288888,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 11,
+     "reply_weight": 1.473857,
+     "reply_branch": 1,
+     "mate_attack": 2,
+     "mate_gate": 0.207259,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m012": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 57510,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.496552,
+     "mate_nodes": 11822,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m013": {
+     "safety_weight": 0.321827,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 5,
+     "tactic_nodes": 1021062,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 11662,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m014": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1046275,
+     "reply_top": 9,
+     "reply_weight": 1.3006,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.021602,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m015": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 11,
+     "reply_branch": 1,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.041936,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.207167
+    },
+    "G10-m016": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 6,
+     "tactic_nodes": 1024249,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 6859,
+     "pawn_reach": 0,
+     "king_weight": 0.022486,
+     "simplify_margin": 0.484431,
+     "draw_value": 0.265825
+    },
+    "G10-m017": {
+     "safety_weight": 0.326351,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_weight": 0.758985,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.545757,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.847068,
+     "draw_value": 0.218401
+    },
+    "G10-m018": {
+     "safety_weight": 0.42487,
+     "exchange_nodes": 150553,
+     "tactic_top": 8,
+     "tactic_nodes": 543517,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m019": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.457056,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m020": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.465393,
+     "draw_value": 0.408655
+    },
+    "G10-m021": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.548546,
+     "mate_nodes": 6918,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m022": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1196470,
+     "reply_top": 9,
+     "reply_weight": 1.230798,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 11153,
+     "king_weight": 0.041438,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m023": {
+     "safety_weight": 0.773421,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.799344,
+     "draw_value": 0.237949
+    },
+    "G10-m024": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.016276,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m025": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_nodes": 814854,
+     "reply_top": 12,
+     "reply_weight": 0.537164,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 0,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m026": {
+     "safety_weight": 0.654549,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_attack": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 11845,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.794918,
+     "draw_value": 0.408655
+    },
+    "G10-m027": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 61283,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 7,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_gate": 0.48055,
+     "mate_nodes": 5677,
+     "pawn_reach": 0,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.329082,
+     "draw_value": 0.564766
+    },
+    "G10-m028": {
+     "safety_weight": 0.66444,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 2,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m029": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 81116,
+     "tactic_top": 8,
+     "tactic_nodes": 408332,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_gate": 0.210445,
+     "mate_nodes": 9241,
+     "king_weight": 0.037816,
+     "simplify_margin": 0.765221,
+     "draw_value": 0.502734
+    },
+    "G10-m030": {
+     "safety_weight": 0.65617,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1013909,
+     "reply_top": 9,
+     "reply_weight": 1.262081,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 4843,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.748696,
+     "draw_value": 0.408655
+    },
+    "G10-m031": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 6,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 11367,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m032": {
+     "safety_weight": 0.801793,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1111381,
+     "reply_top": 9,
+     "reply_weight": 0.513291,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 13367,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.556992
+    },
+    "G10-m033": {
+     "safety_weight": 0.686122,
+     "exchange_nodes": 123857,
+     "tactic_top": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 11,
+     "reply_branch": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m034": {
+     "safety_weight": 0.689989,
+     "exchange_nodes": 64768,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m035": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 145258,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.345795,
+     "draw_value": 0.250363
+    },
+    "G10-m036": {
+     "safety_weight": 0.339929,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.491611
+    },
+    "G10-m037": {
+     "safety_weight": 0.325578,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.831997,
+     "draw_value": 0.408655
+    },
+    "G10-m038": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 7,
+     "reply_weight": 0.539289,
+     "reply_branch": 1,
+     "mate_attack": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.016041,
+     "simplify_margin": 0.761509,
+     "draw_value": 0.285505
+    },
+    "G10-m039": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1129200,
+     "reply_top": 12,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.472135,
+     "mate_nodes": 9241,
+     "king_weight": 0.017418,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m040": {
+     "safety_weight": 0.656083,
+     "exchange_nodes": 139426,
+     "tactic_top": 8,
+     "tactic_rounds": 6,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_gate": 0.561453,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.023156,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m041": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 80379,
+     "tactic_top": 8,
+     "tactic_rounds": 2,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_attack": 2,
+     "mate_gate": 0.20581,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.582888
+    },
+    "G10-m042": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 57002,
+     "tactic_top": 8,
+     "tactic_rounds": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.04351,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.244543
+    },
+    "G10-m043": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 996626,
+     "reply_top": 5,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 4780,
+     "pawn_reach": 0,
+     "king_weight": 0.020439,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m044": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 6,
+     "tactic_nodes": 814854,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.294497,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.041875,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m045": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 134880,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.466292,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.781528,
+     "draw_value": 0.408655
+    },
+    "G10-m046": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.469366,
+     "mate_nodes": 11142,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m047": {
+     "safety_weight": 0.72713,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1023552,
+     "reply_top": 11,
+     "reply_weight": 1.305568,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 6605,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m048": {
+     "safety_weight": 0.324572,
+     "exchange_nodes": 141661,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 0,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.601939
+    },
+    "G10-m049": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 988212,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m050": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 5,
+     "tactic_rounds": 5,
+     "tactic_nodes": 459333,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.043207,
+     "simplify_margin": 0.755182,
+     "draw_value": 0.408655
+    },
+    "G10-m051": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.437866,
+     "draw_value": 0.408655
+    },
+    "G10-m052": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_weight": 1.387362,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.189135,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.421673,
+     "draw_value": 0.408655
+    },
+    "G10-m053": {
+     "safety_weight": 0.374943,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 6,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 5516,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m054": {
+     "safety_weight": 0.726637,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1073360,
+     "reply_top": 5,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.756948,
+     "draw_value": 0.49967
+    },
+    "G10-m055": {
+     "safety_weight": 0.799455,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 5,
+     "tactic_nodes": 648503,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m056": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 79973,
+     "tactic_top": 8,
+     "tactic_nodes": 1216341,
+     "reply_top": 12,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 13464,
+     "pawn_reach": 0,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.52466
+    },
+    "G10-m057": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.234332
+    },
+    "G10-m058": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.820461,
+     "draw_value": 0.408655
+    },
+    "G10-m059": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 6,
+     "tactic_nodes": 1010947,
+     "reply_top": 9,
+     "reply_weight": 1.256415,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.262222,
+     "mate_nodes": 12611,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m060": {
+     "safety_weight": 0.385272,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 558022,
+     "reply_top": 9,
+     "reply_weight": 0.728628,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m061": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 143065,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_weight": 1.283299,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.537802,
+     "mate_nodes": 9241,
+     "king_weight": 0.037034,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m062": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 3,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_weight": 1.377622,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.036227,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m063": {
+     "safety_weight": 0.797201,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 4997,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.45236,
+     "draw_value": 0.211103
+    },
+    "G10-m064": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m065": {
+     "safety_weight": 0.666124,
+     "exchange_nodes": 137080,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.210829,
+     "mate_nodes": 9241,
+     "pawn_reach": 0,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m066": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.561575,
+     "mate_nodes": 6039,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.758557,
+     "draw_value": 0.408655
+    },
+    "G10-m067": {
+     "safety_weight": 0.300688,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_weight": 1.462255,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m068": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.017228,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.297306
+    },
+    "G10-m069": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.041211,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m070": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 439166,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.041113,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m071": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 12,
+     "reply_weight": 0.551539,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.017007,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m072": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 60013,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m073": {
+     "safety_weight": 0.336421,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1103065,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.895271,
+     "draw_value": 0.298685
+    },
+    "G10-m074": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 153200,
+     "tactic_top": 8,
+     "tactic_nodes": 1147307,
+     "reply_top": 11,
+     "reply_weight": 1.270682,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 6199,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m075": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_weight": 1.23495,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 0,
+     "king_weight": 0.014901,
+     "simplify_margin": 0.343388,
+     "draw_value": 0.408655
+    },
+    "G10-m076": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 6810,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.265849
+    },
+    "G10-m077": {
+     "safety_weight": 0.338992,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 2,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.452863,
+     "mate_nodes": 11519,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m078": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 69985,
+     "tactic_top": 8,
+     "tactic_rounds": 6,
+     "tactic_nodes": 445043,
+     "reply_top": 7,
+     "reply_branch": 2,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.035521,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m079": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 5,
+     "tactic_nodes": 550605,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.04073,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.601214
+    },
+    "G10-m080": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m081": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_weight": 1.240971,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_gate": 0.249982,
+     "mate_nodes": 9241,
+     "king_weight": 0.042176,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m082": {
+     "safety_weight": 0.394677,
+     "exchange_nodes": 103094,
+     "tactic_top": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 11895,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.463939,
+     "draw_value": 0.606197
+    },
+    "G10-m083": {
+     "safety_weight": 0.772779,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_weight": 0.599359,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.820905,
+     "draw_value": 0.408655
+    },
+    "G10-m084": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1120830,
+     "reply_top": 9,
+     "reply_weight": 0.550695,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m085": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 641792,
+     "reply_top": 9,
+     "reply_weight": 0.572182,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.263745,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.423451,
+     "draw_value": 0.408655
+    },
+    "G10-m086": {
+     "safety_weight": 0.800311,
+     "exchange_nodes": 62646,
+     "tactic_top": 8,
+     "tactic_rounds": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.4846,
+     "mate_nodes": 9241,
+     "king_weight": 0.037335,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m087": {
+     "safety_weight": 0.385602,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m088": {
+     "safety_weight": 0.314863,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 6,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 6713,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m089": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 530469,
+     "reply_top": 9,
+     "reply_weight": 1.461809,
+     "reply_branch": 1,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 11892,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.466114,
+     "draw_value": 0.525167
+    },
+    "G10-m090": {
+     "safety_weight": 0.789767,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_weight": 1.372459,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 4783,
+     "king_weight": 0.042783,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m091": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 145681,
+     "tactic_top": 8,
+     "tactic_rounds": 5,
+     "tactic_nodes": 1080277,
+     "reply_weight": 0.597011,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.222157,
+     "mate_nodes": 6622,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m092": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1221098,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.04285,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m093": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 5,
+     "reply_branch": 1,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.036349,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.220009
+    },
+    "G10-m094": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 138924,
+     "tactic_top": 8,
+     "tactic_rounds": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.420596,
+     "draw_value": 0.610688
+    },
+    "G10-m095": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 6,
+     "tactic_nodes": 1000294,
+     "reply_top": 9,
+     "reply_weight": 0.587244,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 12875,
+     "pawn_reach": 2,
+     "king_weight": 0.037062,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m096": {
+     "safety_weight": 0.703903,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.519607,
+     "mate_nodes": 12217,
+     "king_weight": 0.041458,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.263653
+    },
+    "G10-m097": {
+     "safety_weight": 0.688404,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 6076,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m098": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 3,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_weight": 0.673423,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m099": {
+     "safety_weight": 0.319445,
+     "exchange_nodes": 125476,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 11,
+     "reply_weight": 1.225473,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 12798,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.815031,
+     "draw_value": 0.408655
+    },
+    "G10-m100": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 11,
+     "reply_branch": 1,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 11785,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.292989
+    },
+    "G10-m101": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 53331,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 12,
+     "reply_branch": 1,
+     "mate_attack": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.039755,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.259512
+    },
+    "G10-m102": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1047737,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 12799,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.813486,
+     "draw_value": 0.408655
+    },
+    "G10-m103": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.272121,
+     "mate_nodes": 12238,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.777812,
+     "draw_value": 0.408655
+    },
+    "G10-m104": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 3,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.504782,
+     "mate_nodes": 6134,
+     "king_weight": 0.043312,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m105": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 3,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 0,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.303006
+    },
+    "G10-m106": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 143488,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 0,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.566259
+    },
+    "G10-m107": {
+     "safety_weight": 0.779895,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.451906,
+     "mate_nodes": 5675,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m108": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1155838,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.042537,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m109": {
+     "safety_weight": 0.272862,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 11,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 13219,
+     "king_weight": 0.021496,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m110": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 6,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.019005,
+     "simplify_margin": 0.482209,
+     "draw_value": 0.408655
+    },
+    "G10-m111": {
+     "safety_weight": 0.321325,
+     "exchange_nodes": 146453,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 13613,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.226993
+    },
+    "G10-m112": {
+     "safety_weight": 0.691282,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 6,
+     "tactic_nodes": 814854,
+     "reply_weight": 1.441225,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 0,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m113": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 152530,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 12,
+     "reply_weight": 1.275314,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m114": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 150325,
+     "tactic_top": 8,
+     "tactic_nodes": 1143453,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.039559,
+     "simplify_margin": 0.325358,
+     "draw_value": 0.408655
+    },
+    "G10-m115": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 1103918,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 12924,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m116": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 78826,
+     "tactic_top": 8,
+     "tactic_nodes": 998350,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m117": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 135404,
+     "tactic_top": 8,
+     "tactic_rounds": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.017626,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m118": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 0,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.844075,
+     "draw_value": 0.408655
+    },
+    "G10-m119": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_weight": 1.398337,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m120": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.021214,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m121": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_top": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m122": {
+     "safety_weight": 0.31649,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_rounds": 5,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 13307,
+     "king_weight": 0.015942,
+     "simplify_margin": 0.339038,
+     "draw_value": 0.408655
+    },
+    "G10-m123": {
+     "safety_weight": 0.53788,
+     "exchange_nodes": 103094,
+     "tactic_rounds": 6,
+     "tactic_nodes": 1195805,
+     "reply_top": 9,
+     "reply_weight": 1.265406,
+     "reply_branch": 2,
+     "mate_attack": 1,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m124": {
+     "safety_weight": 0.308421,
+     "exchange_nodes": 103094,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.78479,
+     "draw_value": 0.408655
+    },
+    "G10-m125": {
+     "safety_weight": 0.699548,
+     "exchange_nodes": 103094,
+     "tactic_top": 5,
+     "tactic_nodes": 1012427,
+     "reply_top": 9,
+     "reply_branch": 1,
+     "mate_defence": 3,
+     "mate_attack": 2,
+     "mate_gate": 0.458704,
+     "mate_nodes": 9241,
+     "pawn_reach": 2,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    },
+    "G10-m126": {
+     "safety_weight": 0.690887,
+     "exchange_nodes": 78265,
+     "tactic_top": 8,
+     "tactic_nodes": 814854,
+     "reply_weight": 0.753708,
+     "reply_branch": 1,
+     "mate_attack": 2,
+     "mate_gate": 0.51652,
+     "mate_nodes": 5472,
+     "pawn_reach": 0,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.343513,
+     "draw_value": 0.211756
+    },
+    "G10-m127": {
+     "safety_weight": 0.791545,
+     "exchange_nodes": 69277,
+     "tactic_top": 8,
+     "tactic_rounds": 6,
+     "tactic_nodes": 559745,
+     "reply_top": 5,
+     "reply_branch": 2,
+     "mate_defence": 3,
+     "mate_gate": 0.374607,
+     "mate_nodes": 9241,
+     "king_weight": 0.029085,
+     "simplify_margin": 0.614364,
+     "draw_value": 0.408655
+    }
+   }
   }
  ]
 }
