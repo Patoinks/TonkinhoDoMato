@@ -87,7 +87,9 @@ def main():
     if args.champions:
         report = json.loads(Path(args.champions).read_text(encoding="utf-8"))
         group = dict(_setting(item) for item in report.get("group_set", []))
-        for name, changes in report["champions"].items():
+        champions = report.get("champions") or {"original": {}, **{f"G{g['generation']}": g["champion_changes"]
+                                                                     for g in report["generations"]}}
+        for name, changes in champions.items():
             players[name] = (report["checkpoint"], {**{k: str(v) for k, v in changes.items()}, **group})
     for item in args.player:
         name, _, spec = item.partition("=")
