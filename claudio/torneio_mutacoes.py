@@ -14,7 +14,13 @@ owner's rule); level on wins: extra games until one is won (at most --extra), th
 thought for less. Every finished game is appended to results/torneio-<label>.jsonl, so a stopped
 tournament continues where it was (same command). Measurement only - nothing is trained.
 
+--fixed name=value keeps a setting the same for every player (never mutated); --group-set
+name=value is applied to every player in the group stage only (e.g. the tournament at calculation
+depth 3, fast, and the group stage at 5).
+
     python claudio/torneio_mutacoes.py --checkpoint claudio/claudio-grande-g0-forte.pt --label geracoes
+    python claudio/torneio_mutacoes.py --label p3 --later-mutants 127 --fixed tactic_depth=3 \
+        --fixed exchange_depth=5 --fixed reply_depth=2 --group-set tactic_depth=5
 """
 import argparse
 from collections import defaultdict
@@ -63,13 +69,15 @@ BOUNDS = {
 }
 
 
-def mutate(parent, rng, rate, spread):
-    """{setting: value} of a mutant of `parent` (full settings): each numeric setting, with
-    chance `rate`, times 1 +- U(spread); at least one setting changes."""
+def mutate(parent, rng, rate, spread, frozen=()):
+    """{setting: value} of a mutant of `parent` (full settings): each numeric setting not in
+    `frozen`, with chance `rate`, times 1 +- U(spread); at least one setting changes."""
     low, high = spread
     while True:
         child = {}
         for name, (least, most) in BOUNDS.items():
+            if name in frozen:
+                continue
             value = parent[name]
             if not value or rng.random() >= rate:
                 continue
@@ -255,19 +263,28 @@ def main():
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument("--label", required=True)
     parser.add_argument("--log", default="", help="where the live game log goes (default results/torneio-<label>.jsonl)")
+    parser.add_argument("--fixed", action="append", default=[],
+                        help="name=value: the same for every player, never mutated (e.g. tactic_depth=3)")
+    parser.add_argument("--group-set", action="append", default=[],
+                        help="name=value: applied to every player in the group stage only (e.g. tactic_depth=5)")
+    parser.add_argument("--no-groups", action="store_true", help="play the generations only (the group stage later)")
     args = parser.parse_args()
 
     import numpy as np
     from claudio_agent import ClaudioConfig
     from claudio_load import load_claudio
-    base = asdict(ClaudioConfig.with_settings([], base=load_claudio(args.checkpoint, with_config=True)[2]))
+    base = asdict(ClaudioConfig.with_settings(args.fixed, base=load_claudio(args.checkpoint, with_config=True)[2]))
+    frozen = {item.partition("=")[0] for item in args.fixed}
+    in_groups = asdict(ClaudioConfig.with_settings(args.group_set, base=base))
+    in_groups = {k: v for k, v in in_groups.items() if v != base[k]}
     out = ROOT / "claudio/results" / f"torneio-{args.label}.json"
     report = {"label": args.label, "checkpoint": args.checkpoint, "base": base, "rate": args.rate,
-              "spread": list(args.spread), "generations": []}
+              "spread": list(args.spread), "fixed": args.fixed, "group_set": args.group_set, "generations": []}
     tournament = Tournament(args)
     started = time.perf_counter()
     parent, champions = dict(base), {"original": dict(base)}
     later = f", depois {args.later_mutants}" if args.later_mutants else ""
+    print(f"fixos para todos: {args.fixed or 'nada'}; na fase de grupos: {args.group_set or 'nada'}", flush=True)
     print(f"{args.generations} geracoes x ({args.mutants} mutantes{later} + o pai), melhor de {args.games}; "
           f"grupos melhor de {args.group_games}", flush=True)
     try:
@@ -276,7 +293,7 @@ def main():
             players = {f"G{generation}-pai": parent}
             count = args.later_mutants if generation > 1 and args.later_mutants else args.mutants
             for i in range(1, count + 1):
-                players[f"G{generation}-m{i:03d}"] = mutate(parent, rng, args.rate, args.spread)
+                players[f"G{generation}-m{i:03d}"] = mutate(parent, rng, args.rate, args.spread, frozen)
             champion, rounds, won = tournament.bracket(generation, players, rng)
             parent = players[champion]
             champions[f"G{generation}"] = parent
@@ -295,12 +312,15 @@ def main():
             print(f"GERACAO {generation}: campeao {champion} (final {final['a']} vs {final['b']} {final['wins']}, "
                   f"{final['draws']} empates) - muda do forte: {changes(parent, base)} "
                   f"({(time.perf_counter() - started) / 60:.0f} min)", flush=True)
-        table, pairs = tournament.groups(champions)
+        if args.no_groups:
+            return
+        table, pairs = tournament.groups({n: {**s, **in_groups} for n, s in champions.items()})
         report.update(groups=table, group_pairs=pairs,
                       champions={n: changes(s, base) for n, s in champions.items()},
                       minutes=round((time.perf_counter() - started) / 60, 1))
         out.write_text(json.dumps(report, indent=1), encoding="utf-8")
-        print(f"FASE DE GRUPOS (cada par melhor de {args.group_games}):", flush=True)
+        print(f"FASE DE GRUPOS (cada par melhor de {args.group_games}, com {args.group_set or 'as mesmas definicoes'}):",
+              flush=True)
         for name, row in sorted(table.items(), key=lambda kv: (-kv[1]["V"], kv[1]["D"])):
             print(f"  {name:9s} WR {100 * row['winrate']:5.1f}%  V/E/D {row['V']}/{row['E']}/{row['D']}  "
                   f"{row['s_por_jogo']:.1f} s/jogo  {changes(champions[name], base)}", flush=True)
