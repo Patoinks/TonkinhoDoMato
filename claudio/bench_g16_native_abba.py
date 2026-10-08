@@ -58,6 +58,75 @@ def real_positions(count):
     return [selected[i] for i in indexes]
 
 
+
+def completed_game_rows(count):
+    """Complete BO30 games, replaying every recorded position, both colours."""
+    pgn = Path(__file__).resolve().parent / "results/matches/g16-vs-g15-100-bo30.pgn"
+    games = []
+    with pgn.open("r", encoding="utf-8") as stream:
+        game_id = 0
+        while True:
+            game = chess.pgn.read_game(stream)
+            if game is None:
+                break
+            if game.errors:
+                raise ValueError(f"Invalid game {game_id}: {game.errors}")
+            if game.headers.get("Result", "*") != "*":
+                board = game.board()
+                rows = []
+                for ply, move in enumerate(game.mainline_moves()):
+                    if board.is_game_over():
+                        raise AssertionError(f"Game {game_id} continues after terminal ply {ply}")
+                    rows.append((game_id, ply, board.copy(stack=True)))
+                    board.push(move)
+                if len(rows) >= 16:
+                    games.append((game_id, rows, game.headers["Result"]))
+            game_id += 1
+    if len(games) < count:
+        raise ValueError(f"Only {len(games)} complete BO30 games; requested {count}")
+    games.sort(key=lambda item: len(item[1]))
+    indexes = ([len(games) // 2] if count == 1 else
+               [round(i * (len(games) - 1) / (count - 1)) for i in range(count)])
+    return [games[i] for i in indexes]
+
+
+def benchmark_complete_games(games, loaded, repeats):
+    """ABBA decision-call totals per recorded game; not self-play or PGN parsing."""
+    totals = {"baseline": [], "candidate": []}
+    decisions_per_pass = 0
+    for game_id, rows, result in games:
+        expected = None
+        per_game = {"baseline": [], "candidate": []}
+        decisions_per_pass += len(rows)
+        for repeat in range(repeats):
+            for label in ("baseline", "candidate", "candidate", "baseline"):
+                decisions, times, _ = evaluate(rows, loaded, REFERENCES[label])
+                if expected is None:
+                    expected = decisions
+                elif decisions != expected:
+                    changed = [(i, x, y) for i, (x, y) in enumerate(zip(expected, decisions))
+                               if x != y]
+                    raise AssertionError(
+                        f"Full-game divergence id={game_id} version={label}: {changed[:8]}")
+                per_game[label].append(sum(times))
+        for label in totals:
+            totals[label].extend(per_game[label])
+        print(f"FULL GAME id={game_id} PGN_result={result} plies={len(rows)} "
+              f"baseline_mean={statistics.mean(per_game['baseline']):.3f}ms "
+              f"candidate_mean={statistics.mean(per_game['candidate']):.3f}ms "
+              f"changed_moves=0", flush=True)
+    b, c = metrics(totals["baseline"]), metrics(totals["candidate"])
+    print(f"FULL GAMES: {len(games)} completed BO30 games, "
+          f"{decisions_per_pass * repeats * 2} decisions/version; "
+          f"all plies, both colours, same recorded moves and GRU history; "
+          f"zero changed decisions", flush=True)
+    print(f"FULL GAME TIME baseline mean={b[0]:.3f} median={b[1]:.3f} "
+          f"p95={b[2]:.3f}ms; candidate mean={c[0]:.3f} "
+          f"median={c[1]:.3f} p95={c[2]:.3f}ms; "
+          f"time_saved={(1 - c[0] / b[0]) * 100:+.2f}%", flush=True)
+    print("Recorded-game replay, not live games or a winrate test.", flush=True)
+
+
 def native_of(module, board):
     original = claudio_agent.claudio_fast
     try:
@@ -176,8 +245,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--positions", type=int, default=96)
     parser.add_argument("--repeats", type=int, default=2)
+    parser.add_argument("--full-games", type=int, default=1,
+                        help="Complete recorded BO30 games to replay per ply (0 to skip)")
     args = parser.parse_args()
-    if args.positions <= 0 or args.repeats <= 0:
+    if args.positions <= 0 or args.repeats <= 0 or args.full_games < 0:
         parser.error("positions and repeats must be positive")
     torch.set_num_threads(1)
     torch.set_num_interop_threads(1)
@@ -216,6 +287,8 @@ def main():
     print(f"TIME saved = {(1 - cand[0] / base[0]) * 100:+.2f}% ; "
           f"SPEED increase = {(base[0] / cand[0] - 1) * 100:+.2f}%", flush=True)
     print("Equivalent moves in sample alone are not an Elo or winrate non-inferiority proof.", flush=True)
+    if args.full_games:
+        benchmark_complete_games(completed_game_rows(args.full_games), loaded, args.repeats)
 
 
 if __name__ == "__main__":
