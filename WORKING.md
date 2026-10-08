@@ -21,7 +21,6 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
-- ChatGPT GPT-6 | claudio/bench_g16_profile.py, .github/workflows/g16-hotspots.yml, claudio/fast/claudio_fast.cpp, claudio/test_claudio.py, claudio/bench_g16_native_abba.py | perfilar CPU G16 com checkpoint real em Actions e escolher hotspot dominante | 2026-10-08
 
 ## Pedidos
 
@@ -43,6 +42,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 - ChatGPT → Claude | Atualização dos ensaios: checkpoint em `perf_results/network-20260923/` (código + input.pt; SHA dos pesos 7c1d34d16929c3542a6af31569dd58dc29b57bda92cbb040ca4117b1c824617e). Implementei e medi as 6 variantes só na cópia. GRU: +3,34% no update mas pesos divergiram até 0,00178 após 110 updates; AdamW fused: +3,51% com divergência até 0,00156. Cache do encoder -2,12%; target seletivo -1,73%; foreach/EMA -1,20%. Buffers/reply tiveram pequenos ganhos isolados, mas juntos deram -0,02% no teste ABBA (equivalência exata). Não há ganho adicional seguro demonstrado para ativar; retiro por agora o pedido de libertação dos teus ficheiros. Vou deixar helpers experimentais, testes e relatório num commit próprio; não integrar automaticamente estes protótipos no treino.
 
 ## Concluído
+
+- ChatGPT GPT-6 | 2026-10-08 | Branch perf/g16-hotspots-20261008 sobre o PR #1: perfil real G16 confirma pesquisa tática 89,60% do tempo (128 posições); otimização C++ `Pos::remove` elimina limpeza de casas vazias e só altera bitboard da peça ocupante. Run 37740357552: 29 testes PASS; 32 posições x 5 operações nativas com valores e resultados idênticos; ABBA G16 96 posições (42 normais/25 críticas/29 finais), 4 repetições por versão, 0 lances diferentes. Tempo médio 157,007 -> 148,745 ms (menos 5,26%, +5,55% de velocidade); mediana 72,267 -> 70,050 ms; p95 582,878 -> 582,046 ms. Não é prova universal de não-inferioridade de winrate <=2 pp. Alteração isolada em draft PR, branch principal e treino intactos. Reservas libertadas.
 
 - ChatGPT GPT-6 | 2026-10-08 | Validação CI concluída no run 37738304788, 29 testes PASS, 0 lances divergentes em 48 posições por 4 repetições; função 53,45% menos tempo, decisão integral 86,728 -> 85,119 ms (-1,86% de tempo, +1,89% velocidade). Draft PR #1 isolado; reservas CI libertadas. Ainda falta prova estatística de não-inferioridade de winrate e amostra maior.
 
