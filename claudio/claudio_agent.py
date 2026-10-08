@@ -76,7 +76,7 @@ class ClaudioConfig:
     phase_values: str = ""          # its own piece values by phase, "P,N,B,R,Q;P,N,B,R,Q;P,N,B,R,Q"
     phase_opening: int = 20         # (opening up to this many half-moves of the game, ending at
     phase_ending: int = 12          # this many pieces or fewer, middlegame otherwise; claudio/valores_fase.py)
-    book: str = ""                  # its own opening experience (claudio/experiencia.py): win rate of each move
+    book: str = ""                  # its own opening experience (claudio/experiencia.py): good rate of each move
     book_weight: float = 0.0        # in its own games, weighted this much, for the side to move
     book_min: int = 8               # a move needs this many games to count
     book_plies: int = 16            # only this deep in the game
@@ -270,7 +270,8 @@ class Claudio:
         nets[found] = deep[found]
 
     def _book(self, fast, codes, moves, scores, known):
-        """Moves it has played here in its own games: their win rate for the side to move (draws count 0,
+        """Moves it has played here in its own games: their good rate for the side to move (good = level or
+        better 6 moves later by its own judgement and won, claudio/experiencia.py; draws count 0,
         the owner's rule), pulled towards the position's mean while there are few games, against that mean."""
         cfg = self.cfg
         seen = self.book_moves.get(_key(fast))
