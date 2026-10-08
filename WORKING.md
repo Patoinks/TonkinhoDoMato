@@ -21,6 +21,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
+- ChatGPT GPT-6 | claudio/fast/claudio_fast.cpp, claudio/bench_g16_native_abba.py, .github/workflows/g16-hotspots.yml, claudio/test_claudio.py | pesquisa tática: gerar apenas capturas com equivalência total | 2026-10-08
 
 ## Pedidos
 
