@@ -154,6 +154,7 @@ def evaluate(rows, loaded, module):
             begin = time.perf_counter()
             action = actor.choose(board)
             elapsed = (time.perf_counter() - begin) * 1000
+            assert actor.moves == list(board.move_stack), "Historical plies were not reconstructed"
             assert action in board.legal_moves, f"Illegal move {action} in {board.fen()}"
             outcomes.append(action.uci())
             timings.append(elapsed)
