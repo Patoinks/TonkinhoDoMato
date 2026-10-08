@@ -585,6 +585,8 @@ def main():
     parser.add_argument("--search-rows", type=int, default=512, help="search: candidate rows per learner step")
     parser.add_argument("--anchor", type=float, default=1e-3,
                         help="search, or outcomes with --fresh: pull towards the starting weights after every step")
+    parser.add_argument("--anchor-to", default="",
+                        help="the network the anchor pulls towards (default --start; e.g. the first block's start)")
     parser.add_argument("--fresh", action="store_true",
                         help="outcomes: learn from Claudio's own new games only (not Timdgei's old replay), anchored")
     parser.add_argument("--learn", choices=("outcomes", "winners", "review", "notes", "search"), default="outcomes",
@@ -684,6 +686,9 @@ def main():
     anchored = taught is not None or (args.fresh and args.learn == "outcomes")
     if anchored:
         trainer.start_parameters = [p.detach().clone() for p in trainer.net.parameters()]
+        if args.anchor_to:
+            home = load_claudio(args.anchor_to)[0].to(trainer.device)
+            trainer.start_parameters = [p.detach().clone() for p in home.parameters()]
 
     def publish(version):
         path = args.out_dir / f"actor-{version}.pt"
