@@ -21,7 +21,6 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
-- Claude (nuvem) | claudio/README-CODEX.md, AGENTS.md, claudio/claudio-grande-g0-respostas.pt, claudio/claudio-grande-g0-forte.pt, claudio/claudio-campeao.pt, claudio/claudio_agent.py, claudio/test_claudio.py, claudio/ESTADO.md, claudio/train_grande.py, claudio/test_search_learning.py, claudio/torneio_mutacoes.py, claudio/grupos_finais.py, claudio/results/torneio-*, claudio/results/grupos-*, claudio/train-campeao*/, claudio/train-busca*/, claudio/results/engine-nuvem-*, history/claudio-* | mais calculo organico + treino na nuvem (aprender com o proprio calculo, autorizado pelo Martim 2026-10-07) | 2026-10-07
 
 
 ## Pedidos
@@ -45,6 +44,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Concluído
 
+- Claude (nuvem) | 2026-10-08 | Claudio: torneio de mutacoes por geracoes (torneio_mutacoes.py; p3: 10 geracoes a profundidade 3, campeoes cada vez mais fortes entre Claudios), fases de grupos (grupos_finais.py), geracoes artificiais (otimo ~G15), modulos novos scan_depth / ahead_draws (empate -1 ao ganhar, pela avaliacao dele) / simplify, claudio-campeao.pt (G10 + modulos), treino --learn outcomes --fresh com --anchor/--anchor-to (na nuvem a CPU so deu 200 jogos; parado a pedido do Martim, vai para a GPU). Guia para o Codex: claudio/README-CODEX.md (AGENTS.md aponta para ele). Testes do Claudio passam. Reservas libertadas.
 - Claude (nuvem) | 2026-10-06 | Claudio: opcao `reply_top`/`reply_mode`/`reply_weight` (respostas do adversario com a propria rede, desligada por omissao). Fairy 1450, 600 jogos emparelhados: g0 53,5% -> reply_top=6 reply_mode=expect 63,2% (+9,7 +- 5,6 pp); Stockfish 1800 sem diferenca. setup_cloud.sh corrigido e a correr em Linux; train_grande usa o KS do checkpoint quando o ficheiro KS nao existe; arena.py sem evolution.json; juiz com diferenca emparelhada. Testes do Claudio: 12 passaram. `python -m pytest -q`: falha ja existente em tests/test_model.py (tonkai/cognitive_agent.py:945 tem 1/3/3/5/9 como fallback), ficheiro nao tocado. Nenhum treino lancado. Reservas libertadas.
 - Claude (nuvem) | 2026-10-07 | Claudio, mais medicoes das respostas (so resultados + ESTADO.md): Fairy 1700 g0 17,5% -> 6/expect 23,5% (+6,0 +- 4,7 pp); reply_weight 0,5 = 57,2%, 1 = 63,2%, 2 = 53,3% (peso 1 e o melhor). Nenhum treino lancado. Sem reservas ativas.
 - Claude | 2026-09-23 23:15 | 80f38dd ataque organico (threat_explore, mate_labels). TREINO a pedido do Martim: modelo KS 60 min (a correr) e depois, automaticamente, start_v4_sf1800.ps1 -Elo 1200 -Games 5000 -ThreatExplore 0.1 -MateLabels 2 -BatchSearch (6 atores, prioridade baixa). Nao parar sem o Martim pedir.
