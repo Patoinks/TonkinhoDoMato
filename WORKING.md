@@ -21,6 +21,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
+- ChatGPT GPT-6 | .github/workflows/g16-terminal-benchmark.yml, claudio/bench_g16_decisions.py | testar a otimização G16 em runner Actions, sem tocar no G16 principal | 2026-10-08
 
 ## Pedidos
 
