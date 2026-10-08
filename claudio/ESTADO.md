@@ -213,3 +213,22 @@ Avaliações (300 jogos, sem aberturas aleatórias): 22,3 / 18,0 / 19,3 / 24,3 /
 melhor nem pior**. A rede aprende os alvos (erro 0,0039 → 0,0014), mas o valor a 1 meio-lance
 já concorda com o de 2 meios-lances: ensinar isso não traz conhecimento novo. Os pesos ficaram
 na nuvem (`claudio/train-busca/`, não versionado).
+
+## Tempo por profundidade (2026-10-08, nuvem)
+
+`tactic_depth` (meios-lances calculados depois do lance que pensa jogar), resto igual ao forte,
+as mesmas 100 posições reais (40 na profundidade 8), 1 núcleo, ms por lance:
+
+| tactic_depth | média | mediana | 90% | pior | Fairy 1700 (600 j.) | Stockfish 1800 (400 j.) |
+|---|---|---|---|---|---|---|
+| 1 | 13 | 10 | 23 | 45 | | |
+| 2 | 10 | 10 | 13 | 21 | | |
+| 3 (omissão) | 12 | 11 | 18 | 28 | 24,5% | 6,75% |
+| 4 | 22 | 16 | 42 | 140 | | |
+| **5 (forte)** | **69** | 53 | 152 | 364 | **32,7%** | **15,2%** |
+| 6 | 272 | 125 | 745 | 1746 | 35,8% | 13,0% |
+| 7 | 1142 | 695 | 3617 | 5263 | | 2/0/8 em 10 |
+| 8 | 2601 | 2888 | 5414 | 6037 | | |
+
+Até 3 o tempo é quase só a rede (~10 ms); cada meio-lance a mais depois custa ~3-4x. Aos 8 o
+limite de nós (2M) corta muitas vezes e o cálculo deixa de contar. O ponto ótimo medido é o 5.
