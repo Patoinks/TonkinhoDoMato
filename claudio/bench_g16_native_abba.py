@@ -1,9 +1,9 @@
 """A/B/B/A exact baseline-versus-optimized G16 C++ verification.
 
 The baseline extension claudio_fast_ref is built from pinned commit
-e52fc775149dcd56c0bf0c9180c8c39ea90c3ce9 (the validated batch-terminal
-implementation); the current claudio_fast contains the candidate Pos::remove
-fastpath. Both use identical G16 weights/config, memory and random seeds.
+a8b8d842a1bcf946181c91a09ff15d267c482639 (validated batch-terminal
+and Pos::remove fastpath); the current claudio_fast contains the specialized
+quiescence capture generator. Both use identical G16 weights/config, memory and random seeds.
 
 Run in Actions after compiling both extensions:
     python claudio/bench_g16_native_abba.py --positions 96 --repeats 2
@@ -80,7 +80,23 @@ def equal(a, b):
 def compare_native(rows):
     values = [0.0, 1.0, 2.13, 2.73, 3.98, 9.06]
     checked = 0
-    for _, _, board in rows[:min(len(rows), 32)]:
+    # Explicit tactical edge positions beyond the normal BO30 sampling:
+    # castling, en passant, quiet/capture promotions, in-check evasion,
+    # fifty-move horizon and history-dependent repetition.
+    edges = [
+        chess.Board("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1"),
+        chess.Board("8/8/8/3pP3/8/8/4K3/7k w - d6 0 1"),
+        chess.Board("7k/P7/8/8/8/8/8/K7 w - - 0 1"),
+        chess.Board("1r5k/P7/8/8/8/8/8/K7 w - - 0 1"),
+        chess.Board("4k3/8/8/8/8/8/4r3/4K3 w - - 0 1"),
+        chess.Board("6k1/8/8/8/8/8/5Q2/6K1 w - - 96 80"),
+    ]
+    repetition = chess.Board()
+    for uci in ("g1f3", "g8f6", "f3g1", "f6g8") * 2:
+        repetition.push_uci(uci)
+    edges.append(repetition)
+    cases = rows[:min(len(rows), 32)] + [(9000 + i, 0, pos) for i, pos in enumerate(edges)]
+    for _, _, board in cases:
         a, b = (native_of(module, board) for module in REFERENCES.values())
         assert a.fen() == b.fen(), "FEN state changed"
         codes = list(a.legal_moves())
