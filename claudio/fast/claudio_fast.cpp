@@ -330,6 +330,31 @@ struct Pos {
         }
         ep_moves(out);
     }
+    // Pseudo-captures in the exact same order as pseudo(), omitting quiet
+    // moves and castles before the quiescence search's legality filter.
+    // This does not change any capture, en passant, underpromotion or order.
+    void pseudo_captures(std::vector<int>& out) const {
+        const int us = turn;
+        const U64 own = occ[us], enemy = occ[us ^ 1];
+        for (U64 pieces = own & ~bb[PAWN]; pieces; pieces &= pieces - 1) {
+            const int from = lsb(pieces);
+            for (U64 targets = attacks_mask(from) & enemy; targets; targets &= targets - 1)
+                out.push_back(mv(from, lsb(targets)));
+        }
+        for (U64 pawns = own & bb[PAWN]; pawns; pawns &= pawns - 1) {
+            const int from = lsb(pawns);
+            for (U64 caps = T.pawn[us][from] & enemy; caps; caps &= caps - 1) {
+                const int to = lsb(caps);
+                if (rank_of(to) == 0 || rank_of(to) == 7) {
+                    for (int p : {QUEEN, ROOK, BISHOP, KNIGHT})
+                        out.push_back(mv(from, to, p));
+                } else {
+                    out.push_back(mv(from, to));
+                }
+            }
+        }
+        ep_moves(out);
+    }
     void ep_moves(std::vector<int>& out) const {
         if (ep <= 0 || (occupied() & bit(ep))) return;  // python: `not self.ep_square`
         U64 rank = turn == WHITE ? (0xFFULL << 32) : (0xFFULL << 24);
@@ -828,11 +853,12 @@ struct ExchangeSearch {
         if (depth == 0) return 0.0;
 
         if (!check) {
-            // Only captures matter here: test legality for them alone (same moves, same order
-            // as filtering all legal moves, without making every quiet move first).
-            p.pseudo(moves);
+            // Only captures matter here. Generate the exact capture subsequence
+            // of pseudo() directly, avoiding quiet moves and castling entirely.
+            // The legal filter preserves their original stable order.
+            p.pseudo_captures(moves);
             moves.erase(std::remove_if(moves.begin(), moves.end(), [&](int m) {
-                return !(p.occ[p.turn ^ 1] & bit(p.captured_square(m))) || !p.legal(m);
+                return !p.legal(m);
             }), moves.end());
         }
         // MVV-LVA, with stable move order for equal scores: an insertion sort

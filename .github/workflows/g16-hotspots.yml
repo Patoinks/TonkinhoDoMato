@@ -1,8 +1,8 @@
-name: G16 hotspots / profiling + optimization checks
+name: G16 cumulative optimizations vs original
 on:
   push:
     branches:
-      - perf/g16-hotspots-20261008
+      - perf/g16-capture-generator-20261008
   workflow_dispatch:
 
 permissions:
@@ -34,8 +34,8 @@ jobs:
           (cd claudio/fast && python setup.py build_ext --inplace)
       - name: Build unchanged native G16 reference from pinned commit
         run: |
-          git fetch --depth=1 origin e52fc775149dcd56c0bf0c9180c8c39ea90c3ce9
-          git show e52fc775149dcd56c0bf0c9180c8c39ea90c3ce9:claudio/fast/claudio_fast.cpp |
+          git fetch --depth=1 origin 2c0bf4df137604a0a62bd8f1de9f592d9e0fabf7
+          git show 2c0bf4df137604a0a62bd8f1de9f592d9e0fabf7:claudio/fast/claudio_fast.cpp |
             sed 's/PYBIND11_MODULE(claudio_fast, m)/PYBIND11_MODULE(claudio_fast_ref, m)/' > claudio/fast/claudio_fast_ref.cpp
           (cd claudio/fast && python - <<'PY'
           from setuptools import setup
