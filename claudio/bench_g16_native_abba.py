@@ -129,7 +129,7 @@ def evaluate(rows, loaded, module):
             outcomes.append(action.uci())
             timings.append(elapsed)
             groups.append("endgame" if chess.popcount(board.occupied) <= conf["endgame_pieces"]
-                          else "critical" if actor._depth >= conf["critical_depth"] else "normal")
+                          else "critical" if getattr(actor, "_depth", 0) >= conf["critical_depth"] else "normal")
         return outcomes, timings, groups
     finally:
         claudio_agent.claudio_fast = original
