@@ -21,6 +21,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
+- ChatGPT GPT-6 | `claudio/fast/claudio_fast.cpp` | Experiencia isolada Pos::make known-piece; comparar com candidato anterior via ABBA | 2026-10-08T20:59:42+01:00
 - ChatGPT GPT-6 | `claudio/bench_g16_native_abba.py`, `.github/workflows/g16-hotspots.yml` | Validacao G16: warm-up, historia GRU e partidas completas ABBA | 2026-10-08T14:02:00Z
 
 
