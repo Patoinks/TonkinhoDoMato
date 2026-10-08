@@ -893,20 +893,42 @@ static double material_search(const Pos& p, int plies, double alpha, double beta
 // search, null move, late move reductions, killer and history move ordering.
 // Leaves are settled by the exact exchange search. Material and mate only.
 struct DeepSearch {
-    struct Entry { U64 key = 0; double value = 0.0; int depth = -1; int flag = 0; int move = 0; };
+    struct Entry {
+        U64 key = 0;
+        double value = 0.0;
+        int depth = -1, flag = 0, move = 0;
+        std::uint32_t generation = 0;
+    };
+    struct TableCache {
+        std::vector<Entry> entries = std::vector<Entry>(size_t(1) << 16);
+        std::uint32_t generation = 0;
+        std::uint32_t next() {
+            if (++generation == 0) {
+                std::fill(entries.begin(), entries.end(), Entry{});
+                generation = 1;
+            }
+            return generation;
+        }
+    };
+    static TableCache& cache() {
+        static thread_local TableCache storage;
+        return storage;
+    }
     enum { EXACT = 0, LOWER = 1, UPPER = 2 };
     ExchangeSearch q;
     int qdepth;
-    std::vector<Entry> table;
+    std::vector<Entry>& table;
+    const std::uint32_t generation;
     int killers[128][2] = {};
     int history[2][64][64] = {};
     std::deque<std::vector<int>> deep_lists;      // move lists reused per ply
     std::deque<std::vector<double>> deep_scores;
+    std::deque<std::vector<double>> deep_gains;
 
     bool exact = false;   // true: no null move and no reductions - the same value as the full search
 
     DeepSearch(const std::vector<double>& values, long long limit, int qdepth_, bool exact_ = false)
-        : q(values, limit), qdepth(qdepth_), table(size_t(1) << 16), exact(exact_) {}
+        : q(values, limit), qdepth(qdepth_), table(cache().entries), generation(cache().next()), exact(exact_) {}
 
     Entry& slot(U64 key) { return table[key & (table.size() - 1)]; }
 
@@ -920,7 +942,7 @@ struct DeepSearch {
         U64 key = key_of(p).hash();
         Entry& e = slot(key);
         int tt_move = 0;
-        if (e.key == key) {
+        if (e.generation == generation && e.key == key) {
             tt_move = e.move;
             if (e.depth >= depth) {
                 if (e.flag == EXACT) return e.value;
@@ -928,9 +950,12 @@ struct DeepSearch {
                 if (e.flag == UPPER && e.value <= alpha) return e.value;
             }
         }
-        while (int(deep_lists.size()) <= ply) { deep_lists.emplace_back(); deep_scores.emplace_back(); }
+        while (int(deep_lists.size()) <= ply) {
+            deep_lists.emplace_back(); deep_scores.emplace_back(); deep_gains.emplace_back();
+        }
         std::vector<int>& moves = deep_lists[ply];
         std::vector<double>& ranks = deep_scores[ply];
+        std::vector<double>& gains = deep_gains[ply];
         moves.clear();
         p.pseudo(moves);                          // legality is checked lazily, move by move
         bool check = p.is_check();
@@ -945,35 +970,43 @@ struct DeepSearch {
             if (score >= beta) return score;
         }
         int k = std::min(ply, 127), side = p.turn;
-        auto order = [&](int m) {
+        auto order = [&](int m, double gain) {
             if (m == tt_move) return 1e9;
-            double gain = q.move_gain(p, m);
             if (gain > 0) return 1e6 + 1000.0 * gain - q.values[std::min(p.type_at(mfrom(m)), int(QUEEN))];
             if (m == killers[k][0]) return 9e5;
             if (m == killers[k][1]) return 8e5;
             return double(history[side][mfrom(m)][mto(m)]);
         };
         ranks.resize(moves.size());
-        for (size_t i = 0; i < moves.size(); ++i) ranks[i] = order(moves[i]);
+        gains.resize(moves.size());
+        for (size_t i = 0; i < moves.size(); ++i) {
+            gains[i] = q.move_gain(p, moves[i]);
+            ranks[i] = order(moves[i], gains[i]);
+        }
         for (size_t i = 1; i < moves.size(); ++i) {        // stable: same order as std::stable_sort
             int m = moves[i];
-            double r = ranks[i];
+            double r = ranks[i], g = gains[i];
             size_t j = i;
-            while (j > 0 && r > ranks[j - 1]) { moves[j] = moves[j - 1]; ranks[j] = ranks[j - 1]; --j; }
+            while (j > 0 && r > ranks[j - 1]) {
+                moves[j] = moves[j - 1]; ranks[j] = ranks[j - 1]; gains[j] = gains[j - 1]; --j;
+            }
             moves[j] = m;
             ranks[j] = r;
+            gains[j] = g;
         }
         double best = -std::numeric_limits<double>::infinity(), start = alpha;
         int best_move = 0;
         size_t searched = 0;                          // legal moves searched so far (i of the legal list)
         for (size_t j = 0; j < moves.size(); ++j) {
             int m = moves[j];
-            if (!p.legal(m)) continue;
-            size_t i = searched++;
-            if (i == 0) best_move = m;
-            double gain = q.move_gain(p, m);
+            // Legality and recursion use the same successor. Pos::legal used to
+            // copy and make it once, then the search made the move a second time.
             Pos next = p;
             next.make(m);
+            if (!MateSearch::safe_after(p, next)) continue;
+            size_t i = searched++;
+            if (i == 0) best_move = m;
+            double gain = gains[j];
             bool quiet = gain == 0.0 && !mpromo(m);
             int reduction = (!exact && depth >= 3 && i >= 3 && quiet && !check && !next.is_check()) ? 1 : 0;
             double score;
@@ -997,6 +1030,7 @@ struct DeepSearch {
         }
         if (!searched) return check ? -(ExchangeSearch::MATE - ply) : 0.0;   // no legal move
         e.key = key;
+        e.generation = generation;
         e.value = best;
         e.depth = depth;
         e.move = best_move;
@@ -1010,7 +1044,7 @@ struct DeepSearch {
         std::vector<int> legal;
         for (int i = 0; i < max_len; ++i) {
             Entry& e = slot(key_of(p).hash());
-            if (e.key != key_of(p).hash() || !e.move) break;
+            if (e.generation != generation || e.key != key_of(p).hash() || !e.move) break;
             p.legal_moves(legal);
             if (std::find(legal.begin(), legal.end(), e.move) == legal.end()) break;
             out.push_back(e.move);
