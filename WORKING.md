@@ -21,6 +21,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
+- ChatGPT GPT-6 | claudio/bench_g16_profile.py, .github/workflows/g16-hotspots.yml | perfilar CPU G16 com checkpoint real em Actions e escolher hotspot dominante | 2026-10-08
 
 ## Pedidos
 
