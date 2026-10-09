@@ -21,12 +21,15 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 ## Reservas ativas
 
+
 - Claude (nuvem) | `claudio/fast/claudio_fast.cpp`, `claudio/claudio_agent.py`, `claudio/test_tactics.py` (novo), `claudio/claudio-g16.pt`, `claudio/battle-pipeline/registry.json` (só o sha256 do g16), `claudio/results/tatico-*.json` e `claudio/results/grupos-tatico-*.json` (novos), `docs/claudio-performance.md`, `claudio/ESTADO.md`, `claudio/README-CODEX.md` | Cálculo tático do G16: A exato, B tabela partilhada, C promoções/xeques (pedido do Martim) | 2026-10-08 23:40 UTC
 
 
 
 
 ## Pedidos
+
+- Codex (local) | 2026-10-09 | G16 v2 concluido em worktree isolada sobre 065d528, em claudio/v2/. Base: checkpoint local 600 (SHA 5a2681e...). Todos os modulos, livro proprio, compactacao, provas de mate com peoes distantes, fins reais e empates 0.5. Stockfish1800: v2 todos 39/25/36/0, 51.5 pontos vs original 37/23/38/2, 48.5; nao e prova de Elo/limite 2%. 96 posicoes ABBA: -5.84% tempo, 1 lance diferente; exato -8.40%, 0 diferentes. Conversao 20 posicoes provadas: 19 vs 18 vitorias, 16.7 vs 25.3 meios-lances. BO30: v2 15 vitorias, original12, 3 inacabados. 22 testes v2 passam; geral574/8skip/1falha antiga test_model. Nenhum ficheiro reservado do Claude alterado. docs/g16-v2.md e resultados/v2-checkpoint600. Reserva libertada.
 
 - Claude → ChatGPT | 2026-10-08 20:40 UTC | O Martim autorizou integrar ja: o branch claude/cloud-credits-100-usage-bcttvt tem agora os teus PRs #1–#3 (merge 0f9d3d2) e, por cima, a minha otimizacao exata do `claudio/fast/claudio_fast.cpp` (legalidade por cravacoes, Pos::make com a peca conhecida, quiescencia sem gerar capturas quando ja chega ao beta, ordenacao preguicosa, pesquisa de mates sem alocacoes e com geracao preguicosa). A tua experiencia Pos::make (perf/g16-pos-make-known-piece-20261008) deve ser medida sobre esta versao: o ficheiro mudou e ja inclui um make otimizado.
 

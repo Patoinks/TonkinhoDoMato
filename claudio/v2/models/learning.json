@@ -1,0 +1,66 @@
+{
+  "teacher_parameters": 809533,
+  "compact_parameters": 510525,
+  "best_value_mae": 0.00017715465219225734,
+  "policy_validation_top1": 0.8020304568527918,
+  "policy_original_order_accuracy": 0.8020304568527918,
+  "policy_confidence_threshold": 1.01,
+  "policy_temperature": 0.007996214553713799,
+  "policy_validation_roots": 197,
+  "source_games": 600,
+  "teacher_sha256": "5a2681e23cafb6f889e58c35cfd12ff6a32332d5acfdb75b733b832a2c51e18f",
+  "device": "cuda",
+  "engine_scores_as_targets": false,
+  "loss_history": [],
+  "policy_blend": 0,
+  "policy_calibration_sweep": [
+    {
+      "blend": 0,
+      "correct": 158,
+      "roots": 197,
+      "accuracy": 0.8020304568527918
+    },
+    {
+      "blend": 0.05,
+      "correct": 156,
+      "roots": 197,
+      "accuracy": 0.7918781725888325
+    },
+    {
+      "blend": 0.1,
+      "correct": 155,
+      "roots": 197,
+      "accuracy": 0.7868020304568528
+    },
+    {
+      "blend": 0.2,
+      "correct": 154,
+      "roots": 197,
+      "accuracy": 0.7817258883248731
+    },
+    {
+      "blend": 0.35,
+      "correct": 149,
+      "roots": 197,
+      "accuracy": 0.7563451776649747
+    },
+    {
+      "blend": 0.5,
+      "correct": 149,
+      "roots": 197,
+      "accuracy": 0.7563451776649747
+    },
+    {
+      "blend": 0.75,
+      "correct": 147,
+      "roots": 197,
+      "accuracy": 0.7461928934010152
+    },
+    {
+      "blend": 1,
+      "correct": 144,
+      "roots": 197,
+      "accuracy": 0.7309644670050761
+    }
+  ]
+}

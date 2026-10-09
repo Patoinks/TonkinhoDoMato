@@ -1,0 +1,26 @@
+{
+  "all": {
+    "score_delta": 0.03,
+    "normal_95_interval": [
+      -0.09287657271104253,
+      0.15287657271104255
+    ],
+    "definition": "paired game IDs and colours; same initial board; Stockfish stochastic/time-limited"
+  },
+  "full": {
+    "score_delta": 0.01,
+    "normal_95_interval": [
+      -0.11300282660790911,
+      0.1330028266079091
+    ],
+    "definition": "paired game IDs and colours; same initial board; Stockfish stochastic/time-limited"
+  },
+  "teacher": {
+    "score_delta": 0.005,
+    "normal_95_interval": [
+      -0.1275060684716673,
+      0.1375060684716673
+    ],
+    "definition": "paired game IDs and colours; same initial board; Stockfish stochastic/time-limited"
+  }
+}
