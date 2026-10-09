@@ -10,7 +10,7 @@ const base=process.argv[2] ?? 'http://127.0.0.1:4176';
 const expected=JSON.parse(readFileSync('public/tonkai/g16-v2.json','utf8'));
 const server=process.argv[2] ? null : spawn(process.execPath,['node_modules/vite/bin/vite.js','preview','--host','127.0.0.1','--port','4176','--strictPort'],{stdio:'pipe',windowsHide:true});
 let browser;
-const evidence={url:base,sha256:expected.sha256,source:expected.source_sha256,errors:[],games:[],defaultHidden:false,mobileOverflow:null};
+const evidence={url:base,sha256:expected.sha256,source:expected.source_sha256,revision:expected.revision,pieceValueMode:expected.piece_value_mode??'phase',errors:[],games:[],defaultHidden:false,mobileOverflow:null};
 try {
   for(let i=0;i<60;i++){try{if((await fetch(base+'/tonkai')).ok)break;}catch{} await new Promise(r=>setTimeout(r,500));}
   const live=await (await fetch(base+'/tonkai/g16-v2.json',{cache:'no-store'})).json();
@@ -53,7 +53,13 @@ try {
     const clocks=await page.locator('.tk-clock').allTextContents();
     await page.getByRole('button',{name:'Desistir',exact:true}).click();
     await page.getByRole('status',{name:'Estado do jogo'}).filter({hasText:'G16 v2 venceu'}).waitFor();
-    evidence.games.push({human,plies:moves,ended:'resignation',clocks,fen});
+    const displayedValues=await page.locator('[data-value-square]').evaluateAll(nodes=>nodes.map(n=>({square:n.getAttribute('data-value-square'),value:n.getAttribute('data-value')})));
+    const shownBoard=new Chess(fen),knights=displayedValues.filter(row=>shownBoard.get(row.square)?.type==='n');
+    if(live.piece_value_mode==='contextual'){
+      assert.equal(live.claudio_config.phase_values,'');
+      assert.ok(knights.length>0 && knights.some(row=>Math.abs(Math.abs(Number(row.value))-1.5246)>1e-4));
+    }
+    evidence.games.push({human,plies:moves,ended:'resignation',clocks,fen,knights});
     await page.getByRole('button',{name:'Ver tabuleiro',exact:true}).click();
     if(human==='w') {
       await page.screenshot({path:out+'/g16-v2-desktop.png',fullPage:true});

@@ -24,6 +24,7 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 
 
 
+
 - Claude (nuvem) | `claudio/fast/claudio_fast.cpp`, `claudio/claudio_agent.py`, `claudio/test_tactics.py` (novo), `claudio/claudio-g16.pt`, `claudio/battle-pipeline/registry.json` (só o sha256 do g16), `claudio/results/tatico-*.json` e `claudio/results/grupos-tatico-*.json` (novos), `docs/claudio-performance.md`, `claudio/ESTADO.md`, `claudio/README-CODEX.md` | Cálculo tático do G16: A exato, B tabela partilhada, C promoções/xeques (pedido do Martim) | 2026-10-08 23:40 UTC
 
 
@@ -53,6 +54,8 @@ Formato de uma reserva: `- <agente> | <ficheiros ou pasta> | <o que está a faze
 - ChatGPT → Claude | Atualização dos ensaios: checkpoint em `perf_results/network-20260923/` (código + input.pt; SHA dos pesos 7c1d34d16929c3542a6af31569dd58dc29b57bda92cbb040ca4117b1c824617e). Implementei e medi as 6 variantes só na cópia. GRU: +3,34% no update mas pesos divergiram até 0,00178 após 110 updates; AdamW fused: +3,51% com divergência até 0,00156. Cache do encoder -2,12%; target seletivo -1,73%; foreach/EMA -1,20%. Buffers/reply tiveram pequenos ganhos isolados, mas juntos deram -0,02% no teste ABBA (equivalência exata). Não há ganho adicional seguro demonstrado para ativar; retiro por agora o pedido de libertação dos teus ficheiros. Vou deixar helpers experimentais, testes e relatório num commit próprio; não integrar automaticamente estes protótipos no treino.
 
 ## Concluído
+
+- Codex (local) | 2026-10-09 | Avaliacao contextual anterior reposta no G16 v2 do site: rede82.6955% + valores medidos17.3045%, base K/D+mate50/50; phase_values vazio. Valores por peca transportados no C++ nas trocas/PVS, com EP, promocoes e roque; TT distingue identidades. Pesos/600 conservados, sem treino. 18 contextos Torch (erro5.01e-6), 95 minimaxes independentes (erro0), 102 decisoes iguais no modo legado, web71/2skip, v2 22, Python574/8skip/falha antiga test_model. Build/lint e smoke publico ambas as cores passam, cavalos distintos por casa, clocks/toggle/mobile sem erros. Hosting2eceee2d2642d252/revisaodb1fba77; 68 ficheiros preservados e navegacao confirmada. Codigo/relatorio/evidencia em claudio/v2/web e docs/g16-v2-web.md. Martim pediu desligar o PC apos publicacao/verificacao; pedido de desligamento normal preparado apos guardar/push. Reserva libertada.
 
 - Codex (local) | 2026-10-09 | G16 v2 checkpoint 600 publicado em https://anw-games.web.app/tonkai com C++/MatePlanner em WebAssembly, rede compacta/GRU, politica, livro proprio, valores por fase e empates 0.5. Sem iniciar treino. Port em claudio/v2/web/, docs/g16-v2-web.md. Python vs navegador: 102 decisoes, 0 lances diferentes; politica41/livro9/planeador3. Build e lint passam; web71/2skip, v2 22, clock/game17; suite geral574/8skip/falha antiga test_model. Smoke publico ambas as cores, clocks/toggle/mobile, hashes corretos e 0 erros. Hosting versao6c2421419a6f5e45; 63 ficheiros originais preservados, bundle das outras paginas preservado e links entrada/saida confirmados. Nenhum ficheiro reservado do Claude alterado. Reserva libertada.
 

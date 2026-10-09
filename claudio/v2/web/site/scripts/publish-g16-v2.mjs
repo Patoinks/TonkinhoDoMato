@@ -43,6 +43,13 @@ const smoke=JSON.parse(readFileSync(output+'/g16-v2-browser-smoke.json','utf8'))
 assert.deepEqual(smoke.errors,[]);assert.equal(smoke.games.length,2);
 const manifest=JSON.parse(readFileSync('public/tonkai/g16-v2.json','utf8'));
 assert.equal(smoke.sha256,manifest.sha256);
+assert.equal(smoke.revision,manifest.revision);
+if(manifest.piece_value_mode==='contextual'){
+  const contextual=JSON.parse(readFileSync(output+'/context-verification.json','utf8'));
+  assert.equal(contextual.weightsUnchanged,manifest.sha256);
+  assert.ok(contextual.frames>=16&&contextual.searchCases>=90&&contextual.maxMaterialError<1e-7&&contextual.maxNeuralError<1e-3);
+  assert.equal(contextual.phaseJumpRemoved,true);
+}
 // The existing SPA's links must load the new dedicated chess entry from Hosting.
 const intoChess='<script id="g16-v2-navigation">document.addEventListener("click",e=>{const a=e.target.closest?.("a[href]");if(!a||e.button||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;const u=new URL(a.href,location.href);if(u.origin===location.origin&&(u.pathname==="/tonkai"||u.pathname.startsWith("/tonkai/"))){e.preventDefault();e.stopImmediatePropagation();location.assign(u.href)}},true)</script>';
 const outOfChess='<script id="g16-v2-navigation">document.addEventListener("click",e=>{const a=e.target.closest?.("a[href]");if(!a||e.button||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;const u=new URL(a.href,location.href);if(u.origin===location.origin&&!(u.pathname==="/tonkai"||u.pathname.startsWith("/tonkai/"))){e.preventDefault();e.stopImmediatePropagation();location.assign(u.href)}},true)</script>';
@@ -85,7 +92,7 @@ await api.updateVersion('anw-games',id,{status:'FINALIZED',config});
 // Guard against concurrent publishers just before activating this release.
 const latest=await api.getChannel('anw-games','anw-games','live');
 assert.equal(latest.release.version.name,source,'Another release appeared; new version is preserved but not activated');
-const release=await api.createRelease('anw-games','live',created,{message:'G16 v2 checkpoint 600, full C++ WebAssembly motor, no training'});
+const release=await api.createRelease('anw-games','live',created,{message:manifest.piece_value_mode==='contextual'?'G16 v2: restore contextual 83/17 piece values in UI and native search; no training':'G16 v2 checkpoint 600, full C++ WebAssembly motor, no training'});
 const report={source,version:created,release:release.name,uploaded,files:Object.keys(newFiles).length,preservedFiles:files.length-changed.length,
   changedExistingFiles:changed,sha256:manifest.sha256,source600:manifest.source_sha256};
 writeFileSync(output+'/hosting-publication.json',JSON.stringify(report,null,2));

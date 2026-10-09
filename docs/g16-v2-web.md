@@ -7,6 +7,37 @@ checkpoint 600 (bloco 0501-0600), SHA256
 `5a2681e23cafb6f889e58c35cfd12ff6a32332d5acfdb75b733b832a2c51e18f`.
 Esta publicacao nao iniciou nem retomou treino. Os pesos publicados sao congelados.
 
+## Correcao contextual de 9 de outubro
+
+A configuracao atual do site repoe a avaliacao anterior: 82.695538207% do valor
+contextual da rede (tipo, casa, cor e memoria real) e 17.304461793% dos valores
+medidos pelo Claudio. Estes ultimos conservam a formula K/D ponderado + casas
+cortadas junto do rei no mate, 50/50, normalizada pelo peao. Nao se voltaram a
+medir valores nem a treinar. Os pesos da rede, politica e rei mantem o mesmo SHA.
+
+`piece_value_mode=contextual`, `phase_values=''`: a tabela por fases deixa de
+intervir na avaliacao das pecas e nas trocas. No C++ gerado, identidades compactas
+transportam os valores individuais congelados na raiz pela pesquisa. As promocoes
+recebem o valor da rede para a sua casa de chegada. A tabela de transposicoes de
+material distingue permutacoes de pecas com valores diferentes; as chaves de
+repeticao e de mate continuam a depender apenas das regras. Nenhuma rede e
+executada nos milhoes de nos internos da pesquisa.
+
+Verificacao independente: 18 contextos/cores/historicos comparados com Torch,
+erro maximo 0.00000501; 95 pesquisas de material comparadas com minimax em
+python-chess, erro zero (incluindo valores diferentes de pecas do mesmo tipo,
+en passant e promocoes). Transporte da torre no roque confirmado. A mudanca
+isolada do numero do lance ja nao faz saltar o valor do cavalo. No smoke do site,
+cavalos em casas diferentes apresentam valores distintos e a interface conserva
+os relogios, o toggle e o layout movel. Nao foi medida uma nova variacao de Elo.
+
+As 102 decisoes iguais descritas abaixo validam a compatibilidade do novo WASM
+com o **modo antigo por fase**, desligando a nova opcao. Nao sao uma alegacao de
+que as decisoes do modo contextual, alteradas de proposito, sao todas iguais.
+`context_reference.py` e `site/scripts/verify-g16-contextual.ts` verificam a nova
+formula e o novo caminho material. A correcao de configuracao e do motor esta
+no export Web; o checkpoint Python original fica conservado para comparacoes.
+
 ## Motor e validacao
 
 O C++ original de `claudio/fast/claudio_fast.cpp` e o MatePlanner de

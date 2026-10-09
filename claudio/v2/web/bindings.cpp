@@ -19,7 +19,7 @@ template<class A,class B> val js(const std::pair<A,B>& p) { val out=val::array()
 template<class... T> val js(const std::tuple<T...>& t) { val out=val::array();size_t i=0;std::apply([&](auto...v){(out.set(i++,js(v)),...);},t);return out; }
 template<class T> std::vector<T> vec(const val& value) { return emscripten::vecFromJSArray<T>(value); }
 val call(const std::string& operation,const val& a) {
-    if(operation=="init") { web_board=std::make_unique<Board>(a[0].as<std::string>());web_board->push_many_checked(vec<int>(a[1]));return val::undefined(); }
+    if(operation=="init") { web_context_on=false;web_board=std::make_unique<Board>(a[0].as<std::string>());web_board->push_many_checked(vec<int>(a[1]));return val::undefined(); }
     if(operation=="dead") return val(dead_pawn_lock(parse_position(a[0].as<std::string>())));
     if(operation=="plan") {
         Pos p=parse_position(a[0].as<std::string>());MatePlanner search(p.turn,a[3].as<double>(),vec<std::string>(a[1]));
@@ -31,6 +31,8 @@ val call(const std::string& operation,const val& a) {
     }
     if(!web_board) throw std::runtime_error("uninitialized G16 board");
     Board& b=*web_board;
+    if(operation=="context") { b.context_values(vec<double>(a[0])); return val::undefined(); }
+    if(operation=="material") return js(b.material_values());
     if(operation=="legal") return js(b.legal_moves());
     if(operation=="fen") return val(b.fen());
     if(operation=="push") { b.push(a[0].as<int>());return val::undefined(); }

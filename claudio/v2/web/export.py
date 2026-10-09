@@ -14,6 +14,7 @@ from claudio_agent import ClaudioConfig
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--bundle',type=Path,required=True);p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--contextual-from',type=Path,help='Restore the published legacy contextual blend, without training')
     args=p.parse_args();args.out.mkdir(parents=True,exist_ok=True)
     data=torch.load(args.bundle,map_location='cpu',weights_only=False)
     if data['format']!='claudio-v2' or data['default_variant']!='all': raise ValueError('Expected tested all-modules v2')
@@ -41,6 +42,19 @@ def main():
         'config':dict(data['compact']['architecture'],objective='victory',king_safety_weight=cfg['king_weight']),
         'claudio_config':cfg,'options':data['options'],'book':data['book']['positions'],
         'kd_values':{str(k):v for k,v in data['teacher']['values'].items()},'king_safety_model':True,'native':native}
+    if args.contextual_from:
+        legacy=json.loads(args.contextual_from.read_text(encoding='utf-8'))
+        if legacy['model_kind']!='tonkai-cognitive-v3': raise ValueError('Expected the previous site manifest')
+        for kind,value in manifest['kd_values'].items():
+            if abs(value-legacy['kd_values'][kind])>1e-8: raise ValueError('Measured values differ from the previous Claudio formula')
+        for name in ('kd_weight','symmetric_piece_values','piece_exchange_tolerance','piece_exchange_depth'):
+            manifest['config'][name]=legacy['config'][name]
+        weight=float(manifest['config']['kd_weight'])
+        if not 0<=weight<=1: raise ValueError('Invalid contextual blend')
+        manifest['piece_value_mode']='contextual'
+        manifest['claudio_config']['phase_values']=''
+        manifest['piece_value_source']={'legacy_manifest_sha256':hashlib.sha256(args.contextual_from.read_bytes()).hexdigest(),
+                                      'legacy_network_sha256':legacy['sha256'],'network_weight':1-weight,'measured_weight':weight}
     manifest['revision']=hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest()
     (args.out/binary).write_bytes(blob)
     (args.out/'g16-v2.json').write_text(json.dumps(manifest),encoding='utf-8')

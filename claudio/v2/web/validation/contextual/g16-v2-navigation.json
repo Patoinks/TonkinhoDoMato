@@ -1,0 +1,14 @@
+{
+  "version": "projects/anw-games/sites/anw-games/versions/2eceee2d2642d252",
+  "preservedOriginalFiles": 68,
+  "originalBundlePreserved": true,
+  "rootToG16Works": true,
+  "g16ToRootWorks": true,
+  "rootScripts": [
+    "/assets/index-DFIVDM7a.js"
+  ],
+  "chessScripts": [
+    "/assets/index-0s8nbI4o.js"
+  ],
+  "errors": []
+}

@@ -53,9 +53,12 @@ def generate():
     extra = extra[extra.index('namespace {'):extra.index('py::dict mating_plan(')]
     extra = extra.replace('BoardV2', 'Board')
     extra += '}\n'
+    from context_material import apply, digest
+    core = apply(core)
     bindings = (Path(__file__).parent / 'bindings.cpp').read_text(encoding='utf-8')
     return '#include <emscripten/bind.h>\n#include <unordered_set>\n#include <unordered_map>\n#include <sstream>\n#include <memory>\n' + core + extra + bindings, {
         'native_source_sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+        'context_material_sha256': digest(),
         'v2_native_sha256': hashlib.sha256(extra_path.read_bytes()).hexdigest()}
 
 

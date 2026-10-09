@@ -1,0 +1,16 @@
+{
+  "mode": "contextual",
+  "measuredWeight": 0.17304461792996828,
+  "networkWeight": 0.8269553820700317,
+  "frames": 18,
+  "searchCases": 95,
+  "maxNeuralError": 0.00000500605440123536,
+  "maxMaterialError": 0,
+  "knights": {
+    "c3": 0.7664811423762274,
+    "f3": 0.6363779520951007
+  },
+  "phaseJumpRemoved": true,
+  "castlingIdentityPreserved": true,
+  "weightsUnchanged": "6af0464105a510e413f43b6eb5d2300a921b7e75890547134b17d816bd328985"
+}

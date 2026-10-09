@@ -7,7 +7,7 @@ import { Network } from '../src/tonkai/network';
 import { G16Network } from '../src/tonkai/g16v2';
 
 const folder = 'public/tonkai/';
-const manifest = JSON.parse(readFileSync(folder + 'g16-v2.json', 'utf8'));
+const manifest = JSON.parse(readFileSync(process.argv[4] ?? folder + 'g16-v2.json', 'utf8'));
 const { default: create } = await import(pathToFileURL(process.cwd() + '/public/tonkai/g16-rules.mjs').href);
 const rules = await create({ wasmBinary: readFileSync(folder + 'g16-rules.wasm') });
 const weights = readFileSync(folder + manifest.binary);

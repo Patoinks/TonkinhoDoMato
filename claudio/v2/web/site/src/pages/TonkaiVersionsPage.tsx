@@ -65,7 +65,7 @@ const versions = [
     change: 'O Claudio completo passa a jogar no navegador, com a rede do checkpoint 600 e os módulos do v2.',
     details: [
       'Usa a rede compacta, memória da partida, livro de experiência próprio e política aprendida.',
-      'Calcula as trocas com os valores das peças que mediu por fase e procura mates forçados para converter finais.',
+      'Avalia cada peça conforme a posição e a casa, combinando a rede com os valores próprios medidos por K/D e contribuição nos mates. Usa esses valores no cálculo das trocas e procura mates forçados para converter finais.',
       'O motor C++ corre no navegador através de WebAssembly. Os empates por regras terminam a partida e valem 0,5 pontos.',
       'Na comparação com o G16 original, ganhou 15 partidas, perdeu 12 e houve 3 partidas inacabadas ao limite de lances. Não houve empates efetivos nesse confronto.',
     ],

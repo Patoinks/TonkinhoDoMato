@@ -9,6 +9,7 @@ export interface G16Manifest extends Manifest {
   options: { finish_pieces: number; finish_moves: number; finish_nodes: number };
   book: Record<string, Record<string, [number, number]>>;
   native: { wasm_sha256: string; loader_sha256: string };
+  piece_value_mode?: 'contextual';
 }
 export interface G16Rules { call(operation: string, args: unknown[]): unknown }
 type Plan = { moves: number; move: number; nodes: number; proven: number; aborted: boolean };
@@ -31,6 +32,7 @@ export class G16Network extends TemporalNetwork {
   private gManifest: G16Manifest;
   private weights: Map<string, Tensor>;
   private counters = { decisions: 0, plannerHits: 0, policyReorders: 0, bookHits: 0 };
+  private rootMaterial: number[] | null = null;
   constructor(manifest: G16Manifest, tensors: Map<string, Tensor>, rules: G16Rules) {
     super(manifest, tensors); this.gManifest = manifest; this.settings = manifest.claudio_config;
     this.weights = tensors; this.rules = rules;
@@ -41,6 +43,7 @@ export class G16Network extends TemporalNetwork {
     return super.linear(x, name, activation).map(Math.fround);
   }
   private setup(board: Chess) {
+    this.rootMaterial = null;
     const history = board.history({ verbose: true });
     const root = history[0]?.before ?? board.fen({ forceEnpassantSquare: true });
     this.call('init', root, history.map(codeOf));
@@ -50,13 +53,15 @@ export class G16Network extends TemporalNetwork {
     return { keys, since };
   }
   private phaseValues(board: Chess) {
+    if (this.gManifest.piece_value_mode === 'contextual') return [0, ...Array.from({ length: 5 }, (_, i) => this.gManifest.kd_values![String(i + 1)])];
     const pieces = board.board().flat().filter(Boolean).length;
     const fields = board.fen().split(' '), plies = 2 * (Number(fields[5]) - 1) + Number(fields[1] === 'b');
     const rows = String(this.settings.phase_values).split(';').map(row => [0, ...row.split(',').map(Number)]);
     return rows.length === 3 ? rows[plies < this.n('phase_opening') ? 0 : pieces <= this.n('phase_ending') ? 2 : 1]
       : [0, ...Array.from({ length: 5 }, (_, i) => this.gManifest.kd_values![String(i + 1)])];
   }
-  override pieceValuer(board: Chess, self: Color): PieceValuer {
+  override pieceValuer(board: Chess, self: Color, context?: Float64Array): PieceValuer {
+    if (this.gManifest.piece_value_mode === 'contextual') return super.pieceValuer(board, self, context);
     const values = this.phaseValues(board);
     return piece => (piece.color === self ? 1 : -1) * (piece.type === 'k' ? 10000 : values[' pnbrqk'.indexOf(piece.type)]);
   }
@@ -67,6 +72,20 @@ export class G16Network extends TemporalNetwork {
     return end < 0 ? null : (end === 1) === (self === 'w') ? 1 : 0;
   }
   diagnostics() { return { ...this.counters }; }
+  private contextualMaterial(board: Chess, self: Color, context: Float64Array) {
+    const value = this.pieceValuer(board, self, context), material = new Array<number>(128).fill(0);
+    for (const piece of board.board().flat()) if (piece && piece.type !== 'k') {
+      material[index(piece.square)] = (piece.color === self ? 1 : -1) * value(piece, piece.square);
+    }
+    for (const color of ['b','w'] as const) for (const type of ['n','b','r','q'] as const) for (let file=0;file<8;file++) {
+      const location = String.fromCharCode(97+file) + (color === 'w' ? '8' : '1');
+      material[64 + Number(color==='w')*32 + (' nbrq'.indexOf(type)-1)*8 + file]
+        = (color === self ? 1 : -1) * value({type,color}, location as Move['to']);
+    }
+    if (!material.every(Number.isFinite)) throw new Error('Non-finite contextual piece values');
+    this.rootMaterial = material;
+    this.call('context', material);
+  }
   private candidatesV2(board: Chess, self: Color) {
     const state = this.observe(board, self), codes = this.call<number[]>('legal');
     const legal = new Map(board.moves({ verbose: true }).map(move => [codeOf(move), move]));
@@ -91,6 +110,12 @@ export class G16Network extends TemporalNetwork {
     return ends.map((end, i) => this.endingValue(end, self) ?? (repeats[i] ? .5 : null));
   }
   private gain(move: Move, values: number[]) {
+    if (this.rootMaterial) {
+      const victim = move.isEnPassant() ? index(move.to) + (move.color === 'w' ? -8 : 8) : index(move.to);
+      const capture = move.captured || move.isEnPassant() ? this.rootMaterial[victim] : 0;
+      const promotion = move.promotion ? this.rootMaterial[64+Number(move.color==='w')*32+(' nbrq'.indexOf(move.promotion)-1)*8+(index(move.to)&7)] - this.rootMaterial[index(move.from)] : 0;
+      return capture + promotion;
+    }
     return (move.isEnPassant() ? values[1] : move.captured ? values[' pnbrqk'.indexOf(move.captured)] : 0)
       + (move.promotion ? values[' pnbrqk'.indexOf(move.promotion)] - values[1] : 0);
   }
@@ -98,6 +123,7 @@ export class G16Network extends TemporalNetwork {
     if (board.turn() !== self) throw new Error('G16 must be on turn');
     const history = this.setup(board), white = self === 'w', values = this.phaseValues(board);
     const state = this.observe(board, self), pieces = board.board().flat().filter(Boolean);
+    if (this.gManifest.piece_value_mode === 'contextual') this.contextualMaterial(board, self, state.context);
     const previous = this.settings.repeat_as_draw && history.keys.length - history.since >= 4 ? history.keys.slice(history.since) : [];
     const dead = pieces.filter(p => p!.type !== 'p' && p!.type !== 'k').length <= 2;
     const codes = this.call<number[]>('legal');
@@ -111,7 +137,7 @@ export class G16Network extends TemporalNetwork {
     };
     const cfg = this.gManifest.options;
     const enemy = pieces.filter(p => p!.color !== self && p!.type !== 'k');
-    const lead = pieces.reduce((s, p) => s + (p!.type === 'k' ? 0 : values[' pnbrqk'.indexOf(p!.type)] * (p!.color === self ? 1 : -1)), 0);
+    const lead = pieces.reduce((s, p) => s + (p!.type === 'k' ? 0 : (this.rootMaterial ? this.rootMaterial[index(p!.square)] : values[' pnbrqk'.indexOf(p!.type)]) * (p!.color === self ? 1 : -1)), 0);
     if (pieces.length <= cfg.finish_pieces && !enemy.length && lead > 0) {
       let plan = this.call<Plan>('plan', this.call<string>('fen'), history.keys.slice(history.since, -1), Math.min(4, cfg.finish_moves), 40000);
       if (!plan.moves && (this.value(state.context).mean >= this.n('ahead_value') || pieces.some(p => p!.color === self && (p!.type === 'q' || p!.type === 'r')))) {

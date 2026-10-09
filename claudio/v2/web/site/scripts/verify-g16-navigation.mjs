@@ -12,7 +12,9 @@ const live=await api.getChannel('anw-games','anw-games','live'),version=live.rel
 let files=[],pageToken='';do{const r=await client.get('/'+version+'/files',{queryParams:{pageSize:1000,pageToken}});files.push(...r.body.files);pageToken=r.body.nextPageToken??'';}while(pageToken);
 const hashes=Object.fromEntries(files.map(f=>[f.path,f.hash]));
 const initial=JSON.parse(readFileSync(out+'/hosting-initial-baseline.json','utf8'));
-for(const [path,hash]of Object.entries(initial.files))if(path!=='/index.html')assert.equal(hashes[path],hash,path+' must retain its original content');
+const publication=JSON.parse(readFileSync(out+'/hosting-publication.json','utf8'));
+const intended=new Set(publication.changedExistingFiles);
+for(const [path,hash]of Object.entries(initial.files))if(!intended.has(path))assert.equal(hashes[path],hash,path+' must retain its original content');
 const original=readFileSync(out+'/public-index-before.html','utf8');
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try {
@@ -29,6 +31,6 @@ try {
   await page.waitForURL('https://anw-games.web.app/');
   assert.deepEqual(await page.locator('script[src]').evaluateAll(nodes=>nodes.map(n=>new URL(n.src).pathname)),rootScripts);
   assert.deepEqual(errors,[]);
-  const report={version,preservedOriginalFiles:Object.keys(initial.files).length-1,originalBundlePreserved:true,rootToG16Works:true,g16ToRootWorks:true,rootScripts,chessScripts,errors};
+  const report={version,preservedOriginalFiles:Object.keys(initial.files).length-intended.size,originalBundlePreserved:true,rootToG16Works:true,g16ToRootWorks:true,rootScripts,chessScripts,errors};
   writeFileSync(out+'/g16-v2-navigation.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
 }finally{await browser.close();}
