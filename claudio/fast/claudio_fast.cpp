@@ -416,6 +416,56 @@ struct Pos {
             if (!f(*m)) return false;
         return true;
     }
+    // In check, with one king (g.plain): pseudo()'s moves in pseudo()'s order without those legal_by
+    // rejects for not answering the check - a move other than the king's or en passant that neither
+    // takes the only checker nor blocks it (in double check: every such move). No castles in check.
+    template <class F>
+    bool each_evasion(const Guard& g, F&& f) const {
+        int us = turn, them = us ^ 1, k = g.king;
+        U64 own = occ[us], enemy = occ[them], all = occupied();
+        U64 block = (g.checkers & (g.checkers - 1)) ? 0 : (g.checkers | T.between[lsb(g.checkers)][k]);
+        for (U64 pieces = own & ~bb[PAWN]; pieces; pieces &= pieces - 1) {
+            int from = lsb(pieces);
+            for (U64 targets = attacks_mask(from) & ~own & (from == k ? ALL : block); targets; targets &= targets - 1)
+                if (!f(mv(from, lsb(targets)))) return false;
+        }
+        for (U64 pawns = own & bb[PAWN]; pawns; pawns &= pawns - 1) {
+            int from = lsb(pawns);
+            auto add = [&](int to) {
+                if (rank_of(to) == 0 || rank_of(to) == 7) {
+                    for (int p : {QUEEN, ROOK, BISHOP, KNIGHT})
+                        if (!f(mv(from, to, p))) return false;
+                    return true;
+                }
+                return bool(f(mv(from, to)));
+            };
+            for (U64 caps = T.pawn[us][from] & enemy & block; caps; caps &= caps - 1)
+                if (!add(lsb(caps))) return false;
+            int step = us == WHITE ? 8 : -8, one = from + step;
+            if (one >= 0 && one < 64 && !(all & bit(one))) {
+                if ((block & bit(one)) && !add(one)) return false;
+                int start = us == WHITE ? 1 : 6, two = one + step;
+                if (rank_of(from) == start && !(all & bit(two)) && (block & bit(two)) && !f(mv(from, two)))
+                    return false;
+            }
+        }
+        int special[16];
+        for (int *m = special, *end = ep_into(special); m < end; ++m)
+            if (!f(*m)) return false;
+        return true;
+    }
+    // The moves to try: in check (one king), only those that can answer it; otherwise all of them.
+    template <class F>
+    bool each_candidate(const Guard& g, F&& f) const {
+        return (g.king >= 0 && g.plain && g.checkers) ? each_evasion(g, f) : each_pseudo(f);
+    }
+    // The same, deciding check first (cheaper than the guard when there is none).
+    template <class F>
+    bool each_answer(F&& f) const {
+        int k = king(turn);
+        if (k >= 0 && single_king(turn) && attacked(turn ^ 1, k, occupied())) return each_evasion(guard(), f);
+        return each_pseudo(f);
+    }
     // A side with at most 16 pieces has at most 16 x 27 + 2 pseudo-legal moves: they fit this buffer
     // and are appended at once (any other board, one by one).
     static constexpr int BUFFER = 448;
@@ -500,7 +550,7 @@ struct Pos {
     }
     void legal_moves(std::vector<int>& out) const {
         Guard g = guard();
-        each_pseudo([&](int m) {
+        each_candidate(g, [&](int m) {
             if (legal_by(g, m)) out.push_back(m);
             return true;
         });
@@ -517,7 +567,7 @@ struct Pos {
             // one checker and blocks the other).
             if (g.checkers & (g.checkers - 1)) return has_legal_ep();
         }
-        return !each_pseudo([&](int m) { return (g.plain && mfrom(m) == g.king) || !legal_by(g, m); });
+        return !each_candidate(g, [&](int m) { return (g.plain && mfrom(m) == g.king) || !legal_by(g, m); });
     }
     // Legal captures ONTO square s (python: generate_legal_captures(to_mask=s)).
     void captures_to(int s, std::vector<int>& out) const {
@@ -996,6 +1046,18 @@ struct MateSearch {
     }
 };
 
+// Options of the deep (tactical) search, for this thread: Board.search_options. All off: the
+// original search, exactly.
+struct SearchOptions {
+    bool promotions = false;    // the exchange search (quiescence) also tries pawns promoting without capture
+    bool quiet_checks = false;  // ...and, at its first half-move, moves that give check
+    int extensions = 0;         // a move that gives check is searched one half-move deeper, this many per line
+};
+SearchOptions& search_options() {
+    static thread_local SearchOptions options;
+    return options;
+}
+
 // Capture-only negamax. In check, every legal evasion is searched; at the
 // horizon only checkmate has a non-zero value. A window is translated through
 // the immediate material gain before searching the opponent's position.
@@ -1006,6 +1068,57 @@ struct ExchangeSearch {
     bool aborted = false;
 
     ExchangeSearch(const std::vector<double>& values_, long long limit_) : values(values_), limit(limit_) {}
+
+    // Options (a deep search sets them from SearchOptions; off for the plain exchange calculation).
+    bool promotions = false, quiet_checks = false;
+    int top = -1;                          // the depth of the first half-move (quiet checks there only)
+
+    // Quiet moves the options add, after the captures: pawns promoting without capture, and at the first
+    // half-move moves that give check - knights, pawns and sliders landing where they attack the king,
+    // any move of a piece that uncovers a slider (each made to be sure). Generated directly; legal_by.
+    void add_quiet(const Pos& p, const Pos::Guard& g, std::vector<int>& moves, bool checks) const {
+        int us = p.turn, them = us ^ 1, step = us == WHITE ? 8 : -8;
+        U64 all = p.occupied(), own = p.occ[us], empty = ~all;
+        U64 pawns = p.bb[PAWN] & own;
+        auto add = [&](int m) { if (p.legal_by(g, m)) moves.push_back(m); };
+        if (promotions)
+            for (U64 seventh = pawns & (us == WHITE ? 0x00FF000000000000ULL : 0xFF00ULL); seventh; seventh &= seventh - 1) {
+                int from = lsb(seventh), to = from + step;
+                if (empty & bit(to))
+                    for (int t : {QUEEN, ROOK, BISHOP, KNIGHT}) add(mv(from, to, t));
+            }
+        int king = p.king(them);
+        if (!checks || king < 0 || !p.single_king(us) || p.attacked(us, king, all)) return;
+        U64 disc = p.discoverers(king);
+        U64 straight = rook_attacks(king, all), diagonal = bishop_attacks(king, all);
+        auto checking = [&](int m) {
+            if (!p.legal_by(g, m)) return;
+            Pos next = p;
+            next.make(m);
+            if (next.is_check()) moves.push_back(m);
+        };
+        for (U64 pieces = own & ~p.bb[PAWN] & ~p.bb[KING]; pieces; pieces &= pieces - 1) {
+            int from = lsb(pieces);
+            U64 f = bit(from), reach = p.attacks_mask(from) & empty, target;
+            if (disc & f) target = reach;                                   // discovered (or direct) check
+            else if (p.bb[KNIGHT] & f) target = reach & T.knight[king];
+            else if (p.bb[QUEEN] & f) target = reach & (straight | diagonal);
+            else if (p.bb[ROOK] & f) target = reach & straight;
+            else target = reach & diagonal;
+            for (; target; target &= target - 1) checking(mv(from, lsb(target)));
+        }
+        U64 king_moves = (disc & own & p.bb[KING]) ? p.attacks_mask(p.king(us)) & empty : 0;   // discovered by the king
+        for (; king_moves; king_moves &= king_moves - 1) checking(mv(p.king(us), lsb(king_moves)));
+        for (U64 rest = pawns; rest; rest &= rest - 1) {
+            int from = lsb(rest), one = from + step;
+            if (one < 0 || one > 63 || !(empty & bit(one)) || rank_of(one) == 0 || rank_of(one) == 7) continue;
+            bool discovering = disc & bit(from);
+            if (discovering || (T.pawn[them][king] & bit(one))) checking(mv(from, one));
+            int start = us == WHITE ? 1 : 6, two = one + step;
+            if (rank_of(from) == start && (empty & bit(two)) && (discovering || (T.pawn[them][king] & bit(two))))
+                checking(mv(from, two));
+        }
+    }
 
     // Move lists reused per recursion level (a deque keeps references valid).
     std::deque<std::vector<int>> lists;
@@ -1056,11 +1169,13 @@ struct ExchangeSearch {
             // of pseudo() directly, avoiding quiet moves and castling entirely.
             // The legal filter preserves their original stable order.
             p.pseudo_captures(moves);
-            if (!moves.empty()) {
+            bool checks = quiet_checks && depth == top, extra = promotions || checks;
+            if (!moves.empty() || extra) {
                 Pos::Guard g = p.guard();
                 moves.erase(std::remove_if(moves.begin(), moves.end(), [&](int m) {
                     return !p.legal_by(g, m);
                 }), moves.end());
+                if (extra) add_quiet(p, g, moves, checks);
             }
         }
         // MVV-LVA, with stable move order for equal scores: an insertion sort
@@ -1134,16 +1249,23 @@ static double material_search(const Pos& p, int plies, double alpha, double beta
 #define LAZY_PICKS 1
 #endif
 struct DeepSearch {
-    struct Entry {
+    struct Entry {                        // 24 bytes: the table fits the cache better (moves fit 16 bits)
         U64 key = 0;
         double value = 0.0;
-        int depth = -1, flag = 0, move = 0;
-        std::uint32_t generation = 0;
+        std::uint16_t move = 0;
+        std::int16_t depth = -1;
+        std::uint16_t generation = 0;     // wraps sooner than before: the table is then cleared, as before
+        std::uint8_t flag = 0;
     };
     struct TableCache {
         std::vector<Entry> entries = std::vector<Entry>(size_t(1) << 16);
-        std::uint32_t generation = 0;
-        std::uint32_t next() {
+        std::uint16_t generation = 0;
+        // A session (Board.table_session): every search until it ends shares one table - the same
+        // position is not searched again from scratch for each candidate of one decision.
+        bool session = false;
+        std::uint16_t session_generation = 0;
+        std::uint16_t open() { return session ? session_generation : next(); }
+        std::uint16_t next() {
             if (++generation == 0) {
                 std::fill(entries.begin(), entries.end(), Entry{});
                 generation = 1;
@@ -1159,7 +1281,7 @@ struct DeepSearch {
     ExchangeSearch q;
     int qdepth;
     std::vector<Entry>& table;
-    const std::uint32_t generation;
+    const std::uint16_t generation;
     int killers[128][2] = {};
     int history[2][64][64] = {};
     struct Item {                                 // a move with its order rank and material gain
@@ -1170,9 +1292,17 @@ struct DeepSearch {
     std::deque<std::vector<Item>> deep_items;
 
     bool exact = false;   // true: no null move and no reductions - the same value as the full search
+    bool lazy = true;     // finite piece values: the lazy ordering gives the full sort's order
+    int extensions_left = 0;   // check extensions still allowed on the current line
 
     DeepSearch(const std::vector<double>& values, long long limit, int qdepth_, bool exact_ = false)
-        : q(values, limit), qdepth(qdepth_), table(cache().entries), generation(cache().next()), exact(exact_) {}
+        : q(values, limit), qdepth(qdepth_), table(cache().entries), generation(cache().open()), exact(exact_),
+          lazy(std::all_of(values.begin(), values.end(), [](double v) { return std::isfinite(v); })),
+          extensions_left(search_options().extensions) {
+        q.promotions = search_options().promotions;
+        q.quiet_checks = search_options().quiet_checks;
+        q.top = qdepth;
+    }
 
     Entry& slot(U64 key) { return table[key & (table.size() - 1)]; }
 
@@ -1200,8 +1330,12 @@ struct DeepSearch {
         std::vector<int>& moves = deep_lists[ply];
         std::vector<Item>& items = deep_items[ply];
         moves.clear();
-        p.pseudo(moves);                          // legality is checked lazily, move by move
-        bool check = p.is_check();
+        const Pos::Guard guard = p.guard();
+        bool check = guard.checkers != 0;         // = p.is_check() (attackers of the same king)
+        if (guard.king >= 0 && guard.plain && check)
+            p.each_evasion(guard, [&](int m) { moves.push_back(m); return true; });
+        else
+            p.pseudo(moves);                      // legality is checked lazily, move by move
         if (moves.empty()) return check ? -(ExchangeSearch::MATE - ply) : 0.0;
         const double eps = 1e-6;
         if (!exact && allow_null && !check && depth >= 3 && has_pieces(p)) {
@@ -1232,7 +1366,7 @@ struct DeepSearch {
         auto place = [&](size_t j) {
             size_t n = items.size();
             if (j < sorted) return;
-            if (j < LAZY_PICKS) {
+            if (lazy && j < LAZY_PICKS) {
                 size_t top = j;
                 for (size_t i = j + 1; i < n; ++i)
                     if (items[i].rank > items[top].rank) top = i;
@@ -1262,7 +1396,6 @@ struct DeepSearch {
         // that cannot be in check and stands pat at once (exchange search) costs its two nodes and is
         // worth 0 - what searching it returns - so it is counted, not made. Legality by the pins then.
         const bool frontier = depth == 1;
-        const Pos::Guard guard = frontier ? p.guard() : Pos::Guard{-1, 0, 0, true};
         const int enemy_king = p.king(p.turn ^ 1);
         // (Not with the enemy king attacked already - a quiet move leaves it so - nor with two kings.)
         const bool direct = frontier && enemy_king >= 0 && p.single_king(p.turn) &&
@@ -1273,17 +1406,25 @@ struct DeepSearch {
             place(j);
             int m = items[j].move;
             bool made = false, calm = false;          // calm: the successor is surely not in check
+            if (!p.legal_by(guard, m)) continue;
             if (frontier) {
-                if (!p.legal_by(guard, m)) continue;
                 calm = enemy_king < 0 || (direct && !MateSearch::may_check(p, m, enemy_king, disc));
             } else {
-                // Legality and recursion use the same successor.
                 next = p;
                 next.make(m);
                 made = true;
-                if (!MateSearch::safe_after(p, next)) continue;
+            }
+            int ext = 0;                              // a check: one half-move deeper (SearchOptions)
+            if (extensions_left > 0 && !calm) {
+                if (!made) {
+                    next = p;
+                    next.make(m);
+                    made = true;
+                }
+                ext = next.is_check() ? 1 : 0;
             }
             auto child = [&](int d, double a, double b) {
+                d += ext;
                 if (calm && d <= 0 && (qdepth == 0 || (0.0 > a ? 0.0 : a) >= b)) {
                     if (++q.nodes > q.limit) { q.aborted = true; return 0.0; }    // this search's node
                     if (++q.nodes > q.limit) { q.aborted = true; return 0.0; }    // the exchange search's
@@ -1294,7 +1435,10 @@ struct DeepSearch {
                     next.make(m);
                     made = true;
                 }
-                return search(next, d, a, b, ply + 1, true);
+                extensions_left -= ext;
+                double value = search(next, d, a, b, ply + 1, true);
+                extensions_left += ext;
+                return value;
             };
             size_t i = searched++;
             if (i == 0) best_move = m;
@@ -1324,8 +1468,8 @@ struct DeepSearch {
         e.key = key;
         e.generation = generation;
         e.value = best;
-        e.depth = depth;
-        e.move = best_move;
+        e.depth = std::int16_t(depth);
+        e.move = std::uint16_t(best_move);
         e.flag = best <= start ? UPPER : best >= beta ? LOWER : EXACT;
         return best;
     }
@@ -1864,6 +2008,16 @@ public:
         return search.q.aborted ? std::numeric_limits<double>::quiet_NaN() : value;
     }
     int ks_status_py(bool defender_white) const { return ks_status(pos, defender_white ? WHITE : BLACK); }
+    // on: the deep searches that follow (this thread) share one transposition table, until off. Use it
+    // only while the piece values, the exchange depth and the search mode stay the same.
+    static void set_search_options(bool promotions, bool quiet_checks, int extensions) {
+        search_options() = SearchOptions{promotions, quiet_checks, std::max(0, extensions)};
+    }
+    static void table_session(bool on) {
+        DeepSearch::TableCache& cache = DeepSearch::cache();
+        if (on) cache.session_generation = cache.next();
+        cache.session = on;
+    }
 
     // King safety (v4) exploration: for every legal move of the side to move
     // (the attacker), in legal_moves() order: (move, threat, check). threat = n
@@ -2113,6 +2267,9 @@ PYBIND11_MODULE(claudio_fast, m) {
         .def("tactic_after_moves", &Board::tactic_after_moves, py::arg("codes"), py::arg("values"),
              py::arg("max_depth"), py::arg("node_limit"))
         .def("ks_status", &Board::ks_status_py, py::arg("defender_white"))
+        .def_static("table_session", &Board::table_session, py::arg("on"))
+        .def_static("search_options", &Board::set_search_options, py::arg("promotions"), py::arg("quiet_checks"),
+                    py::arg("extensions"))
         .def("threats", &Board::threats, py::arg("max_moves"), py::arg("node_limit"))
         .def("expand2", &Board::expand2, py::arg("defender_white"))
         .def("capture_targets", &Board::capture_targets, py::arg("moves"), py::arg("self_color"))

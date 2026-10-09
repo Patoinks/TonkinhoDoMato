@@ -46,6 +46,10 @@ class ClaudioConfig:
     root_pvs: bool = True           # ...each only as far as needed to know if it is the best
     tactic_rounds: int = 4          # how many times a new intended move may be checked (lazy)
     tactic_nodes: int = 2_000_000
+    shared_table: bool = False      # every calculation of one decision shares one transposition table
+    quiesce_promotions: bool = False    # the calculation's capture sequences also see a pawn promoting
+    quiesce_checks: bool = False        # ...and, at their first half-move, moves that give check
+    check_extension: int = 0            # a move that gives check is calculated one half-move deeper (n per line)
     leaf_weight: float = 0.0        # >0: the network's value where the calculated main line ends replaces, by this
                                     # share, its value right after the move (the line cut to the opponent's turn)
     reply_top: int = 0              # >0: the best n candidates are also judged after each opponent reply (own network)
@@ -481,8 +485,30 @@ class Claudio:
             for j, value in found.items():
                 parts[k][j] = value
 
-    @torch.inference_mode()
     def choose(self, board: chess.Board) -> chess.Move:
+        cfg = self.cfg
+        options = (cfg.quiesce_promotions, cfg.quiesce_checks, cfg.check_extension)
+        special = any(options) and hasattr(claudio_fast.Board, "search_options")
+        session = cfg.shared_table and hasattr(claudio_fast.Board, "table_session")
+        if not special and not session:
+            return self._choose(board)
+        # The calculation's options for this decision only; and one decision, one table: a position met
+        # again (another candidate, a deeper check) is not calculated from scratch (the piece values,
+        # the options and the search mode stay the same within it).
+        if special:
+            claudio_fast.Board.search_options(*options)
+        if session:
+            claudio_fast.Board.table_session(True)
+        try:
+            return self._choose(board)
+        finally:
+            if session:
+                claudio_fast.Board.table_session(False)
+            if special:
+                claudio_fast.Board.search_options(False, False, 0)
+
+    @torch.inference_mode()
+    def _choose(self, board: chess.Board) -> chess.Move:
         cfg, me = self.cfg, board.turn
         self._t = time.perf_counter()
         self._catch_up(board)
