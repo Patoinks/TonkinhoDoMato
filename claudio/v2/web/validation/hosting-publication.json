@@ -1,0 +1,13 @@
+{
+  "source": "projects/anw-games/sites/anw-games/versions/36b9cfd21cf0cf5a",
+  "version": "projects/205148335972/sites/anw-games/versions/6c2421419a6f5e45",
+  "release": "projects/205148335972/sites/anw-games/channels/live/releases/1791526984946000",
+  "uploaded": 2,
+  "files": 73,
+  "preservedFiles": 71,
+  "changedExistingFiles": [
+    "/tonkai/index.html"
+  ],
+  "sha256": "6af0464105a510e413f43b6eb5d2300a921b7e75890547134b17d816bd328985",
+  "source600": "5a2681e23cafb6f889e58c35cfd12ff6a32332d5acfdb75b733b832a2c51e18f"
+}

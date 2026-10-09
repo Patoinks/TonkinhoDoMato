@@ -1,0 +1,30 @@
+{
+  "url": "https://anw-games.web.app",
+  "sha256": "6af0464105a510e413f43b6eb5d2300a921b7e75890547134b17d816bd328985",
+  "source": "5a2681e23cafb6f889e58c35cfd12ff6a32332d5acfdb75b733b832a2c51e18f",
+  "errors": [],
+  "games": [
+    {
+      "human": "w",
+      "plies": 8,
+      "ended": "resignation",
+      "clocks": [
+        "5:11",
+        "5:12"
+      ],
+      "fen": "r1bqkbnr/1pppp2p/p1n1p1p1/8/8/P7/1PPP1PPP/RNBQKBNR w KQkq - 0 5"
+    },
+    {
+      "human": "b",
+      "plies": 9,
+      "ended": "resignation",
+      "clocks": [
+        "5:14",
+        "5:12"
+      ],
+      "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/8/P1N2NP1/1PPPPP1P/1RBQKB1R b Kk - 6 5"
+    }
+  ],
+  "defaultHidden": true,
+  "mobileOverflow": false
+}
