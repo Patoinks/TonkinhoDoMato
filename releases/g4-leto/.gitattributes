@@ -1,0 +1,2 @@
+# Manifests validate bytes, including upstream CRLF line endings.
+* -text

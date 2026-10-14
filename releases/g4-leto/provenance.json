@@ -1,0 +1,585 @@
+{
+  "name": "G4 Leto",
+  "date": "2026-10-14",
+  "weights_sha256": "d8f9edad5a5352ec86ef50048794dbe22d2b0b6ab354d8366ff38f6190df5c3f",
+  "web_revision": "bc095e95431517242f3b0b7cd7b3bf00245a2655c8d0dceb9966375d7bfe834a",
+  "files": {
+    "python/claudio/paths.py": {
+      "bytes": 1259,
+      "sha256": "1e9bc23a0ec5a84244132c4ba8c04fdb7acbb80e53e63f0490b84c5562bf2550",
+      "origin": "leto-reference/claudio/paths.py"
+    },
+    "python/claudio/claudio_agent.py": {
+      "bytes": 50763,
+      "sha256": "31aedceb35b42a7f4be497f2f7e18716179c045543ddba6c37ed695325b13481",
+      "origin": "leto-reference/claudio/claudio_agent.py"
+    },
+    "python/claudio/claudio_load.py": {
+      "bytes": 3772,
+      "sha256": "c1c276e82366162f9370b33a25e8d14531f8be5378f3ce3b39b03dbcceaef689",
+      "origin": "leto-reference/claudio/claudio_load.py"
+    },
+    "python/claudio/claudio_net.py": {
+      "bytes": 4132,
+      "sha256": "0796d8e58bebfacf00e5f042d4502e02dbbec6a64203c458426d6e03627d83f3",
+      "origin": "leto-reference/claudio/claudio_net.py"
+    },
+    "python/claudio/abertura.py": {
+      "bytes": 41016,
+      "sha256": "cb6548f3ae4695c24148e581ef5570187d703ce7c6052234f1a8e350485ac0e6",
+      "origin": "leto-reference/claudio/abertura.py"
+    },
+    "python/claudio/pawnomics.py": {
+      "bytes": 10034,
+      "sha256": "02d29d67ab94561cf9b2b43719c2f1c2c7ab2b2b3194d74b7f0e24a55b2e2c6d",
+      "origin": "leto-reference/claudio/pawnomics.py"
+    },
+    "python/claudio/uci.py": {
+      "bytes": 2707,
+      "sha256": "609a1ad5a99d5efc9be41f3f77fca103dd84823c6c44e468e61cc98a41102177",
+      "origin": "leto-reference/claudio/uci.py"
+    },
+    "python/claudio/train_claudio.py": {
+      "bytes": 16661,
+      "sha256": "4e1a2ee458273474482ed90bbe472a6611ab1fc80274855ce9a7f2c4275d1bc6",
+      "origin": "leto-reference/claudio/train_claudio.py"
+    },
+    "python/claudio/train_grande.py": {
+      "bytes": 51411,
+      "sha256": "fdd4c90b207089445b7f85045e5b50fff1cfb67e200f0a95cbbabe45ee6a644c",
+      "origin": "leto-reference/claudio/train_grande.py"
+    },
+    "python/claudio/psutil_free_priority.py": {
+      "bytes": 260,
+      "sha256": "3a349ea68c16575e0b105fe4d7daee803a24a59c89358c2f51380c31b69c7115",
+      "origin": "leto-reference/claudio/psutil_free_priority.py"
+    },
+    "python/claudio/review.py": {
+      "bytes": 11943,
+      "sha256": "a2f6d64bdde773e816bc340590b5b34a5941856934af85d993fad5e002ed6c55",
+      "origin": "leto-reference/claudio/review.py"
+    },
+    "python/claudio/test_claudio.py": {
+      "bytes": 11430,
+      "sha256": "e2a7be40aa105c07f8f44c6e498201b53efe54c1c88d545222ea0c3a141bd556",
+      "origin": "leto-reference/claudio/test_claudio.py"
+    },
+    "python/claudio/test_abertura.py": {
+      "bytes": 15789,
+      "sha256": "ae80e78f81932cb89ab52d4be84fe1e64c892dca94837d41afcc4fb084252c9c",
+      "origin": "leto-reference/claudio/test_abertura.py",
+      "original_sha256": "89e8ff32f1b17bbd23f8100de0d4b2b86d789a9911b8df3dc2e861d5133c3982",
+      "adaptation": "Only checkpoint paths changed to the included models/g4t2-leto-v3.pt"
+    },
+    "python/claudio/base/scripts/evolve_tonkinho.py": {
+      "bytes": 14299,
+      "sha256": "aff3094d334f932463e20864ff09446bbc9763757c4a1103f1555cda19d038c8",
+      "origin": "leto-reference/claudio/base/scripts/evolve_tonkinho.py"
+    },
+    "python/claudio/base/scripts/match_checkpoints.py": {
+      "bytes": 13709,
+      "sha256": "9d28869bfb9d12090c9a9ae1e73a6992f441f337d61ed4515373924f99199eb5",
+      "origin": "leto-reference/claudio/base/scripts/match_checkpoints.py"
+    },
+    "python/claudio/base/setup_claudio.py": {
+      "bytes": 516,
+      "sha256": "b5f83655a236d23c017b4be3ea8dfb0f50b240c8610f106da0236bdf99217bbc",
+      "origin": "leto-reference/claudio/base/setup_claudio.py"
+    },
+    "python/claudio/base/tonkai/__init__.py": {
+      "bytes": 2202,
+      "sha256": "6c9b3382029a8d459e4891ba11f3c0452b957cebd14361d541f63346788905a2",
+      "origin": "leto-reference/claudio/base/tonkai/__init__.py"
+    },
+    "python/claudio/base/tonkai/actor_snapshot.py": {
+      "bytes": 1169,
+      "sha256": "e67a0e069bb0c5e1e27eccd426a7524d16007be92e8802d45302fb567498d62a",
+      "origin": "leto-reference/claudio/base/tonkai/actor_snapshot.py"
+    },
+    "python/claudio/base/tonkai/agent.py": {
+      "bytes": 15003,
+      "sha256": "05edbda7b525aed1ca9caf59421a6029fde36b5d799c98b15b831e724cb44733",
+      "origin": "leto-reference/claudio/base/tonkai/agent.py"
+    },
+    "python/claudio/base/tonkai/captures.py": {
+      "bytes": 32925,
+      "sha256": "92a9e303767519ac1407c21451e6a1ab5936963a22a42193c0c50c75a22839f3",
+      "origin": "leto-reference/claudio/base/tonkai/captures.py"
+    },
+    "python/claudio/base/tonkai/chess_env.py": {
+      "bytes": 2964,
+      "sha256": "7539cf96aba262891d8ae01336adfd3ac05a249cfa29a7a6c564511d9b5ee76f",
+      "origin": "leto-reference/claudio/base/tonkai/chess_env.py"
+    },
+    "python/claudio/base/tonkai/cognitive_agent.py": {
+      "bytes": 65656,
+      "sha256": "c63e0ad348d2d425a541f81d78bd9c20797058a3b82e3acdb8e8b54c1a5586c4",
+      "origin": "leto-reference/claudio/base/tonkai/cognitive_agent.py"
+    },
+    "python/claudio/base/tonkai/cognitive_config.py": {
+      "bytes": 16945,
+      "sha256": "307d935c432702ce05da54be6af1a44f04adca28b920619aab9bf72e4aac5fc0",
+      "origin": "leto-reference/claudio/base/tonkai/cognitive_config.py"
+    },
+    "python/claudio/base/tonkai/cognitive_memory.py": {
+      "bytes": 12742,
+      "sha256": "8508ebb0412d9d976985e2a2a46ec6068a6dbb1c390633fefd68c0cec35d2426",
+      "origin": "leto-reference/claudio/base/tonkai/cognitive_memory.py"
+    },
+    "python/claudio/base/tonkai/cognitive_pool.py": {
+      "bytes": 8890,
+      "sha256": "fc1018d79fe505e9f4df54bb1836e092bceb59d02e3e0f0b59bae517386c6106",
+      "origin": "leto-reference/claudio/base/tonkai/cognitive_pool.py"
+    },
+    "python/claudio/base/tonkai/cognitive_trainer.py": {
+      "bytes": 13874,
+      "sha256": "c7e35720ef724d049a44c06ba27a8ab7c22c2423fd988c28efd6ef352a88e000",
+      "origin": "leto-reference/claudio/base/tonkai/cognitive_trainer.py"
+    },
+    "python/claudio/base/tonkai/config.py": {
+      "bytes": 4236,
+      "sha256": "7b7dd55aa2818ac427c443b686988720ec2263cd15fd60973720e1f1afa3796b",
+      "origin": "leto-reference/claudio/base/tonkai/config.py"
+    },
+    "python/claudio/base/tonkai/cuda_learner.py": {
+      "bytes": 3040,
+      "sha256": "06b5525d7752d9cb0fb06be5f9e3f5daebfa2ee2584f698e4664b33289ee610f",
+      "origin": "leto-reference/claudio/base/tonkai/cuda_learner.py"
+    },
+    "python/claudio/base/tonkai/curriculum.py": {
+      "bytes": 4633,
+      "sha256": "72e751f039d04a0c0a3f6928086e4552ea61979ac7bff4854c28385b2d4e182a",
+      "origin": "leto-reference/claudio/base/tonkai/curriculum.py"
+    },
+    "python/claudio/base/tonkai/encoding.py": {
+      "bytes": 7338,
+      "sha256": "757207b2a6638d2476c06f0b0c27f4c7dc637b0e1288beafae8d540201552e04",
+      "origin": "leto-reference/claudio/base/tonkai/encoding.py"
+    },
+    "python/claudio/base/tonkai/exchange.py": {
+      "bytes": 2258,
+      "sha256": "5aa6ce5779d57d402190acea01f84c1ae8a609f648a1446a6d2b896ecb468971",
+      "origin": "leto-reference/claudio/base/tonkai/exchange.py"
+    },
+    "python/claudio/base/tonkai/execution_fastpaths.py": {
+      "bytes": 2278,
+      "sha256": "dc740481615fe3e65cf26816b36cd22ca8c9a41439232217e3e3ef2deb9e8a50",
+      "origin": "leto-reference/claudio/base/tonkai/execution_fastpaths.py"
+    },
+    "python/claudio/base/tonkai/fast_rules.py": {
+      "bytes": 3684,
+      "sha256": "c4c716beb166d6ebf247c566f27f7999aec14d53b8481af4f7006330d5a049a3",
+      "origin": "leto-reference/claudio/base/tonkai/fast_rules.py"
+    },
+    "python/claudio/base/tonkai/history.py": {
+      "bytes": 1295,
+      "sha256": "8fa3a8a87d644cdfb29c411e0b93a460b59358d57afb0a2346918b362370cb2b",
+      "origin": "leto-reference/claudio/base/tonkai/history.py"
+    },
+    "python/claudio/base/tonkai/inference_broker.py": {
+      "bytes": 4493,
+      "sha256": "057c74a49ffed65034f8e4bbea74f32983c2fcc40b53a33d8ac6fe7f4bad9845",
+      "origin": "leto-reference/claudio/base/tonkai/inference_broker.py"
+    },
+    "python/claudio/base/tonkai/king_safety.py": {
+      "bytes": 4825,
+      "sha256": "ba292d12b0d11c9a010b5bf4f5816ebb36a024be9fd20224dc35e887d3a34ff4",
+      "origin": "leto-reference/claudio/base/tonkai/king_safety.py"
+    },
+    "python/claudio/base/tonkai/king_safety_model.py": {
+      "bytes": 4909,
+      "sha256": "4bdd0f8baf8cfea12e32eea356be84dd45bb2c783d434c5577da233ffffea365",
+      "origin": "leto-reference/claudio/base/tonkai/king_safety_model.py"
+    },
+    "python/claudio/base/tonkai/king_safety_training.py": {
+      "bytes": 17515,
+      "sha256": "82a931d781e2077a5c7f6f29d259c3343d0a33f93b63b02364a3615206e68f43",
+      "origin": "leto-reference/claudio/base/tonkai/king_safety_training.py"
+    },
+    "python/claudio/base/tonkai/metrics.py": {
+      "bytes": 7607,
+      "sha256": "a0f2244287e961c7d0b3241b28ba65d923f18a81445f8bfc4ee8241c06e69db2",
+      "origin": "leto-reference/claudio/base/tonkai/metrics.py"
+    },
+    "python/claudio/base/tonkai/model.py": {
+      "bytes": 4649,
+      "sha256": "928128b3514463c50a7b2231e96298d36033fbc5720f2e84bc27614123706ebb",
+      "origin": "leto-reference/claudio/base/tonkai/model.py"
+    },
+    "python/claudio/base/tonkai/network_fastpaths.py": {
+      "bytes": 3870,
+      "sha256": "177cc831a7dca9349f93b247875a69407a07b425e5408109404dce5a2c93daab",
+      "origin": "leto-reference/claudio/base/tonkai/network_fastpaths.py"
+    },
+    "python/claudio/base/tonkai/objective.py": {
+      "bytes": 3564,
+      "sha256": "a9d863a9d2fff7e4159310c74536195e3e75bc3789d47bf18be23d84f2ff82b5",
+      "origin": "leto-reference/claudio/base/tonkai/objective.py"
+    },
+    "python/claudio/base/tonkai/opening_history.py": {
+      "bytes": 3162,
+      "sha256": "55a52c5af84a37d16111a7dd4e601e8699282648e52ffcd41b8bb6bc61792e98",
+      "origin": "leto-reference/claudio/base/tonkai/opening_history.py"
+    },
+    "python/claudio/base/tonkai/opponents.py": {
+      "bytes": 3157,
+      "sha256": "e98083faac8538138994b542232e067861d9cc5d1fd446b01120a26207797c3a",
+      "origin": "leto-reference/claudio/base/tonkai/opponents.py"
+    },
+    "python/claudio/base/tonkai/parallel.py": {
+      "bytes": 6468,
+      "sha256": "486e5af1eae61fedb8bde0174eb755e27b96ccd513252d4a8086f3c3293df3ac",
+      "origin": "leto-reference/claudio/base/tonkai/parallel.py"
+    },
+    "python/claudio/base/tonkai/piece_safety.py": {
+      "bytes": 10183,
+      "sha256": "a87f38e5f821ca7dcef3dece9379082afe72c83ee905490af0687b84c35689fa",
+      "origin": "leto-reference/claudio/base/tonkai/piece_safety.py"
+    },
+    "python/claudio/base/tonkai/population.py": {
+      "bytes": 7015,
+      "sha256": "f7435047388813d0d23b733e49755bd3d716c7479252e0c6cdfda6bd5779bdf3",
+      "origin": "leto-reference/claudio/base/tonkai/population.py"
+    },
+    "python/claudio/base/tonkai/replay.py": {
+      "bytes": 4934,
+      "sha256": "3e8252344dffd26cde96eefa0cdb9206c8939bf77e30220952c574682f2e206a",
+      "origin": "leto-reference/claudio/base/tonkai/replay.py"
+    },
+    "python/claudio/base/tonkai/resign.py": {
+      "bytes": 17508,
+      "sha256": "78d0f77a80b2b2ead4adf12acfde547f3feec515dcdd4cd7ec6e2b1809037afb",
+      "origin": "leto-reference/claudio/base/tonkai/resign.py"
+    },
+    "python/claudio/base/tonkai/sequence_replay.py": {
+      "bytes": 17050,
+      "sha256": "6dffbe4440fe4d62e30621cf8cd1ccaae2b20257283d3b5dc71c38f94e82e554",
+      "origin": "leto-reference/claudio/base/tonkai/sequence_replay.py"
+    },
+    "python/claudio/base/tonkai/survival_agent.py": {
+      "bytes": 13394,
+      "sha256": "98b2781876b121c71ea3d68f0474108d78e3d8c29dff3394ae5dc9f319065984",
+      "origin": "leto-reference/claudio/base/tonkai/survival_agent.py"
+    },
+    "python/claudio/base/tonkai/survival_config.py": {
+      "bytes": 3000,
+      "sha256": "79595dc39b8f0650d3d04c008e1e9733dccf7f4d24ed206b9517ec985a830b5c",
+      "origin": "leto-reference/claudio/base/tonkai/survival_config.py"
+    },
+    "python/claudio/base/tonkai/survival_pool.py": {
+      "bytes": 12170,
+      "sha256": "faba2133f1e451d91d8494e3907a6547246e0baeb968460899d7fb6eab75b2f5",
+      "origin": "leto-reference/claudio/base/tonkai/survival_pool.py"
+    },
+    "python/claudio/base/tonkai/survival_trainer.py": {
+      "bytes": 27113,
+      "sha256": "3c050e12b18e1f4d7f31629dff1f2c5d461121702d5078961b280a393d788418",
+      "origin": "leto-reference/claudio/base/tonkai/survival_trainer.py"
+    },
+    "python/claudio/base/tonkai/tablebase.py": {
+      "bytes": 1540,
+      "sha256": "1695759e8f1e8d1f54741bce7b12950e3c68ab3ae5283744ecbbcb0e2d5f9f85",
+      "origin": "leto-reference/claudio/base/tonkai/tablebase.py"
+    },
+    "python/claudio/base/tonkai/temporal_model.py": {
+      "bytes": 9829,
+      "sha256": "ce36467d7f5c079103db30c9a746b3da2594d8bd65d3c8d702b792012089af42",
+      "origin": "leto-reference/claudio/base/tonkai/temporal_model.py"
+    },
+    "python/claudio/base/tonkai/theory_buffer.py": {
+      "bytes": 3458,
+      "sha256": "8c0c1f27a59501352eb42079f75e25b432d85dd640acf6fdcadcb50e1d36f109",
+      "origin": "leto-reference/claudio/base/tonkai/theory_buffer.py"
+    },
+    "python/claudio/base/tonkai/trainer.py": {
+      "bytes": 11060,
+      "sha256": "cd41c2a3daa68134b2a325220c77a3dee27bfc645a191518bf36d9bb42ee8a1a",
+      "origin": "leto-reference/claudio/base/tonkai/trainer.py"
+    },
+    "python/claudio/base/tonkai/uci_opponent.py": {
+      "bytes": 6813,
+      "sha256": "68b4abb83558910a58d1d7645f92487cda45373a9bd5ee14d26d141875d3c6a7",
+      "origin": "leto-reference/claudio/base/tonkai/uci_opponent.py"
+    },
+    "python/claudio/base/tonkai/web_publish.py": {
+      "bytes": 2523,
+      "sha256": "d92ac40c83214ff3c881d75dfa6d1b97d3ce654c4a904d412832e930fa8730a7",
+      "origin": "leto-reference/claudio/base/tonkai/web_publish.py"
+    },
+    "python/claudio/base/tonkai/win_history.py": {
+      "bytes": 16364,
+      "sha256": "5f338ce24759e8e883b07961bb3fb787ed3125fd40147ceff4848a061b676658",
+      "origin": "leto-reference/claudio/base/tonkai/win_history.py"
+    },
+    "python/claudio/base/tonkai_fast/fast.cpp": {
+      "bytes": 76684,
+      "sha256": "4ae2984d06ae90dc0117ecf4e4516efb3551af4f8ef9a98939d5963cd1922204",
+      "origin": "leto-reference/claudio/base/tonkai_fast/fast.cpp"
+    },
+    "python/claudio/fast/claudio_fast.cpp": {
+      "bytes": 108075,
+      "sha256": "99b14a41b186434973e7770c854db8d7ddc1b7e3d9dd9b8868bb351227cc89db",
+      "origin": "leto-reference/claudio/fast/claudio_fast.cpp"
+    },
+    "python/claudio/fast/setup.py": {
+      "bytes": 954,
+      "sha256": "06d6d25ee0f00a3928306ea90b30b58cd149a92c90c77948000bace52d8a77cc",
+      "origin": "leto-reference/claudio/fast/setup.py"
+    },
+    "models/g4t2-leto-v3.pt": {
+      "bytes": 4335643,
+      "sha256": "1a1f09908d04cbbdbb30690bff6e97820ffe07b131b6094c60ca51de8e74016c",
+      "origin": "leto-reference/mais/g4t2-leto-v3.pt"
+    },
+    "web/native/g4-rules.cpp": {
+      "bytes": 104115,
+      "sha256": "b8ea93e8cecf5ce5876565a29c2c6efcb905c79cdfc49ee6172e0c2cbbae771a",
+      "origin": "site/g4-work/g4-rules.cpp"
+    },
+    "web/src/tonkai/abertura.ts": {
+      "bytes": 9822,
+      "sha256": "971a574e8b521440f2dd9f024ad959d2f195905bafe6b846c266471b3687aaac",
+      "origin": "site/src/tonkai/abertura.ts"
+    },
+    "web/src/tonkai/brand.ts": {
+      "bytes": 712,
+      "sha256": "094c35091d292a620effbc4a8abbcfc7974d480c1c2dd819b72a826dfff9ec58",
+      "origin": "site/src/tonkai/brand.ts"
+    },
+    "web/src/tonkai/clock.ts": {
+      "bytes": 1845,
+      "sha256": "da58209cd68750c1f7bdb7df06a0fcd5499b01fd50a901924a42c6f7974c007d",
+      "origin": "site/src/tonkai/clock.ts"
+    },
+    "web/src/tonkai/encoding.ts": {
+      "bytes": 1246,
+      "sha256": "f9936600ec70329dc29d28ef58acba5d5c856e816890f72f6d3307d0b579081c",
+      "origin": "site/src/tonkai/encoding.ts"
+    },
+    "web/src/tonkai/exchangeSearch.ts": {
+      "bytes": 3608,
+      "sha256": "1446e2fe1d32aeac0d8991bfe934a25b17aeae1d8cc1457a907c438afcaeef3c",
+      "origin": "site/src/tonkai/exchangeSearch.ts"
+    },
+    "web/src/tonkai/g16v2.ts": {
+      "bytes": 27059,
+      "sha256": "010209bf5a2557e2d4dfba12946cf00fe29d0b00c7ba6e9393313b3b6e47cc39",
+      "origin": "site/src/tonkai/g16v2.ts"
+    },
+    "web/src/tonkai/game.ts": {
+      "bytes": 5612,
+      "sha256": "a8696e7141746b52e8dedb4eb9c13836713e862f912d51921a2a74531d143973",
+      "origin": "site/src/tonkai/game.ts"
+    },
+    "web/src/tonkai/gameHistory.ts": {
+      "bytes": 6005,
+      "sha256": "fd14f578e9c01d58077efd390e1273dbcebc9050b27aab949090fee4e6e2e3ce",
+      "origin": "site/src/tonkai/gameHistory.ts"
+    },
+    "web/src/tonkai/kingSafety.ts": {
+      "bytes": 6591,
+      "sha256": "cbc0f94484b480fd9cccb223c4ea42cb0188dd3fcf44fd5bdb8a3fabc8fde109",
+      "origin": "site/src/tonkai/kingSafety.ts"
+    },
+    "web/src/tonkai/leto.worker.ts": {
+      "bytes": 2745,
+      "sha256": "b9b3baa661478674f891588148fe280de282be6047f86f075366a245e20c77cd",
+      "origin": "site/src/tonkai/leto.worker.ts"
+    },
+    "web/src/tonkai/letoPosition.ts": {
+      "bytes": 4597,
+      "sha256": "7041c02b9a618413f19141bdf4d044986fed248a92ab277a1335564351b8975b",
+      "origin": "site/src/tonkai/letoPosition.ts"
+    },
+    "web/src/tonkai/letoThinking.ts": {
+      "bytes": 7742,
+      "sha256": "d5586f6966b1e9d2c823a7e73c1b1109ce1cb80778258c0cfe041a0b2414fbc5",
+      "origin": "site/src/tonkai/letoThinking.ts"
+    },
+    "web/src/tonkai/letoThinkingProtocol.ts": {
+      "bytes": 816,
+      "sha256": "96c2e2b17805280482ea6d26e2b0151397ddf84b27ec5aebe8e6d7753419ca83",
+      "origin": "site/src/tonkai/letoThinkingProtocol.ts"
+    },
+    "web/src/tonkai/letoTimedSearch.ts": {
+      "bytes": 2339,
+      "sha256": "6c1e21d234f4ed1aa49eb0faf87851a9d2099f223ef706391acfbcdc81820e39",
+      "origin": "site/src/tonkai/letoTimedSearch.ts"
+    },
+    "web/src/tonkai/mateSearch.ts": {
+      "bytes": 3195,
+      "sha256": "15abd0953283d258097fd725c5a84d6370024920a3fb4d2201a345b0b58a2345",
+      "origin": "site/src/tonkai/mateSearch.ts"
+    },
+    "web/src/tonkai/network.ts": {
+      "bytes": 8442,
+      "sha256": "f2306a294f904a0e7b5c0236928dcaf68062d9b078019e97f2b5a920142c0874",
+      "origin": "site/src/tonkai/network.ts"
+    },
+    "web/src/tonkai/pawnBoard.ts": {
+      "bytes": 5819,
+      "sha256": "c0881915471984f46fc2ae5a0f2cf995db31cbc3c33894268e6b5e00ea32db58",
+      "origin": "site/src/tonkai/pawnBoard.ts"
+    },
+    "web/src/tonkai/pawnomics.ts": {
+      "bytes": 6331,
+      "sha256": "67f0769f493e1eac75329dcf11781e20639ce697dd29665600bee738679d4acf",
+      "origin": "site/src/tonkai/pawnomics.ts"
+    },
+    "web/src/tonkai/pawnomicsConstants.ts": {
+      "bytes": 688,
+      "sha256": "15eb359ac20c3e85c3c7625a2f532a37a055f15ead54503c06d8ef4a81bb9230",
+      "origin": "site/src/tonkai/pawnomicsConstants.ts"
+    },
+    "web/src/tonkai/pawnomicsV3.ts": {
+      "bytes": 12645,
+      "sha256": "91a3b943d47ff1d251f4ec739e9d32fdd8c1fe53e548b8e25796be36480aa13e",
+      "origin": "site/src/tonkai/pawnomicsV3.ts"
+    },
+    "web/src/tonkai/pawnProofs.ts": {
+      "bytes": 4206,
+      "sha256": "9cddf8003d67b2c56c187a22cca420598593d55b88b8e9f32527a25a33262616",
+      "origin": "site/src/tonkai/pawnProofs.ts"
+    },
+    "web/src/tonkai/pieceSafety.ts": {
+      "bytes": 5088,
+      "sha256": "535fa3e894bbf58f7d2a0d8e6276ae9c0079d48c5e49dbac4f3781f6cf97d607",
+      "origin": "site/src/tonkai/pieceSafety.ts"
+    },
+    "web/src/tonkai/positionEvaluation.ts": {
+      "bytes": 1435,
+      "sha256": "778a3eb40fd3d947efabb5fedc1db472f4ac7dac7735bd159f158597a0e08f6b",
+      "origin": "site/src/tonkai/positionEvaluation.ts"
+    },
+    "web/src/tonkai/temporal.ts": {
+      "bytes": 26565,
+      "sha256": "54604efde3c9735ef938e2e45b2b18d80cf2c991833f9b6c080c6f4a507f13fb",
+      "origin": "site/src/tonkai/temporal.ts"
+    },
+    "web/public/tonkai/g4-rules.mjs": {
+      "bytes": 41393,
+      "sha256": "4bc7f79bf15a365b4498c84330d2c121dc13fe378eda15e836280abe9f915a6b",
+      "origin": "site/public/tonkai/g4-rules.mjs"
+    },
+    "web/public/tonkai/g4-rules.wasm": {
+      "bytes": 305350,
+      "sha256": "48b810e5187845d803041d2a7bcbc1c24b4c3adc117d88b5bfe3fb709b0ed6be",
+      "origin": "site/public/tonkai/g4-rules.wasm"
+    },
+    "web/public/tonkai/g4-version.json": {
+      "bytes": 210,
+      "sha256": "bb9ac6a63cf1bfba38dfd6642f9180881be9454cf7c60a08211d6693d68d093c",
+      "origin": "site/public/tonkai/g4-version.json"
+    },
+    "web/public/tonkai/g4.json": {
+      "bytes": 9987,
+      "sha256": "aec66bc8548708562e9eda39f18a092fa37beace23121d258a6d3b44053421b2",
+      "origin": "site/public/tonkai/g4.json"
+    },
+    "web/public/tonkai/leto-book-v2.json": {
+      "bytes": 191203,
+      "sha256": "718dc8c47ecc5dc6e90d7105404781824cca902cb284177f348186984c304391",
+      "origin": "site/public/tonkai/leto-book-v2.json"
+    },
+    "web/public/tonkai/leto-version.json": {
+      "bytes": 232,
+      "sha256": "139fb4eba7769f9191ba18107fa28a4a7de3fa122254e9c7c2b24a65a12a733a",
+      "origin": "site/public/tonkai/leto-version.json"
+    },
+    "web/public/tonkai/leto.json": {
+      "bytes": 16159,
+      "sha256": "f548c7495320a3210e1cede4b1c3972719e77acbdc4979c4ea0a25e0616fdcaa",
+      "origin": "site/public/tonkai/leto.json"
+    },
+    "web/public/tonkai/native-provenance.json": {
+      "bytes": 461,
+      "sha256": "5989a20d22fb75e6d1226b24a98133199a6547569ff891bc09b16ea607078294",
+      "origin": "site/public/tonkai/native-provenance.json"
+    },
+    "web/public/tonkai/pawn-kpk-v3.bin": {
+      "bytes": 196608,
+      "sha256": "387b83763281256416c8a5103d4599401febd491c15ebd3cdac3fc598aa657c2",
+      "origin": "site/public/tonkai/pawn-kpk-v3.bin"
+    },
+    "web/public/tonkai/tonkai-d8f9edad5a5352ec86ef50048794dbe22d2b0b6ab354d8366ff38f6190df5c3f.bin": {
+      "bytes": 4304120,
+      "sha256": "d8f9edad5a5352ec86ef50048794dbe22d2b0b6ab354d8366ff38f6190df5c3f",
+      "origin": "site/public/tonkai/tonkai-d8f9edad5a5352ec86ef50048794dbe22d2b0b6ab354d8366ff38f6190df5c3f.bin"
+    },
+    "web/tests/leto.test.ts": {
+      "bytes": 4062,
+      "sha256": "68bc59d07bd76480d59e389459537f66f05bbbdf2833b16c09d5dc25d76741ab",
+      "origin": "site/tests/leto.test.ts"
+    },
+    "web/tests/leto-thinking.test.ts": {
+      "bytes": 9403,
+      "sha256": "97754d8633ed3bf5ae5a9d8fcd4f0b1acfc3e7441a0a4775c5d0847764edc322",
+      "origin": "site/tests/leto-thinking.test.ts"
+    },
+    "web/tests/leto-thinking-model.test.ts": {
+      "bytes": 2972,
+      "sha256": "fd0372b09630b3d20057b82d957ec59b7d83df3fdf5c4a5f3b89698d8cb2f14d",
+      "origin": "site/tests/leto-thinking-model.test.ts"
+    },
+    "web/tests/leto-numeric-helper.ts": {
+      "bytes": 3822,
+      "sha256": "6bd5c5ce2070e71ba0a3560f9d4e0f2edadc2e2c0423bc077c0cb756e08cd574",
+      "origin": "site/tests/leto-numeric-helper.ts"
+    },
+    "web/tests/pawnomics-v3.test.ts": {
+      "bytes": 9001,
+      "sha256": "7263236cee7c03f734223c2b4f6cbee914a6ca60e34d4ebf4be7cac1247e21da",
+      "origin": "site/tests/pawnomics-v3.test.ts"
+    },
+    "web/tests/tonkai-game-history.test.ts": {
+      "bytes": 5593,
+      "sha256": "e5c06c6bbed7ea2ceea4bb6d4a4eccafe7079451d3df567a1bad425b7997a966",
+      "origin": "site/tests/tonkai-game-history.test.ts"
+    },
+    "web/tests/tonkai-training.test.ts": {
+      "bytes": 4749,
+      "sha256": "4a7ff640f5e7acc4850b5d5fa2d0fc864929bfbd38f4c1cb6ce1f8e86016a90a",
+      "origin": "site/tests/tonkai-training.test.ts"
+    },
+    "web/tests/fixtures/leto-numeric.json": {
+      "bytes": 88853,
+      "sha256": "76f986267384c7667949fcf9038343e7c8437e73824cdcbb96e5ac9b349af702",
+      "origin": "site/tests/fixtures/leto-numeric.json"
+    },
+    "web/tests/fixtures/pawn-endgames-oracle.json": {
+      "bytes": 9335,
+      "sha256": "8ef3c583224a9f7cccd7a2e00178cf207fc1003e9b10151f9e1747efea8253b8",
+      "origin": "site/tests/fixtures/pawn-endgames-oracle.json"
+    },
+    "web/scripts/generate-pawn-proofs.py": {
+      "bytes": 2456,
+      "sha256": "adc397f1d40a782894f7a287e31789d2a37fe53cb9fccf8bec13f3d45f1cfdcd",
+      "origin": "site/scripts/generate-pawn-proofs.py"
+    },
+    "docs/LETO-5S.md": {
+      "bytes": 3792,
+      "sha256": "62a34d924edfd7dff7a5ab2f769236c1dc10bc07c1606552c9004c620dac38dd",
+      "origin": "site/LETO-5S.md"
+    },
+    "docs/PAWNOMICS-V3.md": {
+      "bytes": 4685,
+      "sha256": "6ef9ce27fb7df4ccde8968615051dde8af0f64a2f47ef2fc8c659ef104056fec",
+      "origin": "site/PAWNOMICS-V3.md"
+    },
+    "python/claudio/abertura_v1_original.py": {
+      "bytes": 18359,
+      "sha256": "79549b0b9aed914c6cfa40d8f984374922f9b741b7a4bca1ba239e65c70e4e35",
+      "origin": "leto-reference/claudio/abertura_v1_original.py"
+    },
+    "python/claudio/testes-baseline/abertura.py": {
+      "bytes": 34112,
+      "sha256": "6e1d53b597071b709c2a49af709afce1cdc348e5ae7b6684aad9ead9e0c59c69",
+      "origin": "leto-reference/claudio/testes-baseline/abertura.py"
+    },
+    "python/claudio/testes-baseline/claudio_agent.py": {
+      "bytes": 48975,
+      "sha256": "7bab08485f8505dd3587344036d6d41fed853794e651773ab5f9badf44161283",
+      "origin": "leto-reference/claudio/testes-baseline/claudio_agent.py"
+    }
+  }
+}

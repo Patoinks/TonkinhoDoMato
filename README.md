@@ -1,5 +1,7 @@
 # TonkAI
 
+**G4 Leto atual:** [checkpoint, módulos Python/C++, Pawnomics v3 e motor web com pesquisa até 5 segundos](releases/g4-leto/README.md). O pacote inclui os pesos e os recursos necessários, com hashes de integridade.
+
 **Próximo adversário — V3 opt-in:** [memória associativa, contrafactuais e análise adaptativa](docs/cognitive_next_opponent.md).
 `train_cognitive.py` prepara os nove módulos selecionados, com checkpoints próprios;
 não altera nem substitui o treino V2 já em execução.

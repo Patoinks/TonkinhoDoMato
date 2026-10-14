@@ -1,0 +1,7 @@
+**/__pycache__/
+**/build/
+**/node_modules/
+**/*.pyd
+**/*.so
+**/*.pyc
+web/dist/

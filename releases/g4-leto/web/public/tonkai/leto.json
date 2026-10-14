@@ -1,0 +1,818 @@
+{
+  "format": "float32-le",
+  "model_kind": "claudio-v2-web",
+  "model_name": "G4 Leto",
+  "bytes": 4304120,
+  "sha256": "d8f9edad5a5352ec86ef50048794dbe22d2b0b6ab354d8366ff38f6190df5c3f",
+  "binary": "tonkai-d8f9edad5a5352ec86ef50048794dbe22d2b0b6ab354d8366ff38f6190df5c3f.bin",
+  "tensors": [
+    {
+      "name": "net.encoder.0.weight",
+      "shape": [
+        512,
+        782
+      ],
+      "offset": 0,
+      "count": 400384
+    },
+    {
+      "name": "net.encoder.0.bias",
+      "shape": [
+        512
+      ],
+      "offset": 1601536,
+      "count": 512
+    },
+    {
+      "name": "net.encoder.2.weight",
+      "shape": [
+        128,
+        512
+      ],
+      "offset": 1603584,
+      "count": 65536
+    },
+    {
+      "name": "net.encoder.2.bias",
+      "shape": [
+        128
+      ],
+      "offset": 1865728,
+      "count": 128
+    },
+    {
+      "name": "net.encoder.4.fc1.weight",
+      "shape": [
+        512,
+        128
+      ],
+      "offset": 1866240,
+      "count": 65536
+    },
+    {
+      "name": "net.encoder.4.fc1.bias",
+      "shape": [
+        512
+      ],
+      "offset": 2128384,
+      "count": 512
+    },
+    {
+      "name": "net.encoder.4.fc2.weight",
+      "shape": [
+        128,
+        512
+      ],
+      "offset": 2130432,
+      "count": 65536
+    },
+    {
+      "name": "net.encoder.4.fc2.bias",
+      "shape": [
+        128
+      ],
+      "offset": 2392576,
+      "count": 128
+    },
+    {
+      "name": "net.predict_head.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "offset": 2393088,
+      "count": 8192
+    },
+    {
+      "name": "net.predict_head.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 2425856,
+      "count": 64
+    },
+    {
+      "name": "net.predict_head.2.weight",
+      "shape": [
+        1,
+        64
+      ],
+      "offset": 2426112,
+      "count": 64
+    },
+    {
+      "name": "net.predict_head.2.bias",
+      "shape": [
+        1
+      ],
+      "offset": 2426368,
+      "count": 1
+    },
+    {
+      "name": "net.piece_head.0.weight",
+      "shape": [
+        64,
+        168
+      ],
+      "offset": 2426372,
+      "count": 10752
+    },
+    {
+      "name": "net.piece_head.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 2469380,
+      "count": 64
+    },
+    {
+      "name": "net.piece_head.2.weight",
+      "shape": [
+        1,
+        64
+      ],
+      "offset": 2469636,
+      "count": 64
+    },
+    {
+      "name": "net.piece_head.2.bias",
+      "shape": [
+        1
+      ],
+      "offset": 2469892,
+      "count": 1
+    },
+    {
+      "name": "net.type_embed.weight",
+      "shape": [
+        6,
+        16
+      ],
+      "offset": 2469896,
+      "count": 96
+    },
+    {
+      "name": "net.square_embed.weight",
+      "shape": [
+        64,
+        16
+      ],
+      "offset": 2470280,
+      "count": 1024
+    },
+    {
+      "name": "net.side_embed.weight",
+      "shape": [
+        2,
+        8
+      ],
+      "offset": 2474376,
+      "count": 16
+    },
+    {
+      "name": "net.memory_cell.weight_ih",
+      "shape": [
+        192,
+        128
+      ],
+      "offset": 2474440,
+      "count": 24576
+    },
+    {
+      "name": "net.memory_cell.weight_hh",
+      "shape": [
+        192,
+        64
+      ],
+      "offset": 2572744,
+      "count": 12288
+    },
+    {
+      "name": "net.memory_cell.bias_ih",
+      "shape": [
+        192
+      ],
+      "offset": 2621896,
+      "count": 192
+    },
+    {
+      "name": "net.memory_cell.bias_hh",
+      "shape": [
+        192
+      ],
+      "offset": 2622664,
+      "count": 192
+    },
+    {
+      "name": "net.fusion.0.weight",
+      "shape": [
+        128,
+        192
+      ],
+      "offset": 2623432,
+      "count": 24576
+    },
+    {
+      "name": "net.fusion.0.bias",
+      "shape": [
+        128
+      ],
+      "offset": 2721736,
+      "count": 128
+    },
+    {
+      "name": "net.survival_heads.0.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "offset": 2722248,
+      "count": 8192
+    },
+    {
+      "name": "net.survival_heads.0.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 2755016,
+      "count": 64
+    },
+    {
+      "name": "net.survival_heads.0.2.weight",
+      "shape": [
+        2,
+        64
+      ],
+      "offset": 2755272,
+      "count": 128
+    },
+    {
+      "name": "net.survival_heads.0.2.bias",
+      "shape": [
+        2
+      ],
+      "offset": 2755784,
+      "count": 2
+    },
+    {
+      "name": "net.survival_heads.1.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "offset": 2755792,
+      "count": 8192
+    },
+    {
+      "name": "net.survival_heads.1.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 2788560,
+      "count": 64
+    },
+    {
+      "name": "net.survival_heads.1.2.weight",
+      "shape": [
+        2,
+        64
+      ],
+      "offset": 2788816,
+      "count": 128
+    },
+    {
+      "name": "net.survival_heads.1.2.bias",
+      "shape": [
+        2
+      ],
+      "offset": 2789328,
+      "count": 2
+    },
+    {
+      "name": "net.survival_heads.2.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "offset": 2789336,
+      "count": 8192
+    },
+    {
+      "name": "net.survival_heads.2.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 2822104,
+      "count": 64
+    },
+    {
+      "name": "net.survival_heads.2.2.weight",
+      "shape": [
+        2,
+        64
+      ],
+      "offset": 2822360,
+      "count": 128
+    },
+    {
+      "name": "net.survival_heads.2.2.bias",
+      "shape": [
+        2
+      ],
+      "offset": 2822872,
+      "count": 2
+    },
+    {
+      "name": "net.survival_heads.3.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "offset": 2822880,
+      "count": 8192
+    },
+    {
+      "name": "net.survival_heads.3.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 2855648,
+      "count": 64
+    },
+    {
+      "name": "net.survival_heads.3.2.weight",
+      "shape": [
+        2,
+        64
+      ],
+      "offset": 2855904,
+      "count": 128
+    },
+    {
+      "name": "net.survival_heads.3.2.bias",
+      "shape": [
+        2
+      ],
+      "offset": 2856416,
+      "count": 2
+    },
+    {
+      "name": "net.survival_heads.4.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "offset": 2856424,
+      "count": 8192
+    },
+    {
+      "name": "net.survival_heads.4.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 2889192,
+      "count": 64
+    },
+    {
+      "name": "net.survival_heads.4.2.weight",
+      "shape": [
+        2,
+        64
+      ],
+      "offset": 2889448,
+      "count": 128
+    },
+    {
+      "name": "net.survival_heads.4.2.bias",
+      "shape": [
+        2
+      ],
+      "offset": 2889960,
+      "count": 2
+    },
+    {
+      "name": "net.future_heads.0.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "offset": 2889968,
+      "count": 8192
+    },
+    {
+      "name": "net.future_heads.0.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 2922736,
+      "count": 64
+    },
+    {
+      "name": "net.future_heads.0.2.weight",
+      "shape": [
+        128,
+        64
+      ],
+      "offset": 2922992,
+      "count": 8192
+    },
+    {
+      "name": "net.future_heads.0.2.bias",
+      "shape": [
+        128
+      ],
+      "offset": 2955760,
+      "count": 128
+    },
+    {
+      "name": "net.future_heads.1.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "offset": 2956272,
+      "count": 8192
+    },
+    {
+      "name": "net.future_heads.1.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 2989040,
+      "count": 64
+    },
+    {
+      "name": "net.future_heads.1.2.weight",
+      "shape": [
+        128,
+        64
+      ],
+      "offset": 2989296,
+      "count": 8192
+    },
+    {
+      "name": "net.future_heads.1.2.bias",
+      "shape": [
+        128
+      ],
+      "offset": 3022064,
+      "count": 128
+    },
+    {
+      "name": "net.future_heads.2.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "offset": 3022576,
+      "count": 8192
+    },
+    {
+      "name": "net.future_heads.2.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 3055344,
+      "count": 64
+    },
+    {
+      "name": "net.future_heads.2.2.weight",
+      "shape": [
+        128,
+        64
+      ],
+      "offset": 3055600,
+      "count": 8192
+    },
+    {
+      "name": "net.future_heads.2.2.bias",
+      "shape": [
+        128
+      ],
+      "offset": 3088368,
+      "count": 128
+    },
+    {
+      "name": "net.future_heads.3.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "offset": 3088880,
+      "count": 8192
+    },
+    {
+      "name": "net.future_heads.3.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 3121648,
+      "count": 64
+    },
+    {
+      "name": "net.future_heads.3.2.weight",
+      "shape": [
+        128,
+        64
+      ],
+      "offset": 3121904,
+      "count": 8192
+    },
+    {
+      "name": "net.future_heads.3.2.bias",
+      "shape": [
+        128
+      ],
+      "offset": 3154672,
+      "count": 128
+    },
+    {
+      "name": "net.rnd_target.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "offset": 3155184,
+      "count": 8192
+    },
+    {
+      "name": "net.rnd_target.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 3187952,
+      "count": 64
+    },
+    {
+      "name": "net.rnd_target.2.weight",
+      "shape": [
+        32,
+        64
+      ],
+      "offset": 3188208,
+      "count": 2048
+    },
+    {
+      "name": "net.rnd_target.2.bias",
+      "shape": [
+        32
+      ],
+      "offset": 3196400,
+      "count": 32
+    },
+    {
+      "name": "net.rnd_predictor.0.weight",
+      "shape": [
+        64,
+        128
+      ],
+      "offset": 3196528,
+      "count": 8192
+    },
+    {
+      "name": "net.rnd_predictor.0.bias",
+      "shape": [
+        64
+      ],
+      "offset": 3229296,
+      "count": 64
+    },
+    {
+      "name": "net.rnd_predictor.2.weight",
+      "shape": [
+        32,
+        64
+      ],
+      "offset": 3229552,
+      "count": 2048
+    },
+    {
+      "name": "net.rnd_predictor.2.bias",
+      "shape": [
+        32
+      ],
+      "offset": 3237744,
+      "count": 32
+    },
+    {
+      "name": "net.capture_out.weight",
+      "shape": [
+        1,
+        64
+      ],
+      "offset": 3237872,
+      "count": 64
+    },
+    {
+      "name": "net.capture_out.bias",
+      "shape": [
+        1
+      ],
+      "offset": 3238128,
+      "count": 1
+    },
+    {
+      "name": "king_safety.body.0.weight",
+      "shape": [
+        256,
+        782
+      ],
+      "offset": 3238132,
+      "count": 200192
+    },
+    {
+      "name": "king_safety.body.0.bias",
+      "shape": [
+        256
+      ],
+      "offset": 4038900,
+      "count": 256
+    },
+    {
+      "name": "king_safety.body.2.weight",
+      "shape": [
+        256,
+        256
+      ],
+      "offset": 4039924,
+      "count": 65536
+    },
+    {
+      "name": "king_safety.body.2.bias",
+      "shape": [
+        256
+      ],
+      "offset": 4302068,
+      "count": 256
+    },
+    {
+      "name": "king_safety.body.4.weight",
+      "shape": [
+        1,
+        256
+      ],
+      "offset": 4303092,
+      "count": 256
+    },
+    {
+      "name": "king_safety.body.4.bias",
+      "shape": [
+        1
+      ],
+      "offset": 4304116,
+      "count": 1
+    }
+  ],
+  "draw_weight": 0.5,
+  "checkpoint_sha256": "1a1f09908d04cbbdbb30690bff6e97820ffe07b131b6094c60ca51de8e74016c",
+  "architecture": {
+    "hidden_size": 512,
+    "latent_size": 128,
+    "head_hidden": 64,
+    "piece_hidden": 64,
+    "type_embed": 16,
+    "square_embed": 16,
+    "side_embed": 8,
+    "memory_size": 64,
+    "ensemble_size": 5,
+    "future_horizons": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "capture_target_weight": 0.05,
+    "residuals": 1,
+    "residual_hidden": 512
+  },
+  "config": {
+    "hidden_size": 512,
+    "latent_size": 128,
+    "head_hidden": 64,
+    "piece_hidden": 64,
+    "type_embed": 16,
+    "square_embed": 16,
+    "side_embed": 8,
+    "memory_size": 64,
+    "ensemble_size": 5,
+    "future_horizons": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "capture_target_weight": 0.05,
+    "residuals": 1,
+    "residual_hidden": 512,
+    "objective": "victory",
+    "king_safety_weight": 0.0548
+  },
+  "claudio_config": {
+    "safety_weight": 1.76,
+    "exchange_depth": 5,
+    "exchange_nodes": 69277,
+    "exchange_dynamic": false,
+    "tactic_depth": 6,
+    "tactic_top": 10,
+    "root_pvs": true,
+    "tactic_rounds": 3,
+    "tactic_nodes": 559745,
+    "shared_table": false,
+    "quiesce_promotions": true,
+    "quiesce_checks": false,
+    "check_extension": 0,
+    "leaf_weight": 0.0,
+    "reply_top": 4,
+    "reply_weight": 0.36,
+    "reply_mode": "expect",
+    "reply_depth": 2,
+    "reply_branch": 2,
+    "mate_defence": 2,
+    "mate_attack": 2,
+    "mate_gate": 0.28,
+    "mate_nodes": 9241,
+    "pawn_reach": 0,
+    "king_weight": 0.0548,
+    "scan_depth": 3,
+    "ahead_draws": true,
+    "ahead_value": 0.635,
+    "draw_ahead": -1.0,
+    "ahead_material": 0.5,
+    "critical_depth": 0,
+    "critical_gap": 0.0,
+    "critical_spread": 0.0,
+    "endgame_pieces": 0,
+    "endgame_mate": 0,
+    "endgame_depth": 0,
+    "endgame_nodes": 400000,
+    "fifty_horizon": 10,
+    "phase_values": "",
+    "phase_opening": 20,
+    "phase_ending": 12,
+    "book": "",
+    "book_weight": 0.0,
+    "book_min": 8,
+    "book_plies": 16,
+    "simplify_weight": 0.049,
+    "simplify_margin": 0.57,
+    "repeat_as_draw": true,
+    "memory": true,
+    "value_scaling": true,
+    "value_spread_ref": 0.0215,
+    "value_spread_decay": 0.98,
+    "head": "mean",
+    "temperature": 0.0,
+    "draw_value": 0.408655,
+    "pawn_weight": 0.3,
+    "pawn_convert": 0.5,
+    "pawn_v2": false,
+    "opening_book": true,
+    "opening_weight": 0.15,
+    "opening_plies": 30,
+    "opening_book_version": 2,
+    "opening_principles_version": 3,
+    "opening_v3_scale": 1.0,
+    "opening_fade": "hold",
+    "syzygy": "",
+    "pawn_version": 3
+  },
+  "options": {
+    "learned_policy": false,
+    "opening_book": false,
+    "opening_fast": false,
+    "finish_planner": false,
+    "finish_pieces": 0,
+    "finish_moves": 0,
+    "finish_nodes": 0
+  },
+  "book": {},
+  "kd_values": {
+    "1": 1.0,
+    "2": 2.1305672037676793,
+    "3": 2.7274115583819394,
+    "4": 3.981036451607642,
+    "5": 9.061081716147656
+  },
+  "king_safety_model": true,
+  "native": {
+    "native_source_sha256": "f20000396017400f9d58c3e7655e94c93cd080536c0578cdf02b686b7da65da2",
+    "context_material_sha256": "8a61795d80a48ca3b9a85e8ccac24e5e46e7290e8c1db19d6fb300fdc658a40b",
+    "v2_native_sha256": "c3b6d2e74459c268b7acf618f02777877d294cd19da7b8bd543ed07c124b4eb2",
+    "loader_sha256": "4bc7f79bf15a365b4498c84330d2c121dc13fe378eda15e836280abe9f915a6b",
+    "wasm_sha256": "48b810e5187845d803041d2a7bcbc1c24b4c3adc117d88b5bfe3fb709b0ed6be",
+    "loader": "g4-rules.mjs",
+    "wasm": "g4-rules.wasm"
+  },
+  "opening_repertoire": {
+    "file": "leto-book-v2.json",
+    "version": 2,
+    "positions": 2589,
+    "sha256": "718dc8c47ecc5dc6e90d7105404781824cca902cb284177f348186984c304391"
+  },
+  "pawn_proofs": {
+    "file": "pawn-kpk-v3.bin",
+    "bytes": 196608,
+    "sha256": "387b83763281256416c8a5103d4599401febd491c15ebd3cdac3fc598aa657c2"
+  },
+  "revision": "bc095e95431517242f3b0b7cd7b3bf00245a2655c8d0dceb9966375d7bfe834a"
+}

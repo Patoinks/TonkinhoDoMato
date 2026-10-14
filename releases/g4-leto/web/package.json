@@ -1,0 +1,13 @@
+{
+  "name": "tonkai-g4-leto",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --import tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "vite build"
+  },
+  "dependencies": { "chess.js": "1.4.0" },
+  "devDependencies": { "@types/node": "24.2.1", "tsx": "4.23.15", "typescript": "5.8.3", "vite": "7.1.2" }
+}
