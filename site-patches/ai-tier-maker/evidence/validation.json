@@ -1,0 +1,13 @@
+{
+  "siteCommit": "e7f21a0",
+  "hostingVersion": "5a447b5091cd3093",
+  "webSmoke": "passed on preview and public site; see live-smoke.json",
+  "visualReview": "desktop, mobile including lower tiers, and exported PNG inspected",
+  "preservation": "439 original live files unchanged, including model assets and application bundles",
+  "javascriptSyntax": "node --check passed for app.js and site-navigation.js",
+  "pythonSuite": {
+    "initialRun": "python -m pytest -q completed unsuccessfully with many temporary-directory permission errors in sandbox",
+    "workspaceTempRun": "50 cases ran before PermissionError WinError 5 resolving v2.pt in tests/test_cognitive_cli.py::test_next_opponent_entry_saves_v3_and_leaves_source_unchanged",
+    "unsandboxedRetry": "stopped only the own pytest process after more than 72 cases and over 139 CPU seconds; unrelated Python suite not claimed passing"
+  }
+}

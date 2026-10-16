@@ -1,0 +1,15 @@
+diff --git a/index.html b/index.html
+--- a/index.html
++++ b/index.html
+@@ -27,3 +27,4 @@
+     <title>ANW Games | SocoBate Launcher</title>
++    <script defer src="/ai-tier-maker/site-navigation.js" data-ai-tier-navigation></script>
+   </head>
+   <body>
+diff --git a/lol-draft/index.html b/lol-draft/index.html
+--- a/lol-draft/index.html
++++ b/lol-draft/index.html
+@@ -1,2 +1,2 @@
+ <!doctype html>
+-<html lang="pt"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="theme-color" content="#081210"/><meta name="description" content="Constrói uma equipa de lendas de League of Legends. Profissionais por época, draft de campeões e uma simulação tática. Joga online ou contra o bot."/><title>LoL Draft · ANW Games</title><link rel="icon" href="/favicon.ico"/></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>
++<html lang="pt"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="theme-color" content="#081210"/><meta name="description" content="Constrói uma equipa de lendas de League of Legends. Profissionais por época, draft de campeões e uma simulação tática. Joga online ou contra o bot."/><title>LoL Draft · ANW Games</title><link rel="icon" href="/favicon.ico"/><script defer src="/ai-tier-maker/site-navigation.js" data-ai-tier-navigation></script></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>

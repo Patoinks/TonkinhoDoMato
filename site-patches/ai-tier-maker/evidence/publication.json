@@ -1,0 +1,11 @@
+{
+  "source": "projects/anw-games/sites/anw-games/versions/687becc62bb24466",
+  "version": "projects/205148335972/sites/anw-games/versions/5a447b5091cd3093",
+  "release": "projects/205148335972/sites/anw-games/channels/live/releases/1792117446547000",
+  "changed": [
+    "/index.html",
+    "/lol/index.html",
+    "/tonkai/index.html"
+  ],
+  "preserved": 439
+}

@@ -1,0 +1,20 @@
+{
+  "live": false,
+  "navigationFromAllApps": true,
+  "mobileMenus": true,
+  "cards": 20,
+  "dragAndKeyboard": true,
+  "persistence": true,
+  "autoSort": true,
+  "exportPng": {
+    "width": 3200,
+    "height": 2176
+  },
+  "responsiveWidths": [
+    1024,
+    768,
+    390,
+    320
+  ],
+  "errors": []
+}

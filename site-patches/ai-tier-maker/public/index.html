@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/ai-tier-maker/">
+  <title>AI Tier Maker — Top 20 da LMArena (Text, Geral)</title>
+  <meta name="description" content="Tier list interativa com os 20 primeiros modelos do leaderboard geral de texto da LMArena. Arrasta, ordena e exporta em PNG.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="site-nav" aria-label="Navegação ANW Games">
+    <a class="site-brand" href="/">ANW GAMES</a>
+    <div class="site-links">
+      <a href="/">LAUNCHER</a><a href="/portfolio">VR SIMULATOR</a><a href="/lol/">LOL DRAFT</a><a href="/tonkai">TONKAI</a><a href="/ai-tier-maker/" aria-current="page">AI TIER MAKER</a>
+    </div>
+  </nav>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <h1>AI Tier Maker</h1>
+      <p class="subtitle">Top 20 · LMArena Text · Geral <span class="dot">•</span> arrasta os modelos para os tiers</p>
+    </div>
+    <div class="actions">
+      <label class="toggle" for="toggle-rank">
+        <input type="checkbox" id="toggle-rank" checked>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span>Posição na Arena</span>
+      </label>
+      <button class="btn ghost" id="btn-add-tier" type="button">+ Tier</button>
+      <button class="btn ghost" id="btn-auto" type="button" title="Distribui pelos tiers segundo a pontuação da Arena">Auto (Arena)</button>
+      <button class="btn ghost" id="btn-reset" type="button">Repor</button>
+      <button class="btn primary" id="btn-export" type="button">Exportar PNG</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="board" id="board" aria-label="Tiers"></section>
+
+    <section class="pool-wrap" aria-labelledby="pool-title">
+      <div class="pool-head">
+        <h2 id="pool-title">Por classificar <span class="count" id="pool-count"></span></h2>
+        <p class="hint">Dica: clica num modelo e carrega <kbd>S</kbd> <kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> <kbd>D</kbd> <kbd>F</kbd> para o mandar para esse tier, ou <kbd>Esc</kbd> para o devolver.</p>
+      </div>
+      <div class="dropzone pool" id="pool" data-zone="pool"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    Dados: captura de 16/10/2026 do leaderboard geral de texto da LMArena (métrica “Net Improvement”). Logótipos: <a href="https://github.com/lobehub/lobe-icons" target="_blank" rel="noopener">Lobe Icons</a>.
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="logos.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
