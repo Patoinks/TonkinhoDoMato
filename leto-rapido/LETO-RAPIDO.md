@@ -84,3 +84,5 @@ limitada pelo BLAS. `fast/build_var.cmd NOME "DEFINES"` compila variantes para A
 
 Perfil nativo do scan (`deep_after_moves`): ExchangeSearch 38%, DeepSearch 32%, `make` 9%, lances legais 7%.
 O Leto original continua com lances idênticos a `base-4.json`; o Leto rápido com lances idênticos a antes.
+
+Scan incremental (só recalcular o que as últimas peças mexidas tocam), medido com `scan_reuso.py` em 833 decisões: só 52% dos lances mantêm o valor dois meios-lances depois, 54% mesmo longe (>2 casas) das peças mexidas; só 254/833 posições ficam todas iguais. Reaproveitar erraria metade dos valores: não.
