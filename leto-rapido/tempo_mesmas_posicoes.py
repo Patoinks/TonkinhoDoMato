@@ -21,12 +21,13 @@ for g in games:
     moves = [chess.Move.from_uci(u) for u in g["moves"].split()]
     names = list(configs)
     for name in (names if g["game"] % 2 else names[::-1]):
-        p = Claudio(net, values, ClaudioConfig.with_settings(configs[name], base=config), rng=np.random.default_rng(1), king_model=king)
-        p._owner = 1
+        made = ClaudioConfig.with_settings(configs[name], base=config)
+        players = {c: Claudio(net, values, made, rng=np.random.default_rng(1), king_model=king) for c in (chess.WHITE, chess.BLACK)}
+        for q in players.values(): q._owner = 1     # one player per colour: the game memory only catches up
         b = chess.Board()
         for i, m in enumerate(moves):
             if i >= 6:
-                t = time.perf_counter(); picks[name].append(p.choose(b)); dt = (time.perf_counter() - t) * 1000
+                t = time.perf_counter(); picks[name].append(players[b.turn].choose(b)); dt = (time.perf_counter() - t) * 1000
                 T[name].append(dt); phase[(name, min(i // 40, 4))].append(dt)
             b.push(m)
 import statistics as st

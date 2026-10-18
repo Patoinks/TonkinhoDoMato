@@ -100,3 +100,9 @@ do PC: duas corridas separadas da mesma configuração deram 0.642 e 0.561). m03
 | **+ ambos** | **0.644** | 0.042 | **0.98** | **10.7** (-16%) |
 
 Nenhuma perde força; `--rapido` passa a incluir `shared_table=True reply_top=0`.
+
+Correção: `tempo_mesmas_posicoes.py` usava um jogador para as duas cores, e a memória do jogo recomeçava a cada
+lance (~2,6 ms a mais em todas as configurações). Com um jogador por cor: m039 antigo 10,36 ms -> **8,00 ms** (-23%).
+
+Distribuição dos 8,0 ms (`perfil_posicoes.py`, 1095 decisões): root_search 4,95 (62%), scan 1,93 (24%),
+rede candidatos 0,30, memória 0,18, segurança do rei 0,17, princípios de abertura 0,12, resto ~0,4.
