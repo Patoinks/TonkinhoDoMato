@@ -68,3 +68,19 @@ Make/unmake não foi feito: `Pos` tem ~104 bytes (copiar custa menos que desfaze
 Perfil nativo depois do PEXT: DeepSearch 42% (ordenação dos lances e `place` ~23%), ExchangeSearch 32%
 (`pseudo_captures` 8,5%), `Pos::make` 9%. Rede numpy por lote de ~54 linhas: 0,38 ms (residual 128->512->128 0,19 ms),
 limitada pelo BLAS. `fast/build_var.cmd NOME "DEFINES"` compila variantes para A/B; `perfil_rede.py` mede cada camada.
+
+## Pesquisa e scan, segunda volta (2026-10-18)
+
+| Tentativa | Tempo (mesmas posições) | Lances iguais | Força vs Stockfish 2250, 500 jogos | Decisão |
+| --- | ---: | ---: | ---: | --- |
+| m039 (referência) | 13,5 ms | - | 0,611 | - |
+| `bad_capture_pruning` + `delta_pruning` + `shared_table` | 11,3 ms (-16%) | 93% | **0,548** | rejeitada, fica desligada |
+| `shared_table=True` | -6% | 98% | não medida | - |
+| `tactic_top=6` | -6% | 96% | não medida | - |
+| `tactic_rounds=2` | 0% | 100% | - | - |
+| Scan sem linhas principais (`lines=False`) | -3% do scan | exato | = | entra |
+| Scan: aprofundamento a partir de 2 ou 3 | 0% | muda valores | - | não |
+| Capturas da quiescência por tipo de peça | 0% | exato | - | não |
+
+Perfil nativo do scan (`deep_after_moves`): ExchangeSearch 38%, DeepSearch 32%, `make` 9%, lances legais 7%.
+O Leto original continua com lances idênticos a `base-4.json`; o Leto rápido com lances idênticos a antes.

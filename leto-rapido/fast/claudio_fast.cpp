@@ -1106,6 +1106,7 @@ bool& dynamic_exchange() {
 // horizon only checkmate has a non-zero value. A window is translated through
 // the immediate material gain before searching the opponent's position.
 inline bool& delta_pruning() { static thread_local bool on = false; return on; }
+inline bool& bad_capture_pruning() { static thread_local bool on = false; return on; }
 
 struct ExchangeSearch {
     static constexpr double MATE = 1000.0;
@@ -1253,6 +1254,7 @@ struct ExchangeSearch {
         if (best > alpha) alpha = best;
         if (alpha >= beta) return best;
         const bool delta = delta_pruning() && !check;
+        const bool bad = bad_capture_pruning() && !check;
         for (size_t i = 0; i < moves.size(); ++i) {
             int m = moves[i];
             double gain = gains[2 * i];
@@ -1264,6 +1266,11 @@ struct ExchangeSearch {
                 if (gain > best) best = gain;
                 continue;
             }
+            // leto-rapido bad captures: a bigger piece takes a smaller one on a square the opponent
+            // guards, without check - it loses material at once; skipped (stand pat covers it).
+            if (bad && gain < gains[2 * i + 1] && !next.is_check() &&
+                next.attacked(next.turn, mto(m), next.occupied()))
+                continue;
             double score = gain - search(next, depth - 1, gain - beta, gain - alpha);
             if (aborted) return best;
             if (score > best) best = score;
@@ -2015,7 +2022,7 @@ public:
     // NaN and an empty line when the node budget runs out.
     std::vector<std::pair<double, std::vector<int>>> deep_after_moves(
             const std::vector<int>& codes, const std::vector<double>& values, int plies, int max_depth,
-            long long node_limit, bool exact = false) const {
+            long long node_limit, bool exact = false, bool lines = true) const {
         if (values.size() != 6 || plies < 0 || max_depth < 0 || node_limit < 0)
             throw std::invalid_argument("deep_after_moves requires six values and non-negative limits");
         std::vector<int> legal;
@@ -2034,7 +2041,10 @@ public:
             double value = 0.0;
             // Exact mode goes straight to the full depth: at small depths the
             // iterations cost more than the move ordering they buy.
-            for (int depth = exact ? plies : 1; depth <= plies && !search.q.aborted; ++depth) {
+#ifndef SCAN_START
+#define SCAN_START 1
+#endif
+            for (int depth = exact ? plies : std::min(plies, SCAN_START); depth <= plies && !search.q.aborted; ++depth) {
                 double found = search.search(after, depth, -inf, inf, 1, true);
                 if (!search.q.aborted) value = found;
             }
@@ -2042,7 +2052,8 @@ public:
                 out.push_back({std::numeric_limits<double>::quiet_NaN(), {}});
                 continue;
             }
-            out.push_back({value, search.line(after, plies)});
+            // leto-rapido: lines=false when only the values are wanted (the scan): no main line walk.
+            out.push_back({value, lines ? search.line(after, plies) : std::vector<int>{}});
         }
         return out;
     }
@@ -2141,6 +2152,7 @@ public:
     static void keep_table(bool on) { DeepSearch::cache().keep = on; }
     static void set_aggressive_prunings(bool on) { aggressive_prunings() = on; }
     static void set_delta_pruning(bool on) { delta_pruning() = on; }
+    static void set_bad_capture_pruning(bool on) { bad_capture_pruning() = on; }
     static long long take_nodes() { long long n = node_total(); node_total() = 0; return n; }
     // leto-rapido: 2^bits entries in this owner's search table (16 = the original 1.5 MB).
     static void table_bits(int bits) {
@@ -2411,7 +2423,8 @@ PYBIND11_MODULE(claudio_fast, m) {
         .def("exchange_after_moves", &Board::exchange_after_moves, py::arg("codes"), py::arg("values"),
              py::arg("max_depth"), py::arg("node_limit"))
         .def("deep_after_moves", &Board::deep_after_moves, py::arg("codes"), py::arg("values"),
-             py::arg("plies"), py::arg("max_depth"), py::arg("node_limit"), py::arg("exact") = false)
+             py::arg("plies"), py::arg("max_depth"), py::arg("node_limit"), py::arg("exact") = false,
+             py::arg("lines") = true)
         .def("forced_gain", &Board::forced_gain, py::arg("values"), py::arg("plies"), py::arg("max_depth"),
              py::arg("node_limit"))
         .def("pawnomics_v4", &Board::pawnomics_v4)
@@ -2420,6 +2433,7 @@ PYBIND11_MODULE(claudio_fast, m) {
         .def_static("aggressive_prunings", &Board::set_aggressive_prunings)
         .def_static("take_nodes", &Board::take_nodes)
         .def_static("delta_pruning", &Board::set_delta_pruning)
+        .def_static("bad_capture_pruning", &Board::set_bad_capture_pruning)
         .def_static("table_owner", &Board::table_owner)
         .def_static("keep_table", &Board::keep_table)
         .def_static("root_prunings", &Board::set_root_prunings)
