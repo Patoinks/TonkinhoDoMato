@@ -32,6 +32,6 @@ for player in (torneio._state["base"][0], torneio._state["mutant"][0]):
 import abertura
 for m in ("principle_scores", "repertoire_move", "weight_at"):
     if hasattr(abertura, m): timed(abertura, m, "abertura." + m)
-for game in range(2): torneio.play(game, 2026, 300, 6)
+for game in range(int(os.environ.get("GAMES", "2"))): torneio.play(game, 2026, 300, 6)
 total = T["_choose"]
 for k, v in T.most_common(30): print(f"{k:34s} {v:6.2f}s {v/total:6.1%} calls {N[k]:6d} {1000*v/max(1,N[k]):7.3f} ms")
