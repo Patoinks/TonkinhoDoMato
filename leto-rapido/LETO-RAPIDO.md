@@ -86,3 +86,17 @@ Perfil nativo do scan (`deep_after_moves`): ExchangeSearch 38%, DeepSearch 32%, 
 O Leto original continua com lances idênticos a `base-4.json`; o Leto rápido com lances idênticos a antes.
 
 Scan incremental (só recalcular o que as últimas peças mexidas tocam), medido com `scan_reuso.py` em 833 decisões: só 52% dos lances mantêm o valor dois meios-lances depois, 54% mesmo longe (>2 casas) das peças mexidas; só 254/833 posições ficam todas iguais. Reaproveitar erraria metade dos valores: não.
+
+## Sem respostas do adversário + tabela partilhada (`--rapido` desde 2026-10-18)
+
+`ab_stockfish.py`: as configurações jogam intercaladas no mesmo pool (o Stockfish a 2 ms muda de força com a carga
+do PC: duas corridas separadas da mesma configuração deram 0.642 e 0.561). m039 de base, 500 jogos cada:
+
+| Configuração | Score vs SF 2250 | ±95% | s/jogo | ms/lance (mesmas posições, 1 processo) |
+| --- | ---: | ---: | ---: | ---: |
+| m039 | 0.598 | 0.043 | 1.20 | 12.8 |
+| + `shared_table=True` | 0.640 | 0.042 | 1.16 | 11.9 |
+| + `reply_top=0` (sem respostas) | 0.627 | 0.042 | 1.04 | 11.4 |
+| **+ ambos** | **0.644** | 0.042 | **0.98** | **10.7** (-16%) |
+
+Nenhuma perde força; `--rapido` passa a incluir `shared_table=True reply_top=0`.
