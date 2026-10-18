@@ -30,3 +30,23 @@ Strength against v1 (fast configuration both sides, 192 games each, ±0,07):
 | score | 0,464 | 0,471 | **0,536** | 0,497 | 0,445 |
 
 Best at `pawn_weight=0.5`, level with v1 within the margin, at a fraction of the cost.
+
+## Leto rápido completo (`--rapido`)
+
+`root_prunings=True tactic_depth=7 scan_prunings=True fast_net=True pawn_v4=True pawn_weight=0.5`, with the aspiration
+window in the root search, the numpy networks (`rede_rapida.py`), native capture gains and PGO + AVX2.
+
+| | Original | Leto rápido |
+| --- | ---: | ---: |
+| Decision (ms) | 37 | ~6 |
+| root_search per decision (ms) | 27,6 | 2,6 |
+| Game, Leto vs Leto, one worker (s) | ~10 | **~1,5** |
+| Strength vs the original (192 games) | 0,50 | **0,487 ± 0,071** |
+
+Where the ~6 ms go: root_search 2,6; networks (candidates + replies) ~1,1; scan 0,95; king safety, memory,
+values, endings ~0,6; Python glue ~0,7. The search runs ~2,7 M deep nodes/s (~370 ns per node with its quiescence).
+Tried and rejected: keeping the table between moves, larger tables (2^18, 2^20: no change), deeper late-move
+reductions and adaptive null move (slower: more re-searches), 6 or 8 root candidates (no change).
+
+    python leto-rapido/torneio.py --rapido --games 48 --workers 6 --set reply_top=5
+    python leto-rapido/vs_stockfish.py --rapido --deus zeus --games 24 --movetime 0.01

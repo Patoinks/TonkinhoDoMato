@@ -1257,6 +1257,9 @@ static double material_search(const Pos& p, int plies, double alpha, double beta
 #ifndef LAZY_PICKS
 #define LAZY_PICKS 1
 #endif
+inline bool& aggressive_prunings() { static thread_local bool on = false; return on; }
+inline long long& node_total() { static thread_local long long n = 0; return n; }
+
 struct DeepSearch {
     struct Entry {                        // 24 bytes: the table fits the cache better (moves fit 16 bits)
         U64 key = 0;
@@ -1355,6 +1358,7 @@ struct DeepSearch {
     }
 
     double search(const Pos& p, int depth, double alpha, double beta, int ply, bool allow_null) {
+        ++node_total();
         if (++q.nodes > q.limit) { q.aborted = true; return 0.0; }
         if (depth <= 0) {
             int d = (dynamic && ply < 256 && dest[ply] >= 0) ? exchange_plies(p, dest[ply]) : qdepth;
@@ -1390,7 +1394,8 @@ struct DeepSearch {
             null.turn ^= 1;
             null.ep = -1;
             if (ply + 1 < 256) dest[ply + 1] = -1;
-            double score = -search(null, depth - 3, -beta, -beta + eps, ply + 1, false);
+            const int null_r = (aggressive_prunings() && depth >= 6) ? 4 : 3;   // leto-rapido: adaptive R
+            double score = -search(null, depth - null_r, -beta, -beta + eps, ply + 1, false);
             if (q.aborted) return 0.0;
             if (score >= beta) return score;
         }
@@ -1494,6 +1499,7 @@ struct DeepSearch {
             double gain = items[j].gain;
             bool quiet = gain == 0.0 && !mpromo(m);
             int reduction = (!exact && depth >= 3 && i >= 3 && quiet && !check && !next.is_check()) ? 1 : 0;
+            if (reduction && aggressive_prunings() && depth >= 5 && i >= 6) reduction = 2;   // leto-rapido
             double score;
             if (i == 0) {
                 score = gain - child(depth - 1, gain - beta, gain - alpha);
@@ -2086,6 +2092,17 @@ public:
     static bool& root_prunings() { static thread_local bool on = false; return on; }
     static void set_root_prunings(bool on) { root_prunings() = on; }
     static void keep_table(bool on) { DeepSearch::cache().keep = on; }
+    static void set_aggressive_prunings(bool on) { aggressive_prunings() = on; }
+    static long long take_nodes() { long long n = node_total(); node_total() = 0; return n; }
+    // leto-rapido: 2^bits entries in this owner's search table (16 = the original 1.5 MB).
+    static void table_bits(int bits) {
+        if (bits < 10 || bits > 24) throw std::invalid_argument("table_bits must be 10..24");
+        DeepSearch::TableCache& c = DeepSearch::cache();
+        if (c.entries.size() != (size_t(1) << bits)) {
+            c.entries.assign(size_t(1) << bits, DeepSearch::Entry{});
+            c.generation = 0;
+        }
+    }
     double pawnomics_v4(const std::vector<double>& values, bool me_white) const {
         if (values.size() != 6) throw std::invalid_argument("pawnomics_v4 requires six values");
         return pawnomics4::balance(pos, me_white ? WHITE : BLACK, values);
@@ -2351,6 +2368,9 @@ PYBIND11_MODULE(claudio_fast, m) {
              py::arg("node_limit"))
         .def("pawnomics_v4", &Board::pawnomics_v4)
         .def("pawnomics_v4_after_moves", &Board::pawnomics_v4_after_moves)
+        .def_static("table_bits", &Board::table_bits)
+        .def_static("aggressive_prunings", &Board::set_aggressive_prunings)
+        .def_static("take_nodes", &Board::take_nodes)
         .def_static("table_owner", &Board::table_owner)
         .def_static("keep_table", &Board::keep_table)
         .def_static("root_prunings", &Board::set_root_prunings)

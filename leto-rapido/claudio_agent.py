@@ -111,6 +111,8 @@ class ClaudioConfig:
     keep_table: bool = False        # leto-rapido: keep its search table from one move to the next
     fast_net: bool = False          # leto-rapido: the network in numpy (rede_rapida.py), float32-equal
     pawn_v4: bool = False           # leto-rapido: Pawnomics v4 in C++ (fast/pawnomics_v4.inc)
+    table_bits: int = 0             # leto-rapido: 2^bits search-table entries (0 = the original 2^16)
+    aggressive_prunings: bool = False  # leto-rapido: deeper late-move reductions and adaptive null move
     opening_book: bool = False      # the repertoire of opening theory (claudio/abertura.py) while it lasts
     opening_book_patch: bool = False  # sparse fallback only where V2 has no move; frozen book choices win
     opening_weight: float = 0.0     # the classic opening principles, in its first opening_plies half-moves
@@ -182,6 +184,7 @@ class Claudio:
         if getattr(self.cfg, "fast_net", False):
             import rede_rapida
             rede_rapida.acelerar(self.net)
+            rede_rapida.acelerar_king(king_model)
         # [0, pawn, knight, bishop, rook, queen] in its own measured units
         self.values = [0.0] + [float(values[kind]) for kind in range(1, 6)]
         self.base_values = list(self.values)
@@ -633,6 +636,10 @@ class Claudio:
                 self._owner = Claudio._owners
             claudio_fast.Board.table_owner(self._owner)
             claudio_fast.Board.keep_table(bool(getattr(cfg, "keep_table", False)))
+            if hasattr(claudio_fast.Board, "aggressive_prunings"):
+                claudio_fast.Board.aggressive_prunings(bool(getattr(cfg, "aggressive_prunings", False)))
+            if getattr(cfg, "table_bits", 0) and hasattr(claudio_fast.Board, "table_bits"):
+                claudio_fast.Board.table_bits(int(cfg.table_bits))
         options = (cfg.quiesce_promotions, cfg.quiesce_checks, cfg.check_extension)
         special = any(options) and hasattr(claudio_fast.Board, "search_options")
         session = cfg.shared_table and hasattr(claudio_fast.Board, "table_session")
@@ -780,7 +787,21 @@ class Claudio:
                           if cfg.pawn_convert and pawnomics.has_runners(board) else 0.0)
 
         # Material: the exact capture sequence after each move, in its own values.
-        gains = np.array([self._gain(board, move) for move in moves])
+        # leto-rapido: the capture gains and the material lead from the native board, once (same values).
+        kinds, owners = [0] * 64, [None] * 64
+        for square, kind, colour in fast.pieces():
+            kinds[square], owners[square] = kind, colour
+        gains = np.zeros(len(moves))
+        for j, code in enumerate(codes):
+            frm, to, promotion = code & 63, (code >> 6) & 63, code >> 12
+            if kinds[to]:
+                gains[j] = self.values[kinds[to]]
+            elif kinds[frm] == chess.PAWN and (frm - to) % 8:
+                gains[j] = self.values[chess.PAWN]          # en passant
+            if promotion:
+                gains[j] += self.values[promotion] - self.values[chess.PAWN]
+        material_lead = sum(self.values[kinds[s]] * (1 if owners[s] == me else -1)
+                            for s in range(64) if kinds[s] and kinds[s] != chess.KING)
         nets = None
         if cfg.safety_weight:
             try:
@@ -797,18 +818,14 @@ class Claudio:
         # A draw is worth less while it thinks it is winning (its own evaluation of the position).
         ahead = float(values.max())
         if cfg.ahead_material > 0:
-            lead = sum(self.values[p.piece_type] * (1 if p.color == me else -1)
-                       for p in board.piece_map().values() if p.piece_type != chess.KING)
-            lead += cfg.pawn_convert * root_pawns
+            lead = material_lead + cfg.pawn_convert * root_pawns
             ahead = ((1 - cfg.ahead_material) * raw_best
                      + cfg.ahead_material * (0.5 + 0.5 * math.tanh(lead / 3.0)))
         self._draw = (cfg.draw_ahead if cfg.ahead_draws and ahead >= cfg.ahead_value
                       else cfg.draw_value)
         if cfg.simplify_weight and nets is not None:
             # Ahead by its own measure of material: trading down what it does not lose brings the end closer.
-            lead = sum(self.values[p.piece_type] * (1 if p.color == me else -1)
-                       for p in board.piece_map().values() if p.piece_type != chess.KING)
-            lead += cfg.pawn_convert * root_pawns
+            lead = material_lead + cfg.pawn_convert * root_pawns
             share = min(1.0, max(0.0, (lead - cfg.simplify_margin) / 3.0))
             if share > 0:
                 trades = (gains > 0) & (nets >= -1e-9)

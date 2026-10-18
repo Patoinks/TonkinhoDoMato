@@ -125,3 +125,24 @@ def acelerar(net):
                            ("survival", survival), ("predict_logits", predict_logits), ("_rede_rapida", True)):
         object.__setattr__(net, name, function)
     return net
+
+
+def acelerar_king(model):
+    """The king-safety model (782 -> h -> h -> 1, sigmoid) in numpy, same sparse first layer."""
+    if model is None or getattr(model, "_rede_rapida", False):
+        return model
+    encoder = _Encoder(model.net.body[:-1])
+    last = model.net.body[-1]
+    w, b = _np(last.weight).T.copy(), _np(last.bias)
+
+    def ks_rows(rows):
+        x = np.asarray(rows, dtype=np.float32)
+        if x.ndim == 1:
+            x = x[None]
+        if not len(x):
+            return np.zeros(0, dtype=np.float32)
+        return _sigmoid(encoder(x) @ w + b)[:, 0].astype(np.float32, copy=False)
+
+    model.ks_rows = ks_rows
+    model._rede_rapida = True
+    return model

@@ -22,6 +22,8 @@ import paths  # noqa: E402,F401  (frozen base code first)
 
 CHECKPOINT = Path(__file__).resolve().parents[1] / "releases/g4-leto/models/g4t2-leto-v3.pt"
 _state = {}
+# The fast Leto: same strength as the original (0.487 over 192 games), ~6.7x faster per game.
+RAPIDO = ["root_prunings=True", "tactic_depth=7", "scan_prunings=True", "fast_net=True", "pawn_v4=True", "pawn_weight=0.5"]
 
 
 def _init(checkpoint, base_settings, mutant_settings, profile, deus=None, window=None):
@@ -102,8 +104,12 @@ def main():
     parser.add_argument("--profile", action="store_true", help="record seconds per decision section")
     parser.add_argument("--deus", help="the mutant plays as this Pantheon personality (personalidades.py)")
     parser.add_argument("--window", type=float, help="personality strength: score window (default 0.06)")
+    parser.add_argument("--rapido", action="store_true", help="the fast Leto (RAPIDO settings) for every player")
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
+    if args.rapido:
+        args.set = RAPIDO + list(args.set)
+        args.base_set = RAPIDO + list(args.base_set)
     started = time.perf_counter()
     with ProcessPoolExecutor(args.workers, mp_context=get_context("spawn"), initializer=_init,
                              initargs=(str(args.checkpoint), args.base_set, args.set, args.profile, args.deus, args.window)) as pool:
