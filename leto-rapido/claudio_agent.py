@@ -106,6 +106,7 @@ class ClaudioConfig:
                                     # (simplifying, "thinks it is winning")
     pawn_v2: bool = False           # Pawnomics v2: pieces that get in front within two moves; protected, connected
                                     # passed pawns and rooks behind them
+    root_prunings: bool = False     # leto-rapido: null move and reductions in the root search (not exact)
     opening_book: bool = False      # the repertoire of opening theory (claudio/abertura.py) while it lasts
     opening_book_patch: bool = False  # sparse fallback only where V2 has no move; frozen book choices win
     opening_weight: float = 0.0     # the classic opening principles, in its first opening_plies half-moves
@@ -357,12 +358,18 @@ class Claudio:
         rest[top] = False
         floor = float(scores[rest].max()) if rest.any() else -math.inf
         base = [float(scores[i]) - w * math.tanh(nets[i] / 3.0) for i in top]
+        prune = getattr(cfg, "root_prunings", False) and hasattr(claudio_fast.Board, "root_prunings")
+        if prune:
+            claudio_fast.Board.root_prunings(True)
         try:
             _, best_score, losses, status = self.fast.root_search(
                 [codes[i] for i in top], base, [float(gains[i]) for i in top], w, floor, self.values,
                 self._depth, cfg.exchange_depth, cfg.tactic_nodes)
         except RuntimeError:
             return
+        finally:
+            if prune:
+                claudio_fast.Board.root_prunings(False)
         beaten = []
         for j, index in enumerate(top):
             if status[j] == 1:

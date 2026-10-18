@@ -1991,7 +1991,9 @@ public:
         const double inf = std::numeric_limits<double>::infinity();
         const double nan = std::numeric_limits<double>::quiet_NaN();
         const double eps = 1e-9;
-        DeepSearch search(values, node_limit, max_depth, true);   // one table for every candidate
+        // Exact by default; Board.root_prunings(True) lets the root search use the null move and late move
+        // reductions (faster, no longer the exact full-width value).
+        DeepSearch search(values, node_limit, max_depth, !root_prunings());   // one table for every candidate
         int best = -1;
         double best_score = floor;
         std::vector<double> losses(codes.size(), nan);
@@ -2042,6 +2044,8 @@ public:
         search_options() = SearchOptions{promotions, quiet_checks, std::max(0, extensions)};
     }
     static void set_dynamic_exchange(bool on) { dynamic_exchange() = on; }
+    static bool& root_prunings() { static thread_local bool on = false; return on; }
+    static void set_root_prunings(bool on) { root_prunings() = on; }
     static void table_session(bool on) {
         DeepSearch::TableCache& cache = DeepSearch::cache();
         if (on) cache.session_generation = cache.next();
@@ -2288,6 +2292,7 @@ PYBIND11_MODULE(claudio_fast, m) {
              py::arg("plies"), py::arg("max_depth"), py::arg("node_limit"), py::arg("exact") = false)
         .def("forced_gain", &Board::forced_gain, py::arg("values"), py::arg("plies"), py::arg("max_depth"),
              py::arg("node_limit"))
+        .def_static("root_prunings", &Board::set_root_prunings)
         .def("root_search", &Board::root_search, py::arg("codes"), py::arg("base"), py::arg("gains"),
              py::arg("weight"), py::arg("floor"), py::arg("values"), py::arg("plies"), py::arg("max_depth"),
              py::arg("node_limit"))
