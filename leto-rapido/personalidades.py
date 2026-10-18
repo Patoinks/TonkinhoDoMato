@@ -190,7 +190,7 @@ class Personality:
 PERSONALITIES = {
     "nezha": {"development": 1.0, "advance": 0.6, "threats": 0.6, "retreat": -1.0, "check": 0.3},
     "loki": {"quiet": 0.8, "threats": 1.0, "king_zone": 0.3, "capture": -0.6},
-    "wukong": {"knight": 1.0, "outpost": 1.2, "advance": 0.3, "retreat": -0.4},
+    "wukong": {"outpost": 1.2, "threats": 0.5, "knight": 0.3, "retreat": -0.4},
     "susanoo": {"pawn_break": 1.2, "pawn_push": 0.4, "capture": 0.4, "king_zone": 0.4},
     "tsukuyomi": {"restrict": 0.08, "quiet": 0.6, "coordination": 0.3, "advance": -0.2},
     "anubis": {"trade_ahead": 1.5, "capture": 0.6, "coordination": 0.3, "check": -0.3},
@@ -201,8 +201,14 @@ PERSONALITIES = {
 }
 
 
+# Measured against neutral Leto (24 games each, 2026-10-18): 0.06 kept Susanoo, Anubis, Ra, Hades, Zeus
+# and Tsukuyomi level; Nezha, Loki and Amaterasu lost strength at 0.06 and held at 0.03; Wukong lost
+# even at 0.03 with knight moves for their own sake, so its signals were changed and its window lowered.
+WINDOWS = {"nezha": 0.03, "loki": 0.03, "amaterasu": 0.03, "wukong": 0.02}
+
+
 def make(name, window=None):
-    personality = Personality(name, PERSONALITIES[name])
+    personality = Personality(name, PERSONALITIES[name], WINDOWS.get(name, 0.06))
     if window is not None:
         personality.window = window
     repertoire(name)                 # load and validate the lines now
