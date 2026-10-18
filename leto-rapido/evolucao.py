@@ -149,6 +149,21 @@ def estimate(samples, lam=3.0):
     return {c: float(beta[index[c]]) for c in cols}
 
 
+def fit_time(records, lam=1.0):
+    """Ridge regression of log(time / t0467) on the (setting, direction) features: (intercept, effects)."""
+    import numpy as np
+    cols = sorted({f for r in records for f in r["features"]})
+    index = {c: i for i, c in enumerate(cols)}
+    X = np.zeros((len(records), len(cols) + 1))
+    y = np.array([r["logr"] for r in records])
+    for k, r in enumerate(records):
+        for f in r["features"]:
+            X[k, index[f]] = 1.0
+        X[k, -1] = 1.0
+    beta = np.linalg.solve(X.T @ X + np.diag([lam] * len(cols) + [1e-6]), X.T @ y)
+    return float(beta[-1]), {c: float(beta[index[c]]) for c in cols}
+
+
 def survival(timed):
     """(name, direction) -> share of the mutants with it that passed the time trial (Laplace: 1 of 2 to start)."""
     seen, alive = {}, {}
@@ -261,15 +276,43 @@ def main():
     context = get_context("spawn")
     with ProcessPoolExecutor(args.workers, mp_context=context, initializer=M._init,
                              initargs=(args.elo, args.movetime)) as pool:
+        if not state.get("time_records"):
+            # the time map: every setting and direction alone, twice, timed on the three games
+            mrng = np.random.default_rng([args.seed, 99])
+            singles = {}
+            for name in SPACE:
+                for d in DIRS:
+                    for k in range(2):
+                        sets = {}
+                        if mutate_one(mrng, name, d, sets, base, values):
+                            singles[f"s_{name}{d}{k}"] = sets
+            print(f"mapa de tempo: {len(singles)} mutações sozinhas", flush=True)
+            state["time_records"] = []
+            for future in as_completed([pool.submit(TT.trial, (i, [f"{k}={v}" for k, v in s.items()], trial_games))
+                                        for i, s in singles.items()]):
+                r = future.result()
+                if math.isfinite(r["ratio"]) and r["ratio"] > 0:
+                    state["time_records"].append({"features": [f"{n}{d}" for n, d in features(singles[r["id"]], base, values)],
+                                                  "logr": math.log(r["ratio"]), "id": r["id"]})
+            state_file.write_text(json.dumps(state, indent=1), encoding="utf-8")
+            t0, t_eff = fit_time(state["time_records"])
+            slow = sorted(t_eff.items(), key=lambda kv: -kv[1])
+            report.append("\n## Mapa de tempo (cada mutação sozinha, 3 jogos de posições)\n\n"
+                          + ", ".join(f"{k[:-1]}{'↑' if k[-1] == '+' else '↓'} {math.exp(v + t0):.2f}x" for k, v in slow) + "\n")
+            (args.dir / "RESULTADO.md").write_text("".join(report), encoding="utf-8")
+            print(report[-1], flush=True)
         while state["generation"] < args.generations:
             gen = state["generation"]
             rng = np.random.default_rng([args.seed, gen])     # the same mutants if a generation is run again
             started = time.perf_counter()
             effects = {tuple([k[:-1], k[-1]]): v for k, v in estimate(samples).items()} if samples else {}
-            keys, p = sampler(effects, args.temperature, survival(timed + run_timed))
+            keys, p = sampler(effects, args.temperature)
+            t0, t_eff = fit_time(state["time_records"])
+            predict = lambda feats: t0 + sum(t_eff.get(f, 0.0) for f in feats)
             # mutants of the parents
-            mutants = {}
-            while len(mutants) < args.population:
+            mutants, attempts = {}, 0
+            while len(mutants) < args.population and attempts < 200 * args.population:
+                attempts += 1
                 parent = state["parents"][int(rng.integers(len(state["parents"])))]
                 sets = dict(parent)
                 made = 0
@@ -278,7 +321,8 @@ def main():
                         break
                     name, d = keys[int(rng.choice(len(keys), p=p))]
                     made += mutate_one(rng, name, d, sets, base, values)
-                if made:
+                # not sent to the time trial when the time map predicts it slower than t0467
+                if made and predict([f"{n}{d}" for n, d in features(sets, base, values)]) <= 0.0:
                     mutants[f"g{gen}m{len(mutants):03d}"] = sets
             # time trial: slower than the champion t0467 dies
             trials = {}
@@ -288,6 +332,9 @@ def main():
                 trials[r["id"]] = r
             alive = {i: s for i, s in mutants.items() if trials[i]["ratio"] <= 1.0}
             run_timed += [([f"{n}{d}" for n, d in features(s, base, values)], trials[i]["ratio"] <= 1.0) for i, s in mutants.items()]
+            state["time_records"] += [{"features": [f"{n}{d}" for n, d in features(s, base, values)],
+                                       "logr": math.log(trials[i]["ratio"])} for i, s in mutants.items()
+                                      if math.isfinite(trials[i]["ratio"]) and trials[i]["ratio"] > 0]
             champion = {"campeao": dict(state["champion"])}
             # bo for everyone, the champion as reference
             s1 = run_games(pool, {**alive, **champion}, first, gen, 1, args.seed, log, done)
