@@ -2028,9 +2028,11 @@ public:
             Pos after = pos;
             after.make(codes[i]);
             double r = (best_score - base[i]) / weight;
+            double bound = inf;                                  // the null window proved loss < bound
             if (std::isfinite(best_score) && r > -1.0) {
                 // It beats the best only if L < T.
                 double T = gains[i] - 3.0 * std::atanh(std::min(r, 1.0 - 1e-15));
+                bound = T;
                 search.q.nodes = 0;
                 search.q.aborted = false;
                 double v = search.search(after, plies, T - eps, T, 1, true);
@@ -2039,7 +2041,21 @@ public:
             }
             search.q.nodes = 0;
             search.q.aborted = false;
-            double loss = search.search(after, plies, -inf, inf, 1, true);
+            double loss;
+            if (root_prunings() && std::isfinite(bound)) {
+                // leto-rapido: an aspiration window below the bound the null-window search just proved
+                // (loss < bound), widened only on a fail-low, instead of a full window.
+                double width = 0.5, high = bound, low = bound - width;
+                for (;;) {
+                    loss = search.search(after, plies, low, high, 1, true);
+                    if (search.q.aborted || loss > low || !std::isfinite(low)) break;
+                    high = low + eps;
+                    width *= 4.0;
+                    low = width > 64.0 ? -inf : low - width;
+                }
+            } else {
+                loss = search.search(after, plies, -inf, inf, 1, true);
+            }
             if (search.q.aborted) { status[i] = 3; continue; }
             losses[i] = loss;
             status[i] = 1;

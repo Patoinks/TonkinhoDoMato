@@ -1,7 +1,7 @@
 """Time per function inside a decision (pruned depth-7 Leto), two games, one process."""
 import os; os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
 import sys, time, collections
-settings = ["root_prunings=True", "tactic_depth=7"] + sys.argv[1:]
+settings = ["root_prunings=True", "tactic_depth=7", "scan_prunings=True", "fast_net=True", "pawn_v4=True", "pawn_weight=0.5"] + sys.argv[1:]
 sys.argv = ["torneio.py"]
 import torneio
 torneio._init(str(torneio.CHECKPOINT), settings, settings, False)
