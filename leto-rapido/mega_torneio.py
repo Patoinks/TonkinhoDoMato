@@ -28,7 +28,10 @@ CHECKPOINT = HERE.parent / "releases/g4-leto/models/g4t2-leto-v3.pt"
 STOCKFISH = HERE.parent / "engines-local/stockfish-11-win/Windows/stockfish_20011801_x64_bmi2.exe"
 RAPIDO = ["syzygy=", "root_prunings=True", "tactic_depth=6", "scan_prunings=True", "fast_net=True",
           "pawn_v4=True", "pawn_weight=0.5", "shared_table=True", "reply_top=0", "fast_core=True",
-          "delta_pruning=True", "scan_keep=20"]
+          "delta_pruning=True", "scan_keep=12",
+          # champion t0467 (torneio_tempo.py, 2026-10-18): m039 with its five mutations
+          "opening_weight=0.08524", "draw_value=0.5594", "simplify_margin=0.411", "ahead_draws=False",
+          "value_scaling=True", "reply_weight=0.2404", "safety_weight=3.416", "fifty_horizon=28"]
 STAGES = [(256, 20), (64, 50), (32, 100), (2, 500)]   # (entrants, games each)
 
 # name: ("float", low, high) | ("int", low, high) | ("bool",) | ("values",)

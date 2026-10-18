@@ -20,8 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import mega_torneio as M  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-M039 = ["safety_weight=4.739", "opening_weight=0.08524", "draw_value=0.5594", "simplify_margin=0.411",
-        "ahead_draws=False", "value_scaling=False", "reply_weight=0.2936"]
+M039 = []   # the champion (t0467, m039 before it) is part of RAPIDO now
 STAGES = [(1024, 3), (256, 10), (64, 30), (16, 100), (2, 500)]
 POSITIONS = HERE.parent / "mega-torneio/m039-vs-leto-rapido.json"
 

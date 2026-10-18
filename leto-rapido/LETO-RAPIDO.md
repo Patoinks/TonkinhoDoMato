@@ -157,3 +157,10 @@ Diferenças de arredondamento float32 (~2e-5). `LETO_REDE_NATIVA=0` volta à ver
 | vs Stockfish 2250 (pools simultâneos, 500 jogos) | 0,516 | 0,551 |
 
 clang `-march=znver4`: não instalado (o instalador do LLVM pede UAC e não foi possível confirmar): saltado.
+
+## Campeão no `--rapido`: t0467 (2026-10-18)
+
+`--rapido` passa a incluir o campeão do torneio com prova de tempo (m039 + cinco mutações): `safety_weight=3.416
+value_scaling=True reply_weight=0.2404 fifty_horizon=28 scan_keep=12`, com `opening_weight=0.08524 draw_value=0.5594
+simplify_margin=0.411 ahead_draws=False` do m039. Final: 0,596 vs 0,570 da base (500 jogos), ~5% mais rápido.
+Já não é preciso passar o m039 com `--set`.

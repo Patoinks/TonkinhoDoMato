@@ -26,7 +26,10 @@ _state = {}
 # The fast Leto: same strength as the original (0.487 over 192 games), ~6.7x faster per game.
 RAPIDO = ["root_prunings=True", "tactic_depth=6", "scan_prunings=True", "fast_net=True", "pawn_v4=True", "pawn_weight=0.5",
           "shared_table=True", "reply_top=0", "fast_core=True",
-          "delta_pruning=True", "scan_keep=20"]   # one table per decision; no reply module (ab_stockfish.py, 500 games)
+          "delta_pruning=True", "scan_keep=12",
+          # champion t0467 (torneio_tempo.py, 2026-10-18): m039 with its five mutations
+          "opening_weight=0.08524", "draw_value=0.5594", "simplify_margin=0.411", "ahead_draws=False",
+          "value_scaling=True", "reply_weight=0.2404", "safety_weight=3.416", "fifty_horizon=28"]   # one table per decision; no reply module (ab_stockfish.py, 500 games)
 
 
 class UCI:
