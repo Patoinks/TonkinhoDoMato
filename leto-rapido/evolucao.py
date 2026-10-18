@@ -237,10 +237,11 @@ def main():
     mid_n, mid_g = (int(x) for x in mid.split("x"))
     fin_n, fin_g = (int(x) for x in final.split("x"))
     base, values = load_base()
-    rng = np.random.default_rng(args.seed)
+    rng = None
     recorded = json.loads(TT.POSITIONS.read_text(encoding="utf-8"))["games"]
-    trial_games = [g["moves"].split() for g in recorded[:1]]
-    long_games = [g["moves"].split() for g in recorded[1:4]]
+    # three games of positions (~450): one game let slow mutants through (a check extension seldom fires there)
+    trial_games = [g["moves"].split() for g in recorded[:3]]
+    long_games = [g["moves"].split() for g in recorded[3:6]]
     samples, timed = prior_samples(values)
     state_file = args.dir / "estado.json"
     state = json.loads(state_file.read_text(encoding="utf-8")) if state_file.exists() else {
@@ -253,7 +254,7 @@ def main():
         for line in log.read_text(encoding="utf-8").splitlines():
             if line.strip():
                 r = json.loads(line)
-                if r["end"] != "error":
+                if r["end"] != "error" and r["stage"] < 100 * state["generation"]:
                     done[(r["stage"], r["id"], r["game"])] = r
     report = [(args.dir / "RESULTADO.md").read_text(encoding="utf-8")] if (args.dir / "RESULTADO.md").exists() else [
         f"# Torneio de gerações vs Stockfish {args.elo} ({args.movetime * 1000:g} ms), partida do t0467\n"]
@@ -262,6 +263,7 @@ def main():
                              initargs=(args.elo, args.movetime)) as pool:
         while state["generation"] < args.generations:
             gen = state["generation"]
+            rng = np.random.default_rng([args.seed, gen])     # the same mutants if a generation is run again
             started = time.perf_counter()
             effects = {tuple([k[:-1], k[-1]]): v for k, v in estimate(samples).items()} if samples else {}
             keys, p = sampler(effects, args.temperature, survival(timed + run_timed))
@@ -298,12 +300,19 @@ def main():
             ranked2 = sorted(best, key=lambda i: s2[i][0], reverse=True)
             finalists = {i: alive[i] for i in ranked2[:fin_n]}
             s3 = run_games(pool, {**finalists, **champion}, fin_g, gen, 3, args.seed, log, done)
-            top = max(finalists, key=lambda i: s3[i][0]) if finalists else None
-            replaced = top is not None and s3[top][0] >= s3["campeao"][0] + args.margin
-            if replaced:                     # crowned only if it is still not slower on three games of positions
-                check = pool.submit(TT.trial, (top, [f"{k}={v}" for k, v in finalists[top].items()], long_games)).result()
-                trials[top]["ratio_check"] = check["ratio"]
-                replaced = check["ratio"] <= 1.0
+            # crowned: the best finalist that beats the champion by the margin and is still not slower on three
+            # games of positions (the first trial is one game: a borderline mutant can pass it by noise)
+            top, replaced = None, False
+            for i in sorted(finalists, key=lambda i: s3[i][0], reverse=True):
+                if s3[i][0] < s3["campeao"][0] + args.margin:
+                    break
+                check = pool.submit(TT.trial, (i, [f"{k}={v}" for k, v in finalists[i].items()], long_games)).result()
+                trials[i]["ratio_check"] = check["ratio"]
+                if check["ratio"] <= 1.0:
+                    top, replaced = i, True
+                    break
+            if top is None and finalists:
+                top = max(finalists, key=lambda i: s3[i][0])
             if replaced:
                 state["champion"], state["champion_id"] = dict(finalists[top]), top
             state["parents"] = [dict(state["champion"])] + [dict(finalists[i]) for i in sorted(
@@ -319,7 +328,7 @@ def main():
                 + "".join(f"| {i} | {s3[i][0]:.3f} | {1.96 * math.sqrt(max(s3[i][0] * (1 - s3[i][0]), .05) / max(1, s3[i][1])):.3f} | "
                           f"{trials[i]['ratio']:.2f} | {' '.join(f'{k}={v}' for k, v in finalists[i].items())} |\n"
                           for i in sorted(finalists, key=lambda i: s3[i][0], reverse=True))
-                + f"| campeão ({state['champion_id'] if not replaced else 'antigo'}) | {s3['campeao'][0]:.3f} | | 1.00 | "
+                + f"| campeão ({'antigo' if replaced else state['champion_id']}) | {s3['campeao'][0]:.3f} | | 1.00 | "
                   f"{' '.join(f'{k}={v}' for k, v in champion['campeao'].items()) or '(t0467)'} |\n\n"
                 + (f"**Novo campeão: {top}** (+{s3[top][0] - s3['campeao'][0]:.3f}).\n\n" if replaced else "Campeão mantém-se.\n\n")
                 + "Tendências agora — boas: " + ", ".join(map(fmt, good)) + "; más: " + ", ".join(map(fmt, bad)) + ".\n")
