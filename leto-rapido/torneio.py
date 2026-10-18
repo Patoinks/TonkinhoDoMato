@@ -8,6 +8,8 @@ move for move, and the seconds per game, the measure being optimized.
     python leto-rapido/torneio.py --games 20 --workers 6 --set ...
 """
 import argparse
+import os
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")   # one BLAS thread per worker (rede_rapida)
 from concurrent.futures import ProcessPoolExecutor
 import json
 from multiprocessing import get_context

@@ -23,19 +23,48 @@ STOCKFISH = HERE.parent / "engines-local/stockfish-11-win/Windows/stockfish_2001
 _state = {}
 
 
-def _init(deus, elo, movetime):
-    import chess.engine
+class UCI:
+    """A minimal blocking UCI client: no threads, no asyncio (python-chess's engine hung in pool workers)."""
+
+    def __init__(self, path, elo):
+        import subprocess
+        self.proc = subprocess.Popen([str(path)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                     stderr=subprocess.DEVNULL, text=True, bufsize=1)
+        self.send("uci"); self.wait("uciok")
+        for name, value in (("Threads", 1), ("UCI_LimitStrength", "true"), ("UCI_Elo", elo)):
+            self.send(f"setoption name {name} value {value}")
+        self.send("isready"); self.wait("readyok")
+
+    def send(self, line):
+        self.proc.stdin.write(line + "\n")
+        self.proc.stdin.flush()
+
+    def wait(self, token):
+        while True:
+            line = self.proc.stdout.readline()
+            if not line:
+                raise RuntimeError("engine closed")
+            if line.startswith(token):
+                return line
+
+    def play(self, board, movetime):
+        import chess
+        moves = " ".join(m.uci() for m in board.move_stack)
+        self.send(f"position startpos moves {moves}" if moves else "position startpos")
+        self.send(f"go movetime {max(1, int(movetime * 1000))}")
+        return chess.Move.from_uci(self.wait("bestmove").split()[1])
+
+
+def _init(deus, elo, movetime, settings=()):
     import torch
     torch.set_num_threads(1)
     from claudio_load import load_players
-    engine = chess.engine.SimpleEngine.popen_uci(str(STOCKFISH))
-    engine.configure({"Threads": 1, "UCI_LimitStrength": True, "UCI_Elo": elo})
-    _state.update(players=load_players(CHECKPOINT, ["syzygy="]), deus=deus, engine=engine, movetime=movetime)
+    engine = UCI(STOCKFISH, elo)
+    _state.update(players=load_players(CHECKPOINT, ["syzygy="] + list(settings)), deus=deus, engine=engine, movetime=movetime)
 
 
 def play(game, seed, max_plies):
     import chess
-    import chess.engine
     import numpy as np
     from claudio_load import make_player
     leto = make_player(_state["players"], np.random.default_rng([seed, game, 1]))
@@ -49,7 +78,7 @@ def play(game, seed, max_plies):
         if (board.turn == chess.WHITE) == leto_white:
             move = leto.choose(board)
         else:
-            move = _state["engine"].play(board, chess.engine.Limit(time=_state["movetime"])).move
+            move = _state["engine"].play(board, _state["movetime"])
         board.push(move)
     outcome = board.outcome(claim_draw=True)
     if outcome is None or outcome.winner is None:
@@ -70,14 +99,15 @@ def main():
     parser.add_argument("--movetime", type=float, default=1.0)
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument("--max-plies", type=int, default=300)
+    parser.add_argument("--set", action="append", default=[], help="Leto setting name=value")
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
     with ProcessPoolExecutor(args.workers, mp_context=get_context("spawn"), initializer=_init,
-                             initargs=(args.deus, args.elo, args.movetime)) as pool:
+                             initargs=(args.deus, args.elo, args.movetime, args.set)) as pool:
         games = list(pool.map(play, range(args.games), [args.seed] * args.games, [args.max_plies] * args.games))
     wins = sum(g["score"] == 1 for g in games)
     draws = sum(g["score"] == 0.5 for g in games)
-    summary = {"who": args.deus or "leto", "elo": args.elo, "movetime": args.movetime, "games": len(games),
+    summary = {"who": args.deus or "leto", "set": args.set, "elo": args.elo, "movetime": args.movetime, "games": len(games),
                "wins": wins, "draws": draws, "losses": len(games) - wins - draws,
                "score": sum(g["score"] for g in games) / len(games),
                "white_score": sum(g["score"] for g in games if g["leto_white"]) / max(1, sum(g["leto_white"] for g in games)),

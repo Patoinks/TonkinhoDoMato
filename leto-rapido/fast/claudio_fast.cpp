@@ -1,3 +1,5 @@
+#include <unordered_map>
+#include <cstring>
 // tonkai_fast - the V3 agent's hand-written chess rules, in C++.
 //
 // Every function here is a line-by-line port of a Python reference and must
@@ -1271,7 +1273,16 @@ struct DeepSearch {
         // position is not searched again from scratch for each candidate of one decision.
         bool session = false;
         std::uint16_t session_generation = 0;
-        std::uint16_t open() { return session ? session_generation : next(); }
+        // leto-rapido: keep the table from one search to the next (and across moves) while the piece
+        // values, the exchange depth and the search mode stay the same.
+        bool keep = false;
+        U64 signature = 0;
+        std::uint16_t open(U64 sig) {
+            if (session) return session_generation;
+            if (keep && sig == signature && generation != 0) return generation;
+            signature = sig;
+            return next();
+        }
         std::uint16_t next() {
             if (++generation == 0) {
                 std::fill(entries.begin(), entries.end(), Entry{});
@@ -1280,9 +1291,11 @@ struct DeepSearch {
             return generation;
         }
     };
+    // One table per owner (Board.table_owner): two players in one process never share calculations.
+    static int& owner() { static thread_local int id = 0; return id; }
     static TableCache& cache() {
-        static thread_local TableCache storage;
-        return storage;
+        static thread_local std::unordered_map<int, TableCache> storage;
+        return storage[owner()];
     }
     enum { EXACT = 0, LOWER = 1, UPPER = 2 };
     ExchangeSearch q;
@@ -1317,7 +1330,7 @@ struct DeepSearch {
     }
 
     DeepSearch(const std::vector<double>& values, long long limit, int qdepth_, bool exact_ = false)
-        : q(values, limit), qdepth(qdepth_), table(cache().entries), generation(cache().open()), exact(exact_),
+        : q(values, limit), qdepth(qdepth_), table(cache().entries), generation(cache().open(signature_of(values, qdepth_, exact_))), exact(exact_),
           lazy(std::all_of(values.begin(), values.end(), [](double v) { return std::isfinite(v); })),
           extensions_left(search_options().extensions) {
         dynamic = dynamic_exchange();
@@ -1327,6 +1340,14 @@ struct DeepSearch {
         q.top = qdepth;
     }
 
+    static U64 signature_of(const std::vector<double>& values, int qdepth, bool exact) {
+        U64 h = 1469598103934665603ULL;
+        auto mix = [&](U64 v) { h = (h ^ v) * 1099511628211ULL; h ^= h >> 29; };
+        for (double v : values) { U64 bits; std::memcpy(&bits, &v, sizeof bits); mix(bits); }
+        mix(U64(qdepth)); mix(U64(exact)); mix(U64(dynamic_exchange())); mix(U64(search_options().extensions));
+        mix(U64(search_options().promotions)); mix(U64(search_options().quiet_checks));
+        return h;
+    }
     Entry& slot(U64 key) { return table[key & (table.size() - 1)]; }
 
     static bool has_pieces(const Pos& p) {   // null move is unsafe with king and pawns only
@@ -2046,6 +2067,8 @@ public:
     static void set_dynamic_exchange(bool on) { dynamic_exchange() = on; }
     static bool& root_prunings() { static thread_local bool on = false; return on; }
     static void set_root_prunings(bool on) { root_prunings() = on; }
+    static void keep_table(bool on) { DeepSearch::cache().keep = on; }
+    static void table_owner(int id) { DeepSearch::owner() = id; }
     static void table_session(bool on) {
         DeepSearch::TableCache& cache = DeepSearch::cache();
         if (on) cache.session_generation = cache.next();
@@ -2292,6 +2315,8 @@ PYBIND11_MODULE(claudio_fast, m) {
              py::arg("plies"), py::arg("max_depth"), py::arg("node_limit"), py::arg("exact") = false)
         .def("forced_gain", &Board::forced_gain, py::arg("values"), py::arg("plies"), py::arg("max_depth"),
              py::arg("node_limit"))
+        .def_static("table_owner", &Board::table_owner)
+        .def_static("keep_table", &Board::keep_table)
         .def_static("root_prunings", &Board::set_root_prunings)
         .def("root_search", &Board::root_search, py::arg("codes"), py::arg("base"), py::arg("gains"),
              py::arg("weight"), py::arg("floor"), py::arg("values"), py::arg("plies"), py::arg("max_depth"),

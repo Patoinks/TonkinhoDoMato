@@ -107,6 +107,9 @@ class ClaudioConfig:
     pawn_v2: bool = False           # Pawnomics v2: pieces that get in front within two moves; protected, connected
                                     # passed pawns and rooks behind them
     root_prunings: bool = False     # leto-rapido: null move and reductions in the root search (not exact)
+    scan_prunings: bool = False     # leto-rapido: the same prunings in the scan of every move
+    keep_table: bool = False        # leto-rapido: keep its search table from one move to the next
+    fast_net: bool = False          # leto-rapido: the network in numpy (rede_rapida.py), float32-equal
     opening_book: bool = False      # the repertoire of opening theory (claudio/abertura.py) while it lasts
     opening_book_patch: bool = False  # sparse fallback only where V2 has no move; frozen book choices win
     opening_weight: float = 0.0     # the classic opening principles, in its first opening_plies half-moves
@@ -175,6 +178,9 @@ class Claudio:
     def __init__(self, net, values, cfg: ClaudioConfig | None = None, rng=None, king_model=None):
         self.net = net.eval().requires_grad_(False)
         self.cfg = cfg or ClaudioConfig()
+        if getattr(self.cfg, "fast_net", False):
+            import rede_rapida
+            rede_rapida.acelerar(self.net)
         # [0, pawn, knight, bishop, rook, queen] in its own measured units
         self.values = [0.0] + [float(values[kind]) for kind in range(1, 6)]
         self.base_values = list(self.values)
@@ -292,7 +298,8 @@ class Claudio:
         cfg = self.cfg
         try:
             deep = gains - np.array([loss for loss, _ in fast.deep_after_moves(
-                codes, self.values, cfg.scan_depth, cfg.exchange_depth, cfg.tactic_nodes, True)])
+                codes, self.values, cfg.scan_depth, cfg.exchange_depth, cfg.tactic_nodes,
+                not getattr(cfg, "scan_prunings", False))])
         except RuntimeError:
             return
         found = ~np.isnan(deep)
@@ -614,8 +621,17 @@ class Claudio:
         finally:
             claudio_fast.Board.dynamic_exchange(False)
 
+    _owners = 0
+
     def _choose_with_options(self, board: chess.Board) -> chess.Move:
         cfg = self.cfg
+        if hasattr(claudio_fast.Board, "table_owner"):
+            # leto-rapido: this player's own search table; kept across its moves with keep_table.
+            if not hasattr(self, "_owner"):
+                Claudio._owners += 1
+                self._owner = Claudio._owners
+            claudio_fast.Board.table_owner(self._owner)
+            claudio_fast.Board.keep_table(bool(getattr(cfg, "keep_table", False)))
         options = (cfg.quiesce_promotions, cfg.quiesce_checks, cfg.check_extension)
         special = any(options) and hasattr(claudio_fast.Board, "search_options")
         session = cfg.shared_table and hasattr(claudio_fast.Board, "table_session")
