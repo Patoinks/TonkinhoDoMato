@@ -1,0 +1,6 @@
+*.pyd
+*.pdb
+*.pgd
+*.pgc
+build/
+__pycache__/
