@@ -1070,6 +1070,8 @@ bool& dynamic_exchange() {
 // Capture-only negamax. In check, every legal evasion is searched; at the
 // horizon only checkmate has a non-zero value. A window is translated through
 // the immediate material gain before searching the opponent's position.
+inline bool& delta_pruning() { static thread_local bool on = false; return on; }
+
 struct ExchangeSearch {
     static constexpr double MATE = 1000.0;
     const std::vector<double>& values;
@@ -1212,11 +1214,18 @@ struct ExchangeSearch {
         double best = check ? -std::numeric_limits<double>::infinity() : 0.0;
         if (best > alpha) alpha = best;
         if (alpha >= beta) return best;
+        const bool delta = delta_pruning() && !check;
         for (size_t i = 0; i < moves.size(); ++i) {
             int m = moves[i];
             double gain = gains[2 * i];
             Pos next = p;
             next.make(m);
+            // leto-rapido delta pruning: a capture that gives no check is worth at most its gain (the
+            // opponent may stand pat), so with gain <= alpha it cannot raise alpha; its bound is kept.
+            if (delta && gain <= alpha && !next.is_check()) {
+                if (gain > best) best = gain;
+                continue;
+            }
             double score = gain - search(next, depth - 1, gain - beta, gain - alpha);
             if (aborted) return best;
             if (score > best) best = score;
@@ -2093,6 +2102,7 @@ public:
     static void set_root_prunings(bool on) { root_prunings() = on; }
     static void keep_table(bool on) { DeepSearch::cache().keep = on; }
     static void set_aggressive_prunings(bool on) { aggressive_prunings() = on; }
+    static void set_delta_pruning(bool on) { delta_pruning() = on; }
     static long long take_nodes() { long long n = node_total(); node_total() = 0; return n; }
     // leto-rapido: 2^bits entries in this owner's search table (16 = the original 1.5 MB).
     static void table_bits(int bits) {
@@ -2371,6 +2381,7 @@ PYBIND11_MODULE(claudio_fast, m) {
         .def_static("table_bits", &Board::table_bits)
         .def_static("aggressive_prunings", &Board::set_aggressive_prunings)
         .def_static("take_nodes", &Board::take_nodes)
+        .def_static("delta_pruning", &Board::set_delta_pruning)
         .def_static("table_owner", &Board::table_owner)
         .def_static("keep_table", &Board::keep_table)
         .def_static("root_prunings", &Board::set_root_prunings)
