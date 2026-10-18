@@ -1,11 +1,10 @@
 """Super mega ultra torneio de mutações: G4 Leto mutants against Stockfish 11 at a fixed Elo.
 
-256 entrants (the fast Leto itself, unmutated, plus 255 heavy mutants) play bo20 against Stockfish; the best
+256 heavy mutants of the fast Leto play bo20 against Stockfish; the best
 64 play bo50, the best 32 bo100, the best 2 bo500. Every stage is fresh games: a stage ranks by its own
-score (ties by the earlier stages), so a lucky first round does not carry. The unmutated Leto plays every
-stage as the reference, also once it is out of the bracket.
+score (ties by the earlier stages), so a lucky first round does not carry.
 
-Each mutant changes 5-10 settings by a lot (piece values included). Results go to --dir as one JSON line per
+Each mutant changes 5-10 judgement settings by a lot (piece values included), none of its thinking time. Results go to --dir as one JSON line per
 game; a restarted run skips the games already there.
 
     python leto-rapido/mega_torneio.py --workers 11
@@ -31,22 +30,15 @@ RAPIDO = ["syzygy=", "root_prunings=True", "tactic_depth=7", "scan_prunings=True
           "pawn_v4=True", "pawn_weight=0.5"]
 STAGES = [(256, 20), (64, 50), (32, 100), (2, 500)]   # (entrants, games each)
 
-# name: ("float", low, high) | ("int", low, high) | ("bool",) | ("choice", options) | a group (below)
+# name: ("float", low, high) | ("int", low, high) | ("bool",) | ("values",)
+# Only what changes how Leto judges, never how much it calculates: depths, node budgets, reply and scan
+# counts, extensions and the critical/endgame modes stay the fast Leto's, so every mutant thinks as long.
 SPACE = {
-    "safety_weight": ("float", 0.1, 6.0), "reply_weight": ("float", 0.0, 1.0), "mate_gate": ("float", 0.0, 1.0),
-    "king_weight": ("float", 0.0, 0.5), "ahead_value": ("float", 0.5, 0.9), "ahead_material": ("float", 0.0, 1.0),
-    "simplify_weight": ("float", 0.0, 0.5), "simplify_margin": ("float", 0.0, 3.0), "draw_value": ("float", 0.2, 0.6),
-    "pawn_weight": ("float", 0.0, 2.0), "pawn_convert": ("float", 0.0, 1.0), "opening_weight": ("float", 0.0, 0.6),
-    "leaf_weight": ("float", 0.0, 0.5),
-    "exchange_depth": ("int", 2, 8), "tactic_depth": ("int", 4, 9), "tactic_top": ("int", 3, 16),
-    "tactic_rounds": ("int", 1, 6), "tactic_nodes": ("int", 100_000, 2_500_000), "reply_top": ("int", 0, 8),
-    "reply_branch": ("int", 1, 4), "reply_depth": ("int", 2, 3), "mate_defence": ("int", 1, 3),
-    "mate_attack": ("int", 1, 4), "scan_depth": ("int", 0, 5), "check_extension": ("int", 0, 2),
-    "fifty_horizon": ("int", 0, 30), "opening_plies": ("int", 10, 40),
-    "reply_mode": ("choice", ["min", "expect"]),
-    "quiesce_promotions": ("bool",), "quiesce_checks": ("bool",), "ahead_draws": ("bool",),
-    "repeat_as_draw": ("bool",), "value_scaling": ("bool",), "opening_book": ("bool",), "exchange_dynamic": ("bool",),
-    "piece_values": ("values",), "critical": ("critical",), "endgame": ("endgame",),
+    "safety_weight": ("float", 0.1, 6.0), "reply_weight": ("float", 0.0, 1.0), "king_weight": ("float", 0.0, 0.5),
+    "ahead_value": ("float", 0.5, 0.9), "ahead_material": ("float", 0.0, 1.0), "simplify_weight": ("float", 0.0, 0.5),
+    "simplify_margin": ("float", 0.0, 3.0), "draw_value": ("float", 0.2, 0.6), "pawn_weight": ("float", 0.0, 2.0),
+    "pawn_convert": ("float", 0.0, 1.0), "opening_weight": ("float", 0.0, 0.6), "fifty_horizon": ("int", 0, 30),
+    "ahead_draws": ("bool",), "repeat_as_draw": ("bool",), "value_scaling": ("bool",), "piece_values": ("values",),
 }
 
 
@@ -96,7 +88,7 @@ def entrants(seed, count):
     _, values, config, _ = load_claudio(str(CHECKPOINT), with_config=True)
     base = asdict(ClaudioConfig.with_settings(RAPIDO, base=config))
     rng = np.random.default_rng([seed, 4242])
-    out = [{"id": "leto", "settings": []}]
+    out = []
     while len(out) < count:
         out.append({"id": f"m{len(out):03d}", "settings": mutate(rng, base, values)})
     return out
@@ -191,7 +183,7 @@ def main():
                              initargs=(args.elo, args.movetime)) as pool:
         for stage, (count, games) in enumerate(stages):
             alive = alive[:count]
-            players = alive + ([] if "leto" in alive else ["leto"])
+            players = list(alive)
             tasks = [(stage, i, pool_of[i]["settings"], g, args.seed + 1000 * stage, args.max_plies)
                      for g in range(games) for i in players if (stage, i, g) not in done]
             started, finished, total = time.perf_counter(), 0, len(tasks)
@@ -222,16 +214,16 @@ def main():
                           "| # | id | score | ±95% | V/E/D | s/jogo | ms/lance | mutações |\n"
                           "| ---: | --- | ---: | ---: | --- | ---: | ---: | --- |\n")
             shown = alive[:max(stages[stage + 1][0] if stage + 1 < len(stages) else count, 2)]
-            for rank, i in enumerate(alive + ([] if "leto" in alive else ["leto"]), 1):
-                if i not in shown and i != "leto":
+            for rank, i in enumerate(alive, 1):
+                if i not in shown:
                     continue
                 rs = rows[i]
                 s = history[i][-1][0]
                 w = sum(r["score"] == 1 for r in rs); d = sum(r["score"] == 0.5 for r in rs)
-                report.append(f"| {rank if i in alive else '-'} | {i} | {s:.3f} | {interval(s, games):.3f} | "
+                report.append(f"| {rank} | {i} | {s:.3f} | {interval(s, games):.3f} | "
                               f"{w}/{d}/{len(rs) - w - d} | {sum(r['seconds'] for r in rs) / len(rs):.2f} | "
                               f"{sum(r.get('leto_ms', 0) for r in rs) / len(rs):.1f} | "
-                              f"{' '.join(pool_of[i]['settings']) or '(Leto original)'} |\n")
+                              f"{' '.join(pool_of[i]['settings'])} |\n")
             (args.dir / "RESULTADO.md").write_text("".join(report), encoding="utf-8")
             print("".join(report[-1:]), flush=True)
 
