@@ -1,3 +1,4 @@
+#include <immintrin.h>
 #include <unordered_map>
 #include <cstring>
 // tonkai_fast - the V3 agent's hand-written chess rules, in C++.
@@ -131,12 +132,46 @@ HOT U64 ray_attacks(int d, int s, U64 occupied) {
     if (blockers) r ^= T.ray[d][d < 4 ? lsb(blockers) : msb(blockers)];
     return r;
 }
-HOT U64 rook_attacks(int s, U64 occ) {
+HOT U64 rook_attacks_rays(int s, U64 occ) {
     return ray_attacks(0, s, occ) | ray_attacks(1, s, occ) | ray_attacks(4, s, occ) | ray_attacks(5, s, occ);
 }
-HOT U64 bishop_attacks(int s, U64 occ) {
+HOT U64 bishop_attacks_rays(int s, U64 occ) {
     return ray_attacks(2, s, occ) | ray_attacks(3, s, occ) | ray_attacks(6, s, occ) | ray_attacks(7, s, occ);
 }
+#ifdef CLAUDIO_PEXT
+// leto-rapido: PEXT bitboards (BMI2). The attack set of a slider on s is one table entry, indexed by the
+// occupied squares of its relevant rays (edges excluded) packed with PEXT: the same set as the rays above.
+struct Sliders {
+    U64 rmask[64], bmask[64];
+    unsigned roff[64], boff[64];
+    std::vector<U64> rook, bishop;
+    Sliders() {
+        const U64 edges_rank = 0xFF000000000000FFULL, edges_file = 0x8181818181818181ULL;
+        unsigned rt = 0, bt = 0;
+        for (int s = 0; s < 64; ++s) {
+            U64 f = T.ray[0][s] & ~0xFF00000000000000ULL, b = T.ray[4][s] & ~0xFFULL;
+            U64 e = T.ray[1][s] & ~0x8080808080808080ULL, w = T.ray[5][s] & ~0x0101010101010101ULL;
+            rmask[s] = f | b | e | w;
+            bmask[s] = (T.ray[2][s] | T.ray[3][s] | T.ray[6][s] | T.ray[7][s]) & ~(edges_rank | edges_file);
+            roff[s] = rt; rt += 1u << popcnt(rmask[s]);
+            boff[s] = bt; bt += 1u << popcnt(bmask[s]);
+        }
+        rook.assign(rt, 0); bishop.assign(bt, 0);
+        for (int s = 0; s < 64; ++s) {
+            for (U64 i = 0, n = U64(1) << popcnt(rmask[s]); i < n; ++i)
+                rook[roff[s] + i] = rook_attacks_rays(s, _pdep_u64(i, rmask[s]));
+            for (U64 i = 0, n = U64(1) << popcnt(bmask[s]); i < n; ++i)
+                bishop[boff[s] + i] = bishop_attacks_rays(s, _pdep_u64(i, bmask[s]));
+        }
+    }
+};
+const Sliders S;
+HOT U64 rook_attacks(int s, U64 occ) { return S.rook[S.roff[s] + _pext_u64(occ, S.rmask[s])]; }
+HOT U64 bishop_attacks(int s, U64 occ) { return S.bishop[S.boff[s] + _pext_u64(occ, S.bmask[s])]; }
+#else
+HOT U64 rook_attacks(int s, U64 occ) { return rook_attacks_rays(s, occ); }
+HOT U64 bishop_attacks(int s, U64 occ) { return bishop_attacks_rays(s, occ); }
+#endif
 
 // Move: from | to << 6 | promotion piece type << 12.
 inline int mv(int from, int to, int promo = 0) { return from | (to << 6) | (promo << 12); }

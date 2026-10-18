@@ -15,6 +15,8 @@ if arch:
     if arch != "AVX2" or sys.platform != "win32":
         raise ValueError("CLAUDIO_NATIVE_ARCH supports only AVX2 with Windows/MSVC")
     compile_args.append("/arch:AVX2")
+    if not os.environ.get("CLAUDIO_NO_PEXT"):
+        compile_args.append("/DCLAUDIO_PEXT")   # BMI2 PEXT slider tables (every AVX2 CPU here has BMI2)
 
 link_args = []
 # Profile-guided optimization (MSVC): "gen" builds an instrumented module, a few games train it,
