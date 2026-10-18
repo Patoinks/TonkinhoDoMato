@@ -114,6 +114,20 @@ def play(task):
     from claudio_agent import Claudio, ClaudioConfig
     from fim_rapido import Judge
     stage, ident, settings, game, seed, max_plies = task
+    for attempt in range(3):                  # Stockfish's pipe broke: a new engine, the game again
+        row = _game(stage, ident, settings, game, seed, max_plies)
+        if row["end"] != "error" or not row["error"].startswith(("OSError", "RuntimeError: engine closed", "BrokenPipe")):
+            return row
+        from vs_stockfish import UCI
+        _state["engine"] = UCI(STOCKFISH, _state["elo"])
+    return row
+
+
+def _game(stage, ident, settings, game, seed, max_plies):
+    import chess
+    import numpy as np
+    from claudio_agent import Claudio, ClaudioConfig
+    from fim_rapido import Judge
     row = {"stage": stage, "id": ident, "game": game, "leto_white": game % 2 == 0}
     started = time.perf_counter()
     board = chess.Board()
@@ -143,9 +157,6 @@ def play(task):
                    leto_ms=1000 * think / max(1, (len(board.move_stack) + (not row["leto_white"])) // 2))
     except Exception as error:                  # a broken mutant loses the game
         row.update(score=0.0, end="error", error=f"{type(error).__name__}: {error}"[:300])
-        if "engine closed" in str(error):
-            from vs_stockfish import UCI
-            _state["engine"] = UCI(STOCKFISH, _state["elo"])
     row.update(plies=len(board.move_stack), seconds=time.perf_counter() - started,
                moves=" ".join(m.uci() for m in board.move_stack))
     return row
@@ -175,7 +186,8 @@ def main():
         for line in log.read_text(encoding="utf-8").splitlines():
             if line.strip():
                 r = json.loads(line)
-                done[(r["stage"], r["id"], r["game"])] = r
+                if r["end"] != "error":        # an error game is played again (e.g. a worker stopped mid-run)
+                    done[(r["stage"], r["id"], r["game"])] = r
     alive = list(pool_of)
     history = {i: [] for i in pool_of}           # every stage's (score, games)
     report = [f"# Mega torneio de mutações vs Stockfish {args.elo} ({args.movetime * 1000:g} ms)\n"]
