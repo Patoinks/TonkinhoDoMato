@@ -56,3 +56,15 @@
 | ---: | --- | ---: | ---: | --- | ---: | ---: | --- |
 | 1 | m039 | 0.624 | 0.042 | 244/136/120 | 1.19 | 18.8 | safety_weight=4.739 opening_weight=0.08524 draw_value=0.5594 simplify_margin=0.411 ahead_draws=False value_scaling=False reply_weight=0.2936 |
 | 2 | m054 | 0.615 | 0.043 | 253/109/138 | 1.29 | 18.4 | king_weight=0.2233 simplify_margin=0.1523 ahead_material=0.8676 pawn_weight=0.3039 safety_weight=3.941 opening_weight=0.3011 reply_weight=0.624 draw_value=0.2655 ahead_value=0.5 |
+
+## Comparação com o Leto rápido sem mutações
+
+| Jogo | Jogos | Score | ±95% | V/E/D | s/jogo |
+| --- | ---: | ---: | ---: | --- | ---: |
+| Leto rápido vs Stockfish 2250 (2 ms) | 500 | 0.568 | 0.043 | 237/94/169 | 1.25 |
+| m039 vs Stockfish 2250 (2 ms), final | 500 | 0.624 | 0.042 | 244/136/120 | 1.19 |
+| m054 vs Stockfish 2250 (2 ms), final | 500 | 0.615 | 0.043 | 253/109/138 | 1.29 |
+| m039 vs Leto rápido (`torneio.py --rapido`) | 50 | 0.540 | 0.138 | 19/16/15 | 2.37 |
+
+m039 vs Stockfish: +0.056 sobre o Leto rápido (~1.9 desvios; os jogos da final são novos, sem a sorte das fases anteriores).
+Contra o Leto rápido, bo50 não chega para decidir (0.54 ± 0.14).
