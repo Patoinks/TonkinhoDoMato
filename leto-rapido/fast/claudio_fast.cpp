@@ -1539,6 +1539,8 @@ struct DeepSearch {
     }
 };
 
+#include "pawnomics_v4.inc"
+
 // ------------------------------------------------------------------ board
 
 class Board {
@@ -2068,6 +2070,22 @@ public:
     static bool& root_prunings() { static thread_local bool on = false; return on; }
     static void set_root_prunings(bool on) { root_prunings() = on; }
     static void keep_table(bool on) { DeepSearch::cache().keep = on; }
+    double pawnomics_v4(const std::vector<double>& values, bool me_white) const {
+        if (values.size() != 6) throw std::invalid_argument("pawnomics_v4 requires six values");
+        return pawnomics4::balance(pos, me_white ? WHITE : BLACK, values);
+    }
+    std::vector<double> pawnomics_v4_after_moves(const std::vector<int>& codes, const std::vector<double>& values,
+                                                 bool me_white) const {
+        if (values.size() != 6) throw std::invalid_argument("pawnomics_v4 requires six values");
+        std::vector<double> out;
+        out.reserve(codes.size());
+        for (int m : codes) {
+            Pos after = pos;
+            after.make(m);
+            out.push_back(pawnomics4::balance(after, me_white ? WHITE : BLACK, values));
+        }
+        return out;
+    }
     static void table_owner(int id) { DeepSearch::owner() = id; }
     static void table_session(bool on) {
         DeepSearch::TableCache& cache = DeepSearch::cache();
@@ -2315,6 +2333,8 @@ PYBIND11_MODULE(claudio_fast, m) {
              py::arg("plies"), py::arg("max_depth"), py::arg("node_limit"), py::arg("exact") = false)
         .def("forced_gain", &Board::forced_gain, py::arg("values"), py::arg("plies"), py::arg("max_depth"),
              py::arg("node_limit"))
+        .def("pawnomics_v4", &Board::pawnomics_v4)
+        .def("pawnomics_v4_after_moves", &Board::pawnomics_v4_after_moves)
         .def_static("table_owner", &Board::table_owner)
         .def_static("keep_table", &Board::keep_table)
         .def_static("root_prunings", &Board::set_root_prunings)

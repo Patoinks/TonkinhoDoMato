@@ -13,3 +13,20 @@ Medido em 2026-10-18 no Ryzen 5 7500F, um worker, contra o G4 Leto original (`to
 Recomendado: `--set root_prunings=True --set tactic_depth=7` (força igual dentro da margem de 48 jogos, ~3x mais rápido).
 O módulo C++ por omissão continua exato: sem estas definições o Leto joga exatamente como o original.
 Compilação: `fast/build_pgo_*.cmd` (PGO + AVX2, x1,12 com lances idênticos).
+
+## Pawnomics v4 (`pawn_v4=True`, `fast/pawnomics_v4.inc`)
+
+Every pawn in C++, in Leto's own piece values: passed pawns by how likely and how soon they queen (each square of the
+path: free, contested, lost by the exact exchange, or blocked; the king race with the tempo; own king, rook behind,
+protected and connected passers; the enemy material left), and the structure of all pawns (doubled, isolated,
+backward, phalanx/protected, candidate passers). v1 only looked at pawns with no enemy pawn in front on their file.
+
+Speed: all candidates of a decision in 0,005 ms (v1: 2,5 ms; ~490x).
+
+Strength against v1 (fast configuration both sides, 192 games each, ±0,07):
+
+| pawn_weight with v4 | 0,15 | 0,3 | **0,5** | 0,8 | 1,2 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| score | 0,464 | 0,471 | **0,536** | 0,497 | 0,445 |
+
+Best at `pawn_weight=0.5`, level with v1 within the margin, at a fraction of the cost.

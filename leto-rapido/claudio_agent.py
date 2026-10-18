@@ -110,6 +110,7 @@ class ClaudioConfig:
     scan_prunings: bool = False     # leto-rapido: the same prunings in the scan of every move
     keep_table: bool = False        # leto-rapido: keep its search table from one move to the next
     fast_net: bool = False          # leto-rapido: the network in numpy (rede_rapida.py), float32-equal
+    pawn_v4: bool = False           # leto-rapido: Pawnomics v4 in C++ (fast/pawnomics_v4.inc)
     opening_book: bool = False      # the repertoire of opening theory (claudio/abertura.py) while it lasts
     opening_book_patch: bool = False  # sparse fallback only where V2 has no move; frozen book choices win
     opening_weight: float = 0.0     # the classic opening principles, in its first opening_plies half-moves
@@ -757,18 +758,26 @@ class Claudio:
                                                                       cfg.opening_transition_plies)
             scores += share * np.array(abertura_v4.scores(board, moves, board.ply(), cfg.opening_v4_scale,
                                                         cfg.opening_v4_plan_scale))
+        v4 = getattr(cfg, "pawn_v4", False) and hasattr(fast, "pawnomics_v4_after_moves")
         if cfg.pawn_weight:
-            after_board = board.copy(stack=False)
-            balances = np.zeros(len(moves))
-            for index, move in enumerate(moves):
-                after_board.push(move)
-                if pawnomics.has_runners(after_board):
-                    balances[index] = pawnomics.balance(after_board, me, self.values, cfg.pawn_v2)
-                after_board.pop()
+            if v4:
+                # Pawnomics v4 (fast/pawnomics_v4.inc): every pawn and the structure, one native call.
+                balances = np.asarray(fast.pawnomics_v4_after_moves(codes, self.values, me), dtype=np.float64)
+            else:
+                after_board = board.copy(stack=False)
+                balances = np.zeros(len(moves))
+                for index, move in enumerate(moves):
+                    after_board.push(move)
+                    if pawnomics.has_runners(after_board):
+                        balances[index] = pawnomics.balance(after_board, me, self.values, cfg.pawn_v2)
+                    after_board.pop()
             scores += cfg.pawn_weight * np.tanh(balances / 4.0)
             self._lap("pawnomics")
-        root_pawns = (pawnomics.balance(board, me, self.values, cfg.pawn_v2)
-                      if cfg.pawn_convert and pawnomics.has_runners(board) else 0.0)
+        if v4:
+            root_pawns = fast.pawnomics_v4(self.values, me) if cfg.pawn_convert else 0.0
+        else:
+            root_pawns = (pawnomics.balance(board, me, self.values, cfg.pawn_v2)
+                          if cfg.pawn_convert and pawnomics.has_runners(board) else 0.0)
 
         # Material: the exact capture sequence after each move, in its own values.
         gains = np.array([self._gain(board, move) for move in moves])
