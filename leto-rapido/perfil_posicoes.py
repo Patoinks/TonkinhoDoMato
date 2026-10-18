@@ -11,8 +11,7 @@ import torneio, claudio_fast, abertura, rede_rapida
 import claudio_agent as A
 from claudio_load import load_claudio
 from tonkai import fast_rules
-M039 = ["safety_weight=4.739", "opening_weight=0.08524", "draw_value=0.5594", "simplify_margin=0.411",
-        "ahead_draws=False", "value_scaling=False", "reply_weight=0.2936"]
+M039 = []   # the champion (t0467) is part of torneio.RAPIDO now
 net, values, config, _, king = load_claudio(str(torneio.CHECKPOINT), with_config=True, with_king=True)
 cfg = A.ClaudioConfig.with_settings(["syzygy="] + torneio.RAPIDO + M039 + sys.argv[3:], base=config)
 T, N = collections.Counter(), collections.Counter()

@@ -87,3 +87,19 @@
 | opening_weight | ↑ | 75 | -0.049 | 0.019 |
 | piece_values | ↓ | 61 | -0.059 | 0.018 |
 | safety_weight | ↓ | 45 | -0.149 | 0.026 |
+
+## Teste direto das tendências boas (A/B intercalado vs Stockfish 2250, contra o t0467)
+
+| Variante | volta 1 (500) | volta 2 (1000) | média (1500) | ms/lance |
+| --- | ---: | ---: | ---: | ---: |
+| **t0467** | 0,568 | 0,643 | **0,618** | 7,3 / 8,8 |
+| `exchange_depth=6` | 0,599 | 0,622 | 0,614 | 7,0 / 8,4 |
+| `exchange_depth=7` | 0,582 | - | - | 7,3 |
+| `scan_keep=0` (scan completo) | 0,606 | 0,631 | 0,623 | 7,8 / 9,2 |
+| `exchange_depth=6` + `scan_keep=0` | - | 0,620 | - | 9,0 |
+| `opening_weight=0.03` | 0,536 | - | - | 7,4 |
+| 7 + 0,03 + scan completo | 0,597 | - | - | 7,6 |
+| `check_extension=1` | 0,631 | 0,655 | **0,647** | 9,1 / 11,3 (+28%) |
+
+Nenhuma bate o t0467 de forma clara: os ganhos da volta 1 eram ruído (±0,043). O único consistente é
+`check_extension=1` (+0,029 em 1500 jogos, ~1,6 desvios), mas pensa 28% mais tempo. Fica o t0467.

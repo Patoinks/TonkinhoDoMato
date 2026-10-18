@@ -7,8 +7,7 @@ torch.set_num_threads(1)
 from claudio_load import load_claudio
 from claudio_agent import Claudio, ClaudioConfig
 import torneio
-M039 = ["safety_weight=4.739", "opening_weight=0.08524", "draw_value=0.5594", "simplify_margin=0.411",
-        "ahead_draws=False", "value_scaling=False", "reply_weight=0.2936"]
+M039 = []   # the champion (t0467) is part of torneio.RAPIDO now
 net, values, config, _, king = load_claudio(str(torneio.CHECKPOINT), with_config=True, with_king=True)
 # extra configurations: name=setting,setting (on top of m039), e.g. partilha=shared_table=True
 configs = {"leto": ["syzygy="] + torneio.RAPIDO, "m039": ["syzygy="] + torneio.RAPIDO + M039}
