@@ -9,6 +9,8 @@ openings apply), colours alternate. Score is Leto's: win 1, draw 0.5, loss 0.
 import argparse
 from concurrent.futures import ProcessPoolExecutor
 import json
+import os
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")   # one BLAS thread per worker (rede_rapida)
 from multiprocessing import get_context
 from pathlib import Path
 import sys
