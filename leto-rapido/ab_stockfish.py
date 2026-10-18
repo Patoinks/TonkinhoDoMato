@@ -23,6 +23,7 @@ def main():
     parser.add_argument("--elo", type=int, default=2250)
     parser.add_argument("--movetime", type=float, default=0.002)
     parser.add_argument("--seed", type=int, default=99)
+    parser.add_argument("--pin", action="store_true", help="each worker on its own core (see mega_torneio._pin)")
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
     configs = {}
@@ -31,8 +32,9 @@ def main():
         configs[name] = [s for s in sets.split(",") if s]
     tasks = [(0, name, sets, g, args.seed, 300) for g in range(args.games) for name, sets in configs.items()]
     rows = []
-    with ProcessPoolExecutor(args.workers, mp_context=get_context("spawn"), initializer=M._init,
-                             initargs=(args.elo, args.movetime)) as pool:
+    context = get_context("spawn")
+    initargs = (args.elo, args.movetime) + ((context.Value("i", 0), args.workers) if args.pin else ())
+    with ProcessPoolExecutor(args.workers, mp_context=context, initializer=M._init, initargs=initargs) as pool:
         for future in as_completed([pool.submit(M.play, t) for t in tasks]):
             rows.append(future.result())
     print("| configuração | jogos | score | ±95% | V/E/D | s/jogo | ms/lance | erros |")

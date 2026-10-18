@@ -116,6 +116,7 @@ class ClaudioConfig:
     delta_pruning: bool = False     # leto-rapido: skip captures that cannot raise alpha in the exchange search
     bad_capture_pruning: bool = False  # leto-rapido: skip a bigger piece taking a smaller guarded one there
     fast_core: bool = False         # leto-rapido: the fast search core (Zobrist keys, stack move lists, countermoves)
+    scan_keep: int = 0              # leto-rapido: >0, the scan is exact only for moves that can be among the best n
     opening_book: bool = False      # the repertoire of opening theory (claudio/abertura.py) while it lasts
     opening_book_patch: bool = False  # sparse fallback only where V2 has no move; frozen book choices win
     opening_weight: float = 0.0     # the classic opening principles, in its first opening_plies half-moves
@@ -264,13 +265,13 @@ class Claudio:
             gain += self.values[move.promotion] - self.values[chess.PAWN]
         return gain
 
-    def _deep_lines(self, codes):
+    def _deep_lines(self, codes, exact=True, lines=True):
         """What the opponent wins by force after each move (tactic_depth half-moves, NaN if aborted),
-        and the main line after each move (empty when aborted)."""
+        and the main line after each move (empty when aborted or not asked for)."""
         cfg = self.cfg
         try:
             found = self.fast.deep_after_moves(codes, self.values, self._depth, cfg.exchange_depth,
-                                               cfg.tactic_nodes, True)
+                                               cfg.tactic_nodes, exact, lines)
             return [loss for loss, _ in found], [line for _, line in found]
         except RuntimeError:
             return [float("nan")] * len(codes), [[] for _ in codes]
@@ -303,6 +304,27 @@ class Claudio:
         - a discovered attack, a fork, an undefended piece that cannot get away - is seen, not only the
         capture sequence. nets and scores are updated in place."""
         cfg = self.cfg
+        keep = int(getattr(cfg, "scan_keep", 0))
+        if keep > 0 and hasattr(fast, "scan_window"):
+            # leto-rapido: only the moves that can still be among the best `keep` are scanned exactly
+            order = np.argsort(-scores, kind="stable")
+            try:
+                found, status = fast.scan_window(
+                    [codes[i] for i in order], self.values, cfg.scan_depth, cfg.exchange_depth, cfg.tactic_nodes,
+                    not getattr(cfg, "scan_prunings", False), [float(scores[i]) for i in order],
+                    [float(gains[i]) for i in order], [float(nets[i]) for i in order], cfg.safety_weight, keep)
+            except RuntimeError:
+                return
+            w = cfg.safety_weight
+            for j, index in enumerate(order):
+                if status[j] in (1, 2):                 # exact, or a bound that keeps it out of the best
+                    deep = gains[index] - found[j]
+                    scores[index] += w * (math.tanh(deep / 3.0) - math.tanh(nets[index] / 3.0))
+                    nets[index] = deep
+                elif status[j] == 0:                    # cannot get in even winning everything
+                    scores[index] += w * (1.0 - math.tanh(nets[index] / 3.0))
+                    nets[index] = gains[index] + 3.0 * 20.0
+            return
         try:
             deep = gains - np.array([loss for loss, _ in fast.deep_after_moves(
                 codes, self.values, cfg.scan_depth, cfg.exchange_depth, cfg.tactic_nodes,
@@ -937,7 +959,9 @@ class Claudio:
                 continue
             if not known[best] and nets is not None and self._depth > 0 and rounds < cfg.tactic_rounds:
                 rounds += 1
-                losses, lines = self._deep_lines([code])
+                # leto-rapido: with root_prunings the intended move is checked like the root (prunings, no line)
+                pruned = bool(getattr(cfg, "root_prunings", False))
+                losses, lines = self._deep_lines([code], exact=not pruned, lines=not pruned or bool(cfg.leaf_weight))
                 self._recount(best, losses[0], gains, nets, scores)
                 if cfg.leaf_weight:
                     self._leaf([best], codes, lines, scores)

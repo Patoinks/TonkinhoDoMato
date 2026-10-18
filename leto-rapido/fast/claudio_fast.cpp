@@ -1326,8 +1326,18 @@ struct DeepSearch {
         std::uint16_t generation = 0;     // wraps sooner than before: the table is then cleared, as before
         std::uint8_t flag = 0;
     };
+    // leto-rapido fast core: 16-byte entries, so 2^16 of them fit the 1 MB L2 of a Zen 4 core. The search's
+    // generation is folded into the stored key (key ^ salt) instead of a field of its own.
+    struct Entry16 {
+        U64 key = 0;
+        float value = 0.0f;
+        std::uint16_t move = 0;
+        std::int8_t depth = -1;
+        std::uint8_t flag = 0;
+    };
     struct TableCache {
         std::vector<Entry> entries = std::vector<Entry>(size_t(1) << 16);
+        std::vector<Entry16> entries16 = std::vector<Entry16>(size_t(1) << 16);
         std::uint16_t generation = 0;
         // A session (Board.table_session): every search until it ends shares one table - the same
         // position is not searched again from scratch for each candidate of one decision.
@@ -1346,6 +1356,7 @@ struct DeepSearch {
         std::uint16_t next() {
             if (++generation == 0) {
                 std::fill(entries.begin(), entries.end(), Entry{});
+                std::fill(entries16.begin(), entries16.end(), Entry16{});
                 generation = 1;
             }
             return generation;
@@ -1362,6 +1373,8 @@ struct DeepSearch {
     int qdepth;
     std::vector<Entry>& table;
     const std::uint16_t generation;
+    std::vector<Entry16>& table16;
+    const U64 salt;
     int killers[128][2] = {};
     int history[2][64][64] = {};
     struct Item {                                 // a move with its order rank and material gain
@@ -1390,7 +1403,8 @@ struct DeepSearch {
     }
 
     DeepSearch(const std::vector<double>& values, long long limit, int qdepth_, bool exact_ = false)
-        : q(values, limit), qdepth(qdepth_), table(cache().entries), generation(cache().open(signature_of(values, qdepth_, exact_))), exact(exact_),
+        : q(values, limit), qdepth(qdepth_), table(cache().entries), generation(cache().open(signature_of(values, qdepth_, exact_))),
+          table16(cache().entries16), salt(U64(generation) * 0x9E3779B97F4A7C15ULL), exact(exact_),
           lazy(std::all_of(values.begin(), values.end(), [](double v) { return std::isfinite(v); })),
           extensions_left(search_options().extensions) {
         dynamic = dynamic_exchange();
@@ -1409,6 +1423,7 @@ struct DeepSearch {
         return h;
     }
     Entry& slot(U64 key) { return table[key & (table.size() - 1)]; }
+    Entry16& slot16(U64 key) { return table16[key & (table16.size() - 1)]; }
 
     static bool has_pieces(const Pos& p) {   // null move is unsafe with king and pawns only
         return (p.occ[p.turn] & (p.bb[KNIGHT] | p.bb[BISHOP] | p.bb[ROOK] | p.bb[QUEEN])) != 0;
@@ -1592,13 +1607,22 @@ struct DeepSearch {
         std::vector<int> out;
         std::vector<int> legal;
         for (int i = 0; i < max_len; ++i) {
-            const U64 key = fast_core() ? z_full(p) : key_of(p).hash();
-            Entry& e = slot(key);
-            if (e.generation != generation || e.key != key || !e.move) break;
+            int move = 0;
+            if (fast_core()) {
+                const U64 key = z_full(p);
+                Entry16& e = slot16(key);
+                if (e.key != (key ^ salt) || !e.move) break;
+                move = e.move;
+            } else {
+                const U64 key = key_of(p).hash();
+                Entry& e = slot(key);
+                if (e.generation != generation || e.key != key || !e.move) break;
+                move = e.move;
+            }
             p.legal_moves(legal);
-            if (std::find(legal.begin(), legal.end(), e.move) == legal.end()) break;
-            out.push_back(e.move);
-            p.make(e.move);
+            if (std::find(legal.begin(), legal.end(), move) == legal.end()) break;
+            out.push_back(move);
+            p.make(move);
         }
         return out;
     }
@@ -2050,7 +2074,9 @@ public:
 #ifndef SCAN_START
 #define SCAN_START 1
 #endif
-            for (int depth = exact ? plies : std::min(plies, SCAN_START); depth <= plies && !search.q.aborted; ++depth) {
+            // leto-rapido: with the fast core the scan's iterations start at 2 half-moves (depth 1 buys nothing)
+            const int first = fast_core() ? std::min(plies, 2) : std::min(plies, SCAN_START);
+            for (int depth = exact ? plies : first; depth <= plies && !search.q.aborted; ++depth) {
                 double found = search.search(after, depth, -inf, inf, 1, true);
                 if (!search.q.aborted) value = found;
             }
@@ -2062,6 +2088,64 @@ public:
             out.push_back({value, lines ? search.line(after, plies) : std::vector<int>{}});
         }
         return out;
+    }
+    // leto-rapido scan with a window: the moves in the given order (best score first). A move's score after
+    // the scan is score[i] + weight * (tanh((gain[i] - L) / 3) - tanh(net[i] / 3)), L = what the opponent wins
+    // by force within `plies`. Only whether it can still be among the best `keep` matters for the moves after
+    // the first `keep`: those are searched with a null window at the L that would tie the keep-th best score
+    // so far (status 2: L >= the value returned) or not at all when even L = -inf would not reach it
+    // (status 0); the others exactly (status 1). NaN and status 3 when the node budget runs out.
+    std::pair<std::vector<double>, std::vector<int>> scan_window(
+            const std::vector<int>& codes, const std::vector<double>& values, int plies, int max_depth,
+            long long node_limit, bool exact, const std::vector<double>& score, const std::vector<double>& gain,
+            const std::vector<double>& net, double weight, int keep) const {
+        if (values.size() != 6 || plies < 0 || max_depth < 0 || node_limit < 0 || score.size() != codes.size()
+                || gain.size() != codes.size() || net.size() != codes.size() || keep < 1)
+            throw std::invalid_argument("scan_window: bad arguments");
+        const double inf = std::numeric_limits<double>::infinity(), eps = 1e-9;
+        DeepSearch search(values, node_limit, max_depth, exact);
+        std::vector<double> out(codes.size(), std::numeric_limits<double>::quiet_NaN());
+        std::vector<int> status(codes.size(), 3);
+        std::vector<double> best;                       // the after-scan scores so far, highest first, at most keep
+        auto add = [&](double s) {
+            best.insert(std::upper_bound(best.begin(), best.end(), s, std::greater<double>()), s);
+            if (int(best.size()) > keep) best.pop_back();
+        };
+        for (size_t i = 0; i < codes.size(); ++i) {
+            const double t_net = std::tanh(net[i] / 3.0);
+            double low = -inf, high = inf;              // full window by default
+            if (int(best.size()) >= keep && weight > 0.0) {
+                const double r = (best.back() - score[i]) / weight + t_net;   // tanh((gain - L) / 3) needed
+                if (r >= 1.0) { status[i] = 0; continue; }
+                if (r > -1.0) {
+                    const double T = gain[i] - 3.0 * std::atanh(r);
+                    low = T - eps; high = T;
+                }
+            }
+            Pos after = pos;
+            after.make(codes[i]);
+            search.q.nodes = 0;
+            search.q.aborted = false;
+            double value = 0.0;
+            for (int depth = exact ? plies : (fast_core() ? std::min(plies, 2) : 1); depth <= plies && !search.q.aborted; ++depth) {
+                double found = search.search(after, depth, depth < plies ? -inf : low, depth < plies ? inf : high, 1, true);
+                if (!search.q.aborted) value = found;
+            }
+            if (search.q.aborted && plies > 0) continue;
+            if (std::isfinite(high) && value >= high) {
+                out[i] = high; status[i] = 2;           // L >= high: it ties the keep-th best at most
+                continue;
+            }
+            if (std::isfinite(high)) {                  // it gets in: its exact value
+                search.q.nodes = 0;
+                search.q.aborted = false;
+                value = search.search(after, plies, -inf, inf, 1, true);
+                if (search.q.aborted) continue;
+            }
+            out[i] = value; status[i] = 1;
+            add(score[i] + weight * (std::tanh((gain[i] - value) / 3.0) - t_net));
+        }
+        return {out, status};
     }
     // Claudio: which candidate is best once calculated? Candidate i scores
     // base[i] + weight * tanh((gains[i] - L_i) / 3), L_i = what the opponent wins
@@ -2167,6 +2251,7 @@ public:
         DeepSearch::TableCache& c = DeepSearch::cache();
         if (c.entries.size() != (size_t(1) << bits)) {
             c.entries.assign(size_t(1) << bits, DeepSearch::Entry{});
+            c.entries16.assign(size_t(1) << bits, DeepSearch::Entry16{});
             c.generation = 0;
         }
     }
@@ -2429,6 +2514,7 @@ PYBIND11_MODULE(claudio_fast, m) {
              py::arg("node_limit"))
         .def("exchange_after_moves", &Board::exchange_after_moves, py::arg("codes"), py::arg("values"),
              py::arg("max_depth"), py::arg("node_limit"))
+        .def("scan_window", &Board::scan_window)
         .def("deep_after_moves", &Board::deep_after_moves, py::arg("codes"), py::arg("values"),
              py::arg("plies"), py::arg("max_depth"), py::arg("node_limit"), py::arg("exact") = false,
              py::arg("lines") = true)

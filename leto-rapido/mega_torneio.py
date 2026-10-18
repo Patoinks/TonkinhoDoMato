@@ -27,7 +27,8 @@ HERE = Path(__file__).resolve().parent
 CHECKPOINT = HERE.parent / "releases/g4-leto/models/g4t2-leto-v3.pt"
 STOCKFISH = HERE.parent / "engines-local/stockfish-11-win/Windows/stockfish_20011801_x64_bmi2.exe"
 RAPIDO = ["syzygy=", "root_prunings=True", "tactic_depth=6", "scan_prunings=True", "fast_net=True",
-          "pawn_v4=True", "pawn_weight=0.5", "shared_table=True", "reply_top=0", "fast_core=True"]
+          "pawn_v4=True", "pawn_weight=0.5", "shared_table=True", "reply_top=0", "fast_core=True",
+          "delta_pruning=True", "scan_keep=20"]
 STAGES = [(256, 20), (64, 50), (32, 100), (2, 500)]   # (entrants, games each)
 
 # name: ("float", low, high) | ("int", low, high) | ("bool",) | ("values",)
@@ -97,7 +98,22 @@ def entrants(seed, count):
 _state = {}
 
 
-def _init(elo, movetime):
+def _pin(counter, workers):
+    """This worker (and the Stockfish it starts) on one logical CPU: up to half the CPUs, one per physical core
+    (Windows numbers a core's two threads 2k and 2k+1), otherwise one per logical CPU."""
+    import ctypes
+    with counter.get_lock():
+        index = counter.value
+        counter.value += 1
+    cpus = os.cpu_count() or 1
+    cpu = (2 * index) % cpus if workers <= cpus // 2 else index % cpus
+    kernel = ctypes.windll.kernel32
+    kernel.SetProcessAffinityMask(kernel.GetCurrentProcess(), ctypes.c_size_t(1 << cpu))
+
+
+def _init(elo, movetime, counter=None, workers=0):
+    if counter is not None:
+        _pin(counter, workers)
     import torch
     torch.set_num_threads(1)
     from claudio_load import load_claudio

@@ -122,3 +122,22 @@ desligado: o Leto original continua com lances idênticos a `base-4.json`.
 O núcleo rápido só dá ~10% (3.1 -> 3.4 M nós/s): o custo por nó não estava nas listas nem na chave. A tática a 6
 corta 39% do tempo e talvez custe um pouco de força (-0.036, dentro de ~1.2 desvios). Leto rápido vs Leto rápido:
 0.57 s por jogo.
+
+## Ganhos pequenos somados (2026-10-18, tarde)
+
+| Alteração | Efeito medido |
+| --- | --- |
+| Verificação do lance escolhido com as podas da raiz (era exata a 6) | 4,41 -> 3,95 ms por decisão |
+| Tabela de 16 bytes (2^16 cabe no L2 de 1 MB do Zen 4) + prefetch da entrada do filho | +5% nós/s (3,45 -> 3,61 M) |
+| Scan do núcleo rápido começa o aprofundamento em 2 | ~-3% do scan |
+| `delta_pruning=True` + `scan_keep=20` (scan exato só para quem pode estar entre os 20 melhores) | ~-2%, 99% lances iguais |
+| `tactic_top=6` | -6% mas 0,478 vs 0,528 contra o Stockfish: fora |
+| Kernels OpenBLAS (`OPENBLAS_CORETYPE`) | o automático já é o melhor (AVX-512) |
+| Workers fixos a núcleos físicos (`ab_stockfish.py --pin`) | igual (6,1 vs 6,4 ms por lance) |
+
+Força, código de antes (9756d87) e de agora lado a lado (dois pools ao mesmo tempo, 500 jogos cada vs Stockfish 2250):
+antes 0,549, agora 0,529, agora + pequenos 0,531 (±0,044): sem perda medível.
+O Stockfish a 2 ms fica mais forte com o PC menos carregado: 6 workers 0,39-0,45, 11-12 workers 0,52 (mesma
+configuração). Só comparações intercaladas ou simultâneas valem.
+
+`--rapido` agora: 3,92 ms por decisão (PGO) nas mesmas 1095 posições. Leto original: lances idênticos a `base-4.json`.

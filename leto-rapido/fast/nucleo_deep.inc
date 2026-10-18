@@ -13,9 +13,9 @@
             int d = (dynamic && ply < 256 && dest[ply] >= 0) ? exchange_plies(p, dest[ply]) : qdepth;
             return q.qs(p, d, alpha, beta);
         }
-        Entry& e = slot(key);
+        Entry16& e = slot16(key);
         int tt_move = 0;
-        if (e.generation == generation && e.key == key) {
+        if (e.key == (key ^ salt)) {
             tt_move = e.move;
             if (e.depth >= depth) {
                 if (e.flag == EXACT) return e.value;
@@ -95,6 +95,7 @@
                 next = p;
                 next.make(m);
                 next_key = z_after(p, next, key);
+                _mm_prefetch(reinterpret_cast<const char*>(&slot16(next_key)), _MM_HINT_T0);   // the child's entry
                 made = true;
             };
             if (frontier)
@@ -151,10 +152,9 @@
             }
         }
         if (!searched) return check ? -(ExchangeSearch::MATE - ply) : 0.0;
-        e.key = key;
-        e.generation = generation;
-        e.value = best;
-        e.depth = std::int16_t(depth);
+        e.key = key ^ salt;
+        e.value = float(best);
+        e.depth = std::int8_t(std::min(depth, 127));
         e.move = std::uint16_t(best_move);
         e.flag = best <= start ? UPPER : best >= beta ? LOWER : EXACT;
         return best;
