@@ -62,8 +62,67 @@ class _Encoder:
         return x
 
 
+def _nativa():
+    """rede_fast (fast/rede_fast.cpp) when it was built (LETO_REDE_NATIVA=0: the numpy version), else None."""
+    import os
+    if os.environ.get("LETO_REDE_NATIVA") == "0":
+        return None
+    try:
+        import rede_fast
+    except ImportError:
+        return None
+    return rede_fast
+
+
+def _acelerar_nativa(net, rede_fast):
+    enc = list(net.encoder)
+    kinds = [type(m).__name__ for m in enc]
+    if kinds != ["Linear", "SiLU", "Linear", "SiLU", "Residual"]:
+        return False
+    heads = net.survival_heads
+    w = [_np(enc[0].weight), _np(enc[0].bias), _np(enc[2].weight), _np(enc[2].bias),
+         _np(enc[4].fc1.weight), _np(enc[4].fc1.bias), _np(enc[4].fc2.weight), _np(enc[4].fc2.bias),
+         _np(net.memory_cell.weight_ih), _np(net.memory_cell.bias_ih),
+         _np(net.memory_cell.weight_hh), _np(net.memory_cell.bias_hh),
+         _np(net.fusion[0].weight), _np(net.fusion[0].bias),
+         np.concatenate([_np(h[0].weight) for h in heads]), np.concatenate([_np(h[0].bias) for h in heads]),
+         _np(net.predict_head[0].weight), _np(net.predict_head[0].bias),
+         _np(net.predict_head[2].weight), _np(net.predict_head[2].bias)]
+    for h in heads:
+        w += [_np(h[2].weight), _np(h[2].bias)]
+    native = rede_fast.Net(w)
+
+    def as_np(t):
+        return np.ascontiguousarray(t.detach().numpy() if isinstance(t, torch.Tensor) else np.asarray(t), dtype=np.float32)
+
+    def encode(x):
+        return torch.from_numpy(native.encode(as_np(x)))
+
+    def memory_cell(latent, memory):
+        return torch.from_numpy(native.memory_cell(as_np(latent), as_np(memory)))
+
+    def candidates(x, memory):
+        context, after = native.candidates(as_np(x), as_np(memory))
+        return torch.from_numpy(context), torch.from_numpy(after)
+
+    def survival(context):
+        alive, steps = native.survival(as_np(context))
+        return torch.from_numpy(alive), torch.from_numpy(steps)
+
+    def predict_logits(context):
+        return torch.from_numpy(native.predict_logits(as_np(context)))
+
+    for name, function in (("encode", encode), ("memory_cell", memory_cell), ("candidates", candidates),
+                           ("survival", survival), ("predict_logits", predict_logits), ("_rede_rapida", True)):
+        object.__setattr__(net, name, function)
+    return True
+
+
 def acelerar(net):
     if getattr(net, "_rede_rapida", False):
+        return net
+    rede_fast = _nativa()
+    if rede_fast is not None and _acelerar_nativa(net, rede_fast):
         return net
     encoder = _Encoder(net.encoder)
     cell = net.memory_cell
@@ -130,6 +189,23 @@ def acelerar(net):
 def acelerar_king(model):
     """The king-safety model (782 -> h -> h -> 1, sigmoid) in numpy, same sparse first layer."""
     if model is None or getattr(model, "_rede_rapida", False):
+        return model
+    rede_fast = _nativa()
+    body = list(model.net.body)
+    if rede_fast is not None and [type(m).__name__ for m in body] == ["Linear", "SiLU", "Linear", "SiLU", "Linear"]:
+        native = rede_fast.King([_np(body[0].weight), _np(body[0].bias), _np(body[2].weight), _np(body[2].bias),
+                                 _np(body[4].weight), _np(body[4].bias)])
+
+        def ks_native(rows):
+            x = np.ascontiguousarray(np.asarray(rows, dtype=np.float32))
+            if x.ndim == 1:
+                x = x[None]
+            if not len(x):
+                return np.zeros(0, dtype=np.float32)
+            return native.rows(x)
+
+        model.ks_rows = ks_native
+        model._rede_rapida = True
         return model
     encoder = _Encoder(model.net.body[:-1])
     last = model.net.body[-1]

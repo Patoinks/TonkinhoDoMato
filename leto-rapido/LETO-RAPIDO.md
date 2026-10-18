@@ -141,3 +141,19 @@ O Stockfish a 2 ms fica mais forte com o PC menos carregado: 6 workers 0,39-0,45
 configuração). Só comparações intercaladas ou simultâneas valem.
 
 `--rapido` agora: 3,92 ms por decisão (PGO) nas mesmas 1095 posições. Leto original: lances idênticos a `base-4.json`.
+
+## Rede nativa AVX-512 (`fast/rede_fast.cpp`, por omissão desde 2026-10-18)
+
+Encoder, memória GRU, fusão, cabeças de sobrevivência e previsão, e segurança do rei em C++ compilado com
+`/arch:AVX512` (Zen 4): kernel de 4 linhas x 64 colunas com FMA, só as colunas não nulas do lote, exp vetorizado.
+Diferenças de arredondamento float32 (~2e-5). `LETO_REDE_NATIVA=0` volta à versão numpy.
+
+| | numpy | nativa |
+| --- | ---: | ---: |
+| candidatos | 0,273 ms | 0,147 ms |
+| segurança do rei | 0,154 ms | 0,114 ms |
+| sobrevivência + encode + memória | 0,176 ms | 0,086 ms |
+| decisão inteira | 3,85 ms | **3,57 ms** |
+| vs Stockfish 2250 (pools simultâneos, 500 jogos) | 0,516 | 0,551 |
+
+clang `-march=znver4`: não instalado (o instalador do LLVM pede UAC e não foi possível confirmar): saltado.

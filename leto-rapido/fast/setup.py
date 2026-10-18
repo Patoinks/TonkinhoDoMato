@@ -37,4 +37,7 @@ fast = Pybind11Extension(
     extra_compile_args=compile_args,
     extra_link_args=link_args,
 )
-setup(name="claudio-fast", ext_modules=[fast], cmdclass={"build_ext": build_ext})
+# leto-rapido: the network's decision-time pieces, for this machine (AVX-512 on Zen 4); float32 rounding only.
+net_args = ["/O2", "/arch:AVX512", "/fp:fast"] if sys.platform == "win32" else ["-O3", "-march=native", "-ffast-math"]
+rede = Pybind11Extension("rede_fast", ["rede_fast.cpp"], cxx_std=20, extra_compile_args=net_args)
+setup(name="claudio-fast", ext_modules=[fast, rede], cmdclass={"build_ext": build_ext})
