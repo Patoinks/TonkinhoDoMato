@@ -1202,6 +1202,9 @@ struct ExchangeSearch {
         std::vector<double>& gains = keys[level];
         Level guard(level);
         if (check) {
+#ifndef NO_QUICK_MATE
+            if (depth == 0) return p.any_legal() ? 0.0 : -MATE;   // only whether a move exists: no list
+#endif
             p.legal_moves(moves);
             if (moves.empty()) return -MATE;
         }

@@ -64,15 +64,17 @@ def play(game, seed, max_plies, random_plies):
     mutant_white = game % 2 == 0
     board = opening(seed, game // 2, random_plies)
     first = len(board.move_stack)
+    from fim_rapido import Judge
+    judge = Judge(board)   # = board.outcome(claim_draw=True), without replaying the game each ply
     started = time.perf_counter()
-    while not board.is_game_over(claim_draw=True) and len(board.move_stack) < max_plies:
+    while judge.outcome(board) is None and len(board.move_stack) < max_plies:
         mutant_turn = (board.turn == chess.WHITE) == mutant_white
         move = (mutant if mutant_turn else base).choose(board)
         if move not in board.legal_moves:
             raise ValueError(f"illegal move {move} in {board.fen()}")
-        board.push(move)
+        judge.push(board, move)
     seconds = time.perf_counter() - started
-    outcome = board.outcome(claim_draw=True)
+    outcome = judge.outcome(board)
     if outcome is None or outcome.winner is None:
         score = 0.5
     else:

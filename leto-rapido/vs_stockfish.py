@@ -75,14 +75,16 @@ def play(game, seed, max_plies):
         leto.personality = make(_state["deus"])
     leto_white = game % 2 == 0
     board = chess.Board()
+    from fim_rapido import Judge
+    judge = Judge(board)
     started = time.perf_counter()
-    while not board.is_game_over(claim_draw=True) and len(board.move_stack) < max_plies:
+    while judge.outcome(board) is None and len(board.move_stack) < max_plies:
         if (board.turn == chess.WHITE) == leto_white:
             move = leto.choose(board)
         else:
             move = _state["engine"].play(board, _state["movetime"])
-        board.push(move)
-    outcome = board.outcome(claim_draw=True)
+        judge.push(board, move)
+    outcome = judge.outcome(board)
     if outcome is None or outcome.winner is None:
         score = 0.5
     else:

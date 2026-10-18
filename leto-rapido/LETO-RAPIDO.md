@@ -50,3 +50,21 @@ reductions and adaptive null move (slower: more re-searches), 6 or 8 root candid
 
     python leto-rapido/torneio.py --rapido --games 48 --workers 6 --set reply_top=5
     python leto-rapido/vs_stockfish.py --rapido --deus zeus --games 24 --movetime 0.01
+
+## Pesquisa: PEXT, PGO e o fim de jogo (2026-10-18)
+
+Todas exatas: o Leto original continua com lances idênticos a `base-4.json` (`compara.py`, 4 jogos) e o resultado de
+`root_search` em 5 posições tem o mesmo digest.
+
+| Alteração | Ganho | Nota |
+| --- | ---: | --- |
+| Tabelas de ataque PEXT/BMI2 (`/DCLAUDIO_PEXT`, com AVX2) | ~10% na pesquisa | 15,87 -> 14,29 ms por root search |
+| PGO refeito com PEXT (`build_pgo_gen/use.cmd`, 6 jogos `--rapido`) | ~8% na pesquisa | original: 10,05 -> 7,19 s/jogo (x1,40) |
+| `fim_rapido.Judge` em `torneio.py`/`vs_stockfish.py` | 0,17 -> 0,013 ms por meio-lance (~3% do jogo) | 408 804 meios-lances comparados com `board.outcome(claim_draw=True)`: 0 diferenças |
+| Mate sem lista na quiescência (`any_legal` a profundidade 0) | ruído | mantido: exato |
+| `LAZY_PICKS` 2, 3, 5 | ruído | fica 1 |
+
+Make/unmake não foi feito: `Pos` tem ~104 bytes (copiar custa menos que desfazer o lance), ganho estimado < 2%.
+Perfil nativo depois do PEXT: DeepSearch 42% (ordenação dos lances e `place` ~23%), ExchangeSearch 32%
+(`pseudo_captures` 8,5%), `Pos::make` 9%. Rede numpy por lote de ~54 linhas: 0,38 ms (residual 128->512->128 0,19 ms),
+limitada pelo BLAS. `fast/build_var.cmd NOME "DEFINES"` compila variantes para A/B; `perfil_rede.py` mede cada camada.

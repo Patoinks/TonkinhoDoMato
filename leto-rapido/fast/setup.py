@@ -18,6 +18,8 @@ if arch:
     if not os.environ.get("CLAUDIO_NO_PEXT"):
         compile_args.append("/DCLAUDIO_PEXT")   # BMI2 PEXT slider tables (every AVX2 CPU here has BMI2)
 
+for define in os.environ.get("CLAUDIO_DEFINES", "").split():   # experiments, e.g. LAZY_PICKS=3
+    compile_args.append("/D" + define)
 link_args = []
 # Profile-guided optimization (MSVC): "gen" builds an instrumented module, a few games train it,
 # "use" rebuilds it from that profile. Same code and same /fp:strict arithmetic, faster layout.
