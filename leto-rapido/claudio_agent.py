@@ -115,6 +115,7 @@ class ClaudioConfig:
     aggressive_prunings: bool = False  # leto-rapido: deeper late-move reductions and adaptive null move
     delta_pruning: bool = False     # leto-rapido: skip captures that cannot raise alpha in the exchange search
     bad_capture_pruning: bool = False  # leto-rapido: skip a bigger piece taking a smaller guarded one there
+    fast_core: bool = False         # leto-rapido: the fast search core (Zobrist keys, stack move lists, countermoves)
     opening_book: bool = False      # the repertoire of opening theory (claudio/abertura.py) while it lasts
     opening_book_patch: bool = False  # sparse fallback only where V2 has no move; frozen book choices win
     opening_weight: float = 0.0     # the classic opening principles, in its first opening_plies half-moves
@@ -642,6 +643,8 @@ class Claudio:
                 claudio_fast.Board.delta_pruning(bool(getattr(cfg, "delta_pruning", False)))
             if hasattr(claudio_fast.Board, "bad_capture_pruning"):
                 claudio_fast.Board.bad_capture_pruning(bool(getattr(cfg, "bad_capture_pruning", False)))
+            if hasattr(claudio_fast.Board, "fast_core"):
+                claudio_fast.Board.fast_core(bool(getattr(cfg, "fast_core", False)))
             if hasattr(claudio_fast.Board, "aggressive_prunings"):
                 claudio_fast.Board.aggressive_prunings(bool(getattr(cfg, "aggressive_prunings", False)))
             if getattr(cfg, "table_bits", 0) and hasattr(claudio_fast.Board, "table_bits"):

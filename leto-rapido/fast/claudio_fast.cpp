@@ -1105,6 +1105,8 @@ bool& dynamic_exchange() {
 // Capture-only negamax. In check, every legal evasion is searched; at the
 // horizon only checkmate has a non-zero value. A window is translated through
 // the immediate material gain before searching the opponent's position.
+#include "zobrist.inc"
+
 inline bool& delta_pruning() { static thread_local bool on = false; return on; }
 inline bool& bad_capture_pruning() { static thread_local bool on = false; return on; }
 
@@ -1279,6 +1281,7 @@ struct ExchangeSearch {
         }
         return best;
     }
+#include "nucleo_q.inc"
 };
 
 // Full-width material search: every legal move for `plies` half-moves, then
@@ -1412,6 +1415,7 @@ struct DeepSearch {
     }
 
     double search(const Pos& p, int depth, double alpha, double beta, int ply, bool allow_null) {
+        if (fast_core()) return search_fast(p, z_full(p), depth, alpha, beta, ply, allow_null, 0);
         ++node_total();
         if (++q.nodes > q.limit) { q.aborted = true; return 0.0; }
         if (depth <= 0) {
@@ -1588,8 +1592,9 @@ struct DeepSearch {
         std::vector<int> out;
         std::vector<int> legal;
         for (int i = 0; i < max_len; ++i) {
-            Entry& e = slot(key_of(p).hash());
-            if (e.generation != generation || e.key != key_of(p).hash() || !e.move) break;
+            const U64 key = fast_core() ? z_full(p) : key_of(p).hash();
+            Entry& e = slot(key);
+            if (e.generation != generation || e.key != key || !e.move) break;
             p.legal_moves(legal);
             if (std::find(legal.begin(), legal.end(), e.move) == legal.end()) break;
             out.push_back(e.move);
@@ -1597,6 +1602,7 @@ struct DeepSearch {
         }
         return out;
     }
+#include "nucleo_deep.inc"
 };
 
 #include "pawnomics_v4.inc"
@@ -2153,6 +2159,7 @@ public:
     static void set_aggressive_prunings(bool on) { aggressive_prunings() = on; }
     static void set_delta_pruning(bool on) { delta_pruning() = on; }
     static void set_bad_capture_pruning(bool on) { bad_capture_pruning() = on; }
+    static void set_fast_core(bool on) { fast_core() = on; }
     static long long take_nodes() { long long n = node_total(); node_total() = 0; return n; }
     // leto-rapido: 2^bits entries in this owner's search table (16 = the original 1.5 MB).
     static void table_bits(int bits) {
@@ -2434,6 +2441,7 @@ PYBIND11_MODULE(claudio_fast, m) {
         .def_static("take_nodes", &Board::take_nodes)
         .def_static("delta_pruning", &Board::set_delta_pruning)
         .def_static("bad_capture_pruning", &Board::set_bad_capture_pruning)
+        .def_static("fast_core", &Board::set_fast_core)
         .def_static("table_owner", &Board::table_owner)
         .def_static("keep_table", &Board::keep_table)
         .def_static("root_prunings", &Board::set_root_prunings)

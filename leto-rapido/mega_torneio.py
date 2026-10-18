@@ -26,8 +26,8 @@ import paths  # noqa: E402,F401
 HERE = Path(__file__).resolve().parent
 CHECKPOINT = HERE.parent / "releases/g4-leto/models/g4t2-leto-v3.pt"
 STOCKFISH = HERE.parent / "engines-local/stockfish-11-win/Windows/stockfish_20011801_x64_bmi2.exe"
-RAPIDO = ["syzygy=", "root_prunings=True", "tactic_depth=7", "scan_prunings=True", "fast_net=True",
-          "pawn_v4=True", "pawn_weight=0.5", "shared_table=True", "reply_top=0"]
+RAPIDO = ["syzygy=", "root_prunings=True", "tactic_depth=6", "scan_prunings=True", "fast_net=True",
+          "pawn_v4=True", "pawn_weight=0.5", "shared_table=True", "reply_top=0", "fast_core=True"]
 STAGES = [(256, 20), (64, 50), (32, 100), (2, 500)]   # (entrants, games each)
 
 # name: ("float", low, high) | ("int", low, high) | ("bool",) | ("values",)

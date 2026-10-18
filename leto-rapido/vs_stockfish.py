@@ -24,8 +24,8 @@ CHECKPOINT = HERE.parent / "releases/g4-leto/models/g4t2-leto-v3.pt"
 STOCKFISH = HERE.parent / "engines-local/stockfish-11-win/Windows/stockfish_20011801_x64_bmi2.exe"
 _state = {}
 # The fast Leto: same strength as the original (0.487 over 192 games), ~6.7x faster per game.
-RAPIDO = ["root_prunings=True", "tactic_depth=7", "scan_prunings=True", "fast_net=True", "pawn_v4=True", "pawn_weight=0.5",
-          "shared_table=True", "reply_top=0"]   # one table per decision; no reply module (ab_stockfish.py, 500 games)
+RAPIDO = ["root_prunings=True", "tactic_depth=6", "scan_prunings=True", "fast_net=True", "pawn_v4=True", "pawn_weight=0.5",
+          "shared_table=True", "reply_top=0", "fast_core=True"]   # one table per decision; no reply module (ab_stockfish.py, 500 games)
 
 
 class UCI:

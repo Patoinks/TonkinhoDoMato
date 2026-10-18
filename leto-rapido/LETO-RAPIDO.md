@@ -106,3 +106,19 @@ lance (~2,6 ms a mais em todas as configurações). Com um jogador por cor: m039
 
 Distribuição dos 8,0 ms (`perfil_posicoes.py`, 1095 decisões): root_search 4,95 (62%), scan 1,93 (24%),
 rede candidatos 0,30, memória 0,18, segurança do rei 0,17, princípios de abertura 0,12, resto ~0,4.
+
+## Núcleo rápido (`fast_core`) e tática a 6 (`--rapido` desde 2026-10-18)
+
+`fast/zobrist.inc`, `fast/nucleo_q.inc`, `fast/nucleo_deep.inc`: as mesmas regras de pesquisa com chaves Zobrist
+incrementais, listas de lances em arrays na pilha, ordenação por chave compactada e countermove. Por omissão
+desligado: o Leto original continua com lances idênticos a `base-4.json`.
+
+| | ms/decisão (mesmas posições) | Lances iguais | Score vs SF 2250 (A/B intercalado, 500 jogos) | s/jogo vs SF |
+| --- | ---: | ---: | ---: | ---: |
+| m039, tática 7 | 8.09 | - | 0.609 ± 0.043 | 1.09 |
+| + `fast_core` | 7.39 (-9%) | 99% | 0.595 ± 0.043 | 1.00 |
+| **+ `fast_core` + `tactic_depth=6`** | **4.93 (-39%)** | 90% | 0.573 ± 0.043 | **0.63** |
+
+O núcleo rápido só dá ~10% (3.1 -> 3.4 M nós/s): o custo por nó não estava nas listas nem na chave. A tática a 6
+corta 39% do tempo e talvez custe um pouco de força (-0.036, dentro de ~1.2 desvios). Leto rápido vs Leto rápido:
+0.57 s por jogo.
