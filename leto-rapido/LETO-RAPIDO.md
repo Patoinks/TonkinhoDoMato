@@ -164,3 +164,9 @@ clang `-march=znver4`: não instalado (o instalador do LLVM pede UAC e não foi 
 value_scaling=True reply_weight=0.2404 fifty_horizon=28 scan_keep=12`, com `opening_weight=0.08524 draw_value=0.5594
 simplify_margin=0.411 ahead_draws=False` do m039. Final: 0,596 vs 0,570 da base (500 jogos), ~5% mais rápido.
 Já não é preciso passar o m039 com `--set`.
+
+## Campeão no `--rapido`: g2m077 (2026-10-19)
+
+Do torneio de gerações (`evolucao.py`): o t0467 com `ahead_material=0.2605 pawn_weight=0.1891`. Geração 3: 0,691 vs
+0,656 do t0467 (400 jogos no mesmo pool), ~15% mais rápido (prova de tempo em 3 jogos de posições); geração 4:
+defendeu o título com 0,669 contra finalistas até 0,630.

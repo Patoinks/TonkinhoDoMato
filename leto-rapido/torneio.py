@@ -28,7 +28,9 @@ RAPIDO = ["root_prunings=True", "tactic_depth=6", "scan_prunings=True", "fast_ne
           "delta_pruning=True", "scan_keep=12",
           # champion t0467 (torneio_tempo.py, 2026-10-18): m039 with its five mutations
           "opening_weight=0.08524", "draw_value=0.5594", "simplify_margin=0.411", "ahead_draws=False",
-          "value_scaling=True", "reply_weight=0.2404", "safety_weight=3.416", "fifty_horizon=28"]   # one table per decision; no reply module (ab_stockfish.py, 500 games)
+          "value_scaling=True", "reply_weight=0.2404", "safety_weight=3.416", "fifty_horizon=28",
+          # champion g2m077 (evolucao.py, generation 3, kept in 4): t0467 with two mutations
+          "ahead_material=0.2605", "pawn_weight=0.1891"]   # one table per decision; no reply module (ab_stockfish.py, 500 games)
 
 
 def _init(checkpoint, base_settings, mutant_settings, profile, deus=None, window=None):
