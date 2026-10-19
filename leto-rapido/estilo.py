@@ -25,9 +25,7 @@ import chess
 
 V = {chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3, chess.ROOK: 5, chess.QUEEN: 9, chess.KING: 100}
 CENTRE = [chess.D4, chess.E4, chess.D5, chess.E5]
-NAMES = {"leto": "Leto (neutro)", "nezha": "Nezha", "loki": "Loki", "wukong": "Wukong", "susanoo": "Susanoo",
-         "tsukuyomi": "Tsukuyomi", "anubis": "Anúbis", "amaterasu": "Amaterasu", "ra": "Rá", "hades": "Hades",
-         "zeus": "Zeus"}
+NAMES = {"leto": "Leto (neutro)", "nezha": "Nezha", "loki": "Loki", "anubis": "Anúbis", "hades": "Hades"}
 FAMILIES = {
     "Agressividade": ["a_check", "a_threat", "a_kingzone", "a_advance"],
     "Posicional": ["p_space", "p_mobility", "p_centre", "p_outpost"],
@@ -168,6 +166,9 @@ def move_signals(board, move, book):
     }
 
 
+PHASE = None   # (first, last) half-move of the game to count, e.g. (0, 19) for the opening; None: middlegame
+
+
 def player(folder, name):
     data = json.loads((folder / f"{name}.json").read_text(encoding="utf-8"))
     games = data["games"]
@@ -181,7 +182,8 @@ def player(folder, name):
         for i, m in enumerate(moves):
             if (board.turn == chess.WHITE) == white:
                 sig = move_signals(board, m, in_book and i < 30)
-                middle = len(board.piece_map()) >= 16      # the families compare middlegame moves only: game
+                middle = (len(board.piece_map()) >= 16 if PHASE is None   # the families compare middlegame moves:
+                          else PHASE[0] <= i <= PHASE[1])                 # game
                 opposite.append(sig.pop("_opposite"))      # lengths differ, and the endgame has less of everything
                 for k, v in sig.items():
                     if v is not None and (middle or k == "x_king_centre"):

@@ -1,4 +1,4 @@
-"""The ten Pantheon personalities on G4 Leto: their own openings and a style for the rest of the game.
+"""The Pantheon personalities on G4 Leto (Nezha, Loki, Anúbis, Hades): their own openings and a style for the rest of the game.
 
 A personality never changes what Leto computes. It acts in two places only:
 
@@ -36,53 +36,17 @@ OPENINGS = {   # W: lines it plays as White; B: its replies as Black (to 1.e4, 1
         B: d4 Nf6 c4 c5 d5 e6 Nc3 exd5 cxd5 d6
         B: c4 c5 Nc3 Nc6 g3 g6 Bg2 Bg7
     """,
-    "wukong": """
-        W: e4 e5 Nf3 Nc6 Nc3 Nf6 Bb5 Bb4 O-O O-O
-        B: e4 Nf6 e5 Nd5 d4 d6 Nf3 g6
-        B: d4 Nf6 c4 e6 Nc3 Bb4 e3 O-O Bd3 d5 Nf3
-        B: c4 Nf6 Nc3 e5 Nf3 Nc6 g3 Bb4
-    """,
-    "susanoo": """
-        W: e4 e5 f4 exf4 Nf3 g5 h4 g4 Ne5
-        B: e4 c5 Nf3 Nc6 d4 cxd4 Nxd4 Nf6 Nc3 e5 Ndb5 d6
-        B: d4 Nf6 c4 g6 Nc3 d5 cxd5 Nxd5 e4 Nxc3 bxc3 Bg7
-        B: c4 e5 Nc3 Nf6 Nf3 Nc6 d4 exd4 Nxd4
-    """,
-    "tsukuyomi": """
-        W: d4 d5 Bf4 Nf6 e3 c5 c3 Nc6 Nd2 e6 Ngf3
-        B: e4 c6 d4 d5 Nc3 dxe4 Nxe4 Bf5 Ng3 Bg6
-        B: d4 d5 c4 c6 Nf3 Nf6 Nc3 dxc4 a4 Bf5
-        B: c4 c6 e4 d5 exd5 cxd5 cxd5 Nf6
-    """,
     "anubis": """
         W: e4 e5 Nf3 Nc6 Bb5 a6 Bxc6 dxc6 O-O f6 d4
         B: e4 e5 Nf3 Nf6 Nxe5 d6 Nf3 Nxe4 d4 d5 Bd3
         B: d4 d5 c4 e6 Nc3 Nf6 cxd5 exd5 Bg5 Be7 e3
         B: c4 e6 Nc3 d5 d4 Nf6 cxd5 exd5
     """,
-    "amaterasu": """
-        W: e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3 d6 c3 O-O
-        B: e4 e6 d4 d5 Nd2 Nf6 e5 Nfd7 Bd3 c5 c3 Nc6
-        B: d4 Nf6 c4 e6 Nf3 b6 g3 Ba6 b3 Bb4 Bd2 Be7
-        B: c4 Nf6 Nc3 e6 e4 d5 e5 d4
-    """,
-    "ra": """
-        W: d4 d5 c4 e6 Nc3 Nf6 Bg5 Be7 e3 O-O Nf3 h6 Bh4 b6
-        B: e4 e5 Nf3 Nc6 Bb5 Nf6 O-O Nxe4 d4 Nd6 Bxc6 dxc6 dxe5 Nf5
-        B: d4 Nf6 c4 g6 Nc3 Bg7 e4 d6 Nf3 O-O Be2 e5
-        B: c4 g6 d4 Nf6 Nc3 Bg7 e4 d6
-    """,
     "hades": """
         W: c4 e5 Nc3 Nf6 g3 d5 cxd5 Nxd5 Bg2 Nb6
         B: e4 e6 d4 d5 Nc3 Bb4 e5 c5 a3 Bxc3 bxc3 Ne7
         B: d4 f5 c4 Nf6 g3 e6 Bg2 d5 Nf3 c6 O-O Bd6
         B: Nf3 f5 g3 Nf6 Bg2 e6 O-O d5
-    """,
-    "zeus": """
-        W: e4 e5 Nf3 Nc6 d4 exd4 Bc4 Bc5 c3 Nf6 e5 d5
-        B: e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6 Bg5 e6 f4
-        B: d4 Nf6 c4 e5 dxe5 Ng4 Bf4 Nc6 Nf3 Bb4
-        B: c4 e5 Nc3 Nf6 g3 d5 cxd5 Nxd5 Bg2 Nb6
     """,
 }
 
@@ -190,21 +154,15 @@ class Personality:
 PERSONALITIES = {
     "nezha": {"development": 1.0, "advance": 0.6, "threats": 0.6, "retreat": -1.0, "check": 0.3},
     "loki": {"quiet": 0.8, "threats": 1.0, "king_zone": 0.3, "capture": -0.6},
-    "wukong": {"outpost": 1.2, "threats": 0.5, "knight": 0.3, "retreat": -0.4},
-    "susanoo": {"pawn_break": 1.2, "pawn_push": 0.4, "capture": 0.4, "king_zone": 0.4},
-    "tsukuyomi": {"restrict": 0.08, "quiet": 0.6, "coordination": 0.3, "advance": -0.2},
     "anubis": {"trade_ahead": 1.5, "capture": 0.6, "coordination": 0.3, "check": -0.3},
-    "amaterasu": {"coordination": 0.6, "castle": 1.5, "development": 0.6, "king_move": -1.0},
-    "ra": {"centre": 1.2, "pawn_push": 0.5, "advance": 0.3, "retreat": -0.3},
     "hades": {"restrict": 0.12, "quiet": 0.4, "coordination": 0.4, "capture": -0.3},
-    "zeus": {"check": 1.5, "king_zone": 0.8, "threats": 0.5, "advance": 0.3},
 }
 
 
 # Measured against neutral Leto (24 games each, 2026-10-18): 0.06 kept Susanoo, Anubis, Ra, Hades, Zeus
 # and Tsukuyomi level; Nezha, Loki and Amaterasu lost strength at 0.06 and held at 0.03; Wukong lost
 # even at 0.03 with knight moves for their own sake, so its signals were changed and its window lowered.
-WINDOWS = {"nezha": 0.03, "loki": 0.03, "amaterasu": 0.03, "wukong": 0.02}
+WINDOWS = {"nezha": 0.03, "loki": 0.03}
 
 
 def make(name, window=None):
