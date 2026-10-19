@@ -153,10 +153,23 @@ def _game(stage, ident, settings, game, seed, max_plies):
     started = time.perf_counter()
     board = chess.Board()
     try:
+        deus = [s.split("=", 1)[1] for s in settings if s.startswith("deus=")]
+        pecado = [s.split("=", 1)[1] for s in settings if s.startswith("pecado=")]
+        janela = [float(s.split("=", 1)[1]) for s in settings if s.startswith("janela=")]
+        settings = [s for s in settings if not s.startswith(("deus=", "janela=", "pecado="))]
+        if pecado:                             # a sin's own engine settings come first; explicit ones override
+            from pecados import SINS
+            settings = SINS[pecado[0]].settings + settings
         cfg = ClaudioConfig.with_settings(RAPIDO + list(settings), base=_state["config"])
         leto = Claudio(_state["net"], _state["values"], cfg, rng=np.random.default_rng([seed, stage, game]),
                        king_model=_state["king"])
         leto._owner = 1                        # one search table per worker, not one per game
+        if deus:                               # a Pantheon personality (janela=: its style window; 0: openings only)
+            from personalidades import make
+            leto.personality = make(deus[0], janela[0] if janela else None)
+        if pecado:                             # one of the Seven Deadly Sins (pecados.py)
+            from pecados import make as make_sin
+            leto.personality = make_sin(pecado[0], janela[0] if janela else None)
         judge = Judge(board)
         think = 0.0
         while judge.outcome(board) is None and len(board.move_stack) < max_plies:

@@ -22,33 +22,7 @@ VALUE = {chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3, chess.ROOK: 5, chess.Q
 
 # ---------------------------------------------------------------- openings
 # Each line is played by whichever side the personality has; the other side's moves are what it expects.
-OPENINGS = {   # W: lines it plays as White; B: its replies as Black (to 1.e4, 1.d4 and the flank openings)
-    "nezha": """
-        W: e4 e5 Nf3 Nc6 Bc4 Bc5 b4 Bxb4 c3 Ba5 d4 exd4 O-O
-        W: e4 e5 Nf3 Nc6 Bc4 Nf6 d4 exd4 O-O
-        B: e4 e5 Nf3 Nc6 Bc4 Nf6 Ng5 d5 exd5 Na5
-        B: d4 d5 c4 dxc4 e4 e5 Nf3 exd4 Bxc4
-        B: c4 e5 Nc3 Nf6 g3 d5 cxd5 Nxd5
-    """,
-    "loki": """
-        W: e4 e5 Nc3 Nf6 f4 d5 fxe5 Nxe4 Nf3
-        B: e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 g6 Be3 Bg7 f3 O-O
-        B: d4 Nf6 c4 c5 d5 e6 Nc3 exd5 cxd5 d6
-        B: c4 c5 Nc3 Nc6 g3 g6 Bg2 Bg7
-    """,
-    "anubis": """
-        W: e4 e5 Nf3 Nc6 Bb5 a6 Bxc6 dxc6 O-O f6 d4
-        B: e4 e5 Nf3 Nf6 Nxe5 d6 Nf3 Nxe4 d4 d5 Bd3
-        B: d4 d5 c4 e6 Nc3 Nf6 cxd5 exd5 Bg5 Be7 e3
-        B: c4 e6 Nc3 d5 d4 Nf6 cxd5 exd5
-    """,
-    "hades": """
-        W: c4 e5 Nc3 Nf6 g3 d5 cxd5 Nxd5 Bg2 Nb6
-        B: e4 e6 d4 d5 Nc3 Bb4 e5 c5 a3 Bxc3 bxc3 Ne7
-        B: d4 f5 c4 Nf6 g3 e6 Bg2 d5 Nf3 c6 O-O Bd6
-        B: Nf3 f5 g3 Nf6 Bg2 e6 O-O d5
-    """,
-}
+from repertorios_deuses import OPENINGS  # noqa: E402  (written by hand, 2026-10-19: repertorios_deuses.py)
 
 
 def _key(board):
@@ -151,11 +125,18 @@ class Personality:
     stats: dict = field(default_factory=lambda: {"decisions": 0, "changed": 0, "book": 0})
 
 
+# Target profiles (2026-10-19): Nezha aggression, chaos and tricks, little positional or defensive play; Anubis
+# positional, defensive and materialist, no tricks or chaos; Hades positional, aggressive, tricks and chaos;
+# Loki positional, tricks and chaos, not aggressive.
 PERSONALITIES = {
-    "nezha": {"development": 1.0, "advance": 0.6, "threats": 0.6, "retreat": -1.0, "check": 0.3},
-    "loki": {"quiet": 0.8, "threats": 1.0, "king_zone": 0.3, "capture": -0.6},
-    "anubis": {"trade_ahead": 1.5, "capture": 0.6, "coordination": 0.3, "check": -0.3},
-    "hades": {"restrict": 0.12, "quiet": 0.4, "coordination": 0.4, "capture": -0.3},
+    "nezha": {"threats": 1.0, "check": 0.8, "king_zone": 0.5, "advance": 0.5, "pawn_break": 0.6, "development": 0.5,
+              "retreat": -1.0, "castle": -0.5, "coordination": -0.1},
+    "anubis": {"trade_ahead": 1.2, "capture": 0.8, "castle": 1.0, "centre": 0.6, "outpost": 0.5, "coordination": 0.3,
+               "restrict": 0.05, "check": -0.5, "threats": -0.3, "pawn_break": -0.5, "king_zone": -0.2},
+    "hades": {"centre": 0.8, "outpost": 0.8, "threats": 0.8, "king_zone": 0.6, "pawn_break": 0.6, "check": 0.4,
+              "advance": 0.3, "restrict": 0.05, "retreat": -0.5, "coordination": -0.1},
+    "loki": {"threats": 0.8, "outpost": 0.7, "centre": 0.6, "pawn_break": 0.6, "quiet": 0.5, "restrict": 0.05,
+             "capture": -0.4, "check": -0.4, "king_zone": -0.2, "coordination": -0.1},
 }
 
 

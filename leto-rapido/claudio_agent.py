@@ -712,11 +712,16 @@ class Claudio:
         personality = getattr(self, "personality", None)
         if personality is not None:
             # A personality's own opening lines come before Leto's repertoire (personalidades.py).
-            from personalidades import opening_move
-            own = opening_move(personality.name, board)
-            if own is not None and own in moves:
-                personality.stats["book"] += 1
-                return own
+            if hasattr(personality, "opening"):          # a sin (pecados.py): its book or its plan
+                own = personality.opening(board, moves)
+                if own is not None:
+                    return own
+            else:
+                from personalidades import opening_move
+                own = opening_move(personality.name, board)
+                if own is not None and own in moves:
+                    personality.stats["book"] += 1
+                    return own
         if cfg.opening_book and board.ply() < 40:
             theory = abertura.repertoire_move(board, cfg.opening_book_version)
             if theory is None and cfg.opening_book_patch:
@@ -932,7 +937,8 @@ class Claudio:
         if personality is not None:
             # The style chooses only among safe, near-equal moves; the mate-defence check below still runs.
             from personalidades import apply_style
-            apply_style(personality, board, moves, scores, known, nets)
+            (personality.adjust(board, moves, scores, known, nets) if hasattr(personality, "adjust")
+             else apply_style(personality, board, moves, scores, known, nets))
 
         # Check the move it intends to play, then the next one if that fails.
         checked, rounds = set(), 0

@@ -80,8 +80,13 @@ def play(game, seed, max_plies):
     from claudio_load import make_player
     leto = make_player(_state["players"], np.random.default_rng([seed, game, 1]))
     if _state["deus"]:
-        from personalidades import make
-        leto.personality = make(_state["deus"])
+        from pecados import SINS
+        if _state["deus"] in SINS:             # one of the Seven Deadly Sins
+            from pecados import make as make_sin
+            leto.personality = make_sin(_state["deus"])
+        else:
+            from personalidades import make
+            leto.personality = make(_state["deus"])
     leto_white = game % 2 == 0
     board = chess.Board()
     from fim_rapido import Judge
@@ -118,6 +123,10 @@ def main():
     args = parser.parse_args()
     if args.rapido:
         args.set = RAPIDO + list(args.set)
+    if args.deus:
+        from pecados import SINS
+        if args.deus in SINS:                  # a sin's own engine settings, before any explicit --set
+            args.set = list(args.set[:len(RAPIDO)] if args.rapido else []) + SINS[args.deus].settings +                 list(args.set[len(RAPIDO):] if args.rapido else args.set)
     with ProcessPoolExecutor(args.workers, mp_context=get_context("spawn"), initializer=_init,
                              initargs=(args.deus, args.elo, args.movetime, args.set)) as pool:
         games = list(pool.map(play, range(args.games), [args.seed] * args.games, [args.max_plies] * args.games))
