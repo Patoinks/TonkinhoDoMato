@@ -40,3 +40,18 @@ Final run (`ab_stockfish.py`, 300 games each, one pool; neutral Leto 0.512 in th
 
 0.70 is out of reach: depth 7 + check extension gives ~+0.14 over Leto, depth 8 ~+0.16, depth 9 nothing more
 (0.56-0.62 with 3 M nodes) - the ceiling of this network and search against Stockfish 2250 at 2 ms is ~0.63-0.65.
+
+## More thinking time for Greed and Pride (2026-10-19)
+
+100 games each vs SF 2250 (±0.095), same pool:
+
+| Variant | ms/move in play | Score |
+| --- | ---: | ---: |
+| Leto | 6.6 | 0.495 |
+| Pride now (depth 8 + check extension) | 49 | 0.655 |
+| Greed + depth 10, 12 candidates, 8 M nodes, scan 4 | 246 | 0.655 |
+| Pride + depth 10, 20 candidates, 12 M nodes, scan 5, network replies | 231 | 0.635 |
+| Pride + depth 7 + network at the end of the lines (`leaf_weight=0.3`) | 255 | 0.500 |
+
+Five times the time gives the same strength: the search counts material only, and past ~depth 8 it finds nothing
+more; the network at the leaves makes it weaker. Not adopted.
