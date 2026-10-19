@@ -156,7 +156,8 @@ def _game(stage, ident, settings, game, seed, max_plies):
         deus = [s.split("=", 1)[1] for s in settings if s.startswith("deus=")]
         pecado = [s.split("=", 1)[1] for s in settings if s.startswith("pecado=")]
         janela = [float(s.split("=", 1)[1]) for s in settings if s.startswith("janela=")]
-        settings = [s for s in settings if not s.startswith(("deus=", "janela=", "pecado="))]
+        tweaks = [s[4:].split("=", 1) for s in settings if s.startswith("sin.")]   # e.g. sin.plan_plies=16
+        settings = [s for s in settings if not s.startswith(("deus=", "janela=", "pecado=", "sin."))]
         if pecado:                             # a sin's own engine settings come first; explicit ones override
             from pecados import SINS
             settings = SINS[pecado[0]].settings + settings
@@ -170,6 +171,8 @@ def _game(stage, ident, settings, game, seed, max_plies):
         if pecado:                             # one of the Seven Deadly Sins (pecados.py)
             from pecados import make as make_sin
             leto.personality = make_sin(pecado[0], janela[0] if janela else None)
+            for key, value in tweaks:
+                setattr(leto.personality, key, float(value) if "." in value else int(value))
         judge = Judge(board)
         think = 0.0
         while judge.outcome(board) is None and len(board.move_stack) < max_plies:

@@ -23,3 +23,20 @@ Sloth's early stop in the C++ iterative deepening is not done: it thinks less th
 Repertoires written by hand (95-217 lines each, `validar_repertorios.py`), style weights for the target profiles.
 Openings only vs openings + style, 300 games each vs SF 2250 (Leto 0.545): Nezha 0.533 / 0.480, Loki 0.487 / 0.430,
 Hades 0.490 / 0.410, Anubis 0.465 / 0.385. Book moves per game ~1 -> 2.4-3.1.
+
+## Recalibrated to 0.20 -> 0.70 (2026-10-19)
+
+Final run (`ab_stockfish.py`, 300 games each, one pool; neutral Leto 0.512 in this run, ~0.54 usually):
+
+| Level | Sin | Score | Engine settings that set the level | ms/move | Proof |
+| ---: | --- | ---: | --- | ---: | --- |
+| 1 Beginner | Sloth | 0.215 | autopilot 16 half-moves, window 0.06 | 7.1 | attack on the king 1.52 vs 2.53 ✓ |
+| 2 Easy | Lust | 0.290 | tactic depth 5, window 0.10 | 6.0 | early queen 21% vs 10% ✓ |
+| 3 Easy+ | Gluttony | 0.365 | appetite 0.6 / a pawn, safety 2.5 | 7.3 | captures 31% vs 28% ✓ |
+| 4 Intermediate | Wrath | 0.412 | window 0.07, mate attack 3 | 8.2 | attack units 3.11 vs 2.53 ✓ |
+| 5 Advanced | Envy | 0.455 | tactic depth 7, window 0.012 | 13.7 | opponent's threat 0.62 vs 0.64 ✓ |
+| 6 Advanced+ | Greed | 0.552 | tactic depth 7 + check extension, window 0.008 | 19.8 | hanging material 0.78 vs 0.82 ✓ |
+| 7 Expert | Pride | 0.623 | tactic depth 8 + check extension, window 0.006 | 44.8 | draws 25% vs 29% ✓ |
+
+0.70 is out of reach: depth 7 + check extension gives ~+0.14 over Leto, depth 8 ~+0.16, depth 9 nothing more
+(0.56-0.62 with 3 M nodes) - the ceiling of this network and search against Stockfish 2250 at 2 ms is ~0.63-0.65.

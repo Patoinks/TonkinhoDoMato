@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import pecados as S  # noqa: E402
 
 METRICS = {   # sin: (metric, what it should do vs Leto)
-    "sloth": ("ms/lance", "↓"), "gluttony": ("materialismo", "↑"), "lust": ("dama cedo", "↑"),
+    "sloth": ("ataque ao rei", "↓"), "gluttony": ("materialismo", "↑"), "lust": ("dama cedo", "↑"),
     "wrath": ("ataque ao rei", "↑"), "envy": ("ameaça do adversário", "↓"), "greed": ("material pendurado", "↓"),
     "pride": ("empates", "↓"),
 }

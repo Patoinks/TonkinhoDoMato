@@ -4,7 +4,7 @@ settings, at seven difficulty levels (Sloth, the easiest, to Pride, the boss).
 A sin acts where the Pantheon personalities act (claudio_agent: the opening, then the style among near-equal
 safe moves) and, through `settings`, on Leto's own engine options. Each module adds its own signals:
 
-- Sloth     autopilot: a piece-placement plan (London / King's Indian setup) instead of a book; shallow search.
+- Sloth     autopilot: a piece-placement plan (London / King's Indian setup) for 16 half-moves; lazy, quiet play.
 - Gluttony  material appetite: its captures count for more, and it takes slightly losing captures (poisoned pawns).
 - Lust      queen and king hunt: early queen activity, its pieces drawn to the enemy king.
 - Wrath     king attack: attack units on the enemy king's zone, pawn storms, deeper mate searches.
@@ -297,9 +297,11 @@ def _book(name):
 
 
 class Sloth(Sin):
+    plan_plies = 16                              # the autopilot runs this many half-moves of the game
+
     def opening(self, board, moves):
         """The autopilot: the first step of its setup not done yet that a legal move does, if Leto rates it sound."""
-        if board.ply() > 30:
+        if board.ply() > self.plan_plies:
             return None
         plan = SLOTH_PLAN[board.turn]
         for symbol, square in plan:
@@ -417,31 +419,30 @@ class Pride(Sin):
 # at 2 ms per move (ab_stockfish.py, 300 games each, interleaved with neutral Leto at ~0.56); the windows and the
 # engine settings are what put each sin there.
 SINS = {
-    "sloth": Sloth("sloth", 1, "Beginner", 0.12, 0.10,
+    "sloth": Sloth("sloth", 1, "Beginner", 0.22, 0.06,
                    {"lazy": 1.0, "quiet": 0.5, "coordination": 0.3, "castle": 1.0, "development": 0.5},
-                   ["tactic_depth=5", "tactic_nodes=250000", "scan_depth=3", "exchange_depth=4", "draw_value=0.5",
-                    "mate_attack=1", "mate_defence=1"]),
-    "gluttony": Gluttony("gluttony", 3, "Easy+", 0.31, 0.10,
+                   ["draw_value=0.5"]),
+    "gluttony": Gluttony("gluttony", 3, "Easy+", 0.37, 0.10,
                          {"appetite": 1.0, "capture": 0.8, "trade_ahead": 0.3, "retreat": -0.2},
-                         ["tactic_depth=5", "safety_weight=2.0", "simplify_weight=0.0"]),
-    "lust": Lust("lust", 2, "Easy", 0.27, 0.10,
+                         ["safety_weight=2.5", "simplify_weight=0.0"]),
+    "lust": Lust("lust", 2, "Easy", 0.29, 0.10,
                  {"queen_out": 1.0, "tropism": 0.4, "king_zone": 0.4, "threats": 0.5, "check": 0.5, "retreat": -0.5},
                  ["tactic_depth=5"]),
-    "wrath": Wrath("wrath", 4, "Intermediate", 0.39, 0.10,
+    "wrath": Wrath("wrath", 4, "Intermediate", 0.41, 0.07,
                    {"attack_units": 0.3, "storm": 0.4, "check": 0.8, "threats": 0.6, "king_zone": 0.4,
                     "retreat": -1.0, "castle": -0.3},
                    ["mate_attack=3", "king_weight=0.15"]),
-    "envy": Envy("envy", 5, "Advanced", 0.44, 0.03,
+    "envy": Envy("envy", 5, "Advanced", 0.46, 0.012,
                  {"prophylaxis": 0.8, "restrict": 0.06, "trade_best": 1.0, "coordination": 0.2, "outpost": 0.4},
-                 []),
-    "greed": Greed("greed", 6, "Advanced+", 0.46, 0.025,
+                 ["tactic_depth=7"]),
+    "greed": Greed("greed", 6, "Advanced+", 0.55, 0.008,
                    {"hoard": 0.6, "convert": 1.2, "coordination": 0.3, "check": -0.3, "pawn_break": -0.3},
-                   ["simplify_weight=0.15", "simplify_margin=0.5", "draw_value=0.5"]),
-    "pride": Pride("pride", 7, "Expert", 0.55, 0.02,
+                   ["tactic_depth=7", "check_extension=1", "simplify_weight=0.08", "simplify_margin=0.5"]),
+    "pride": Pride("pride", 7, "Expert", 0.62, 0.006,
                    {"no_draw": 1.5, "no_repeat": 2.0, "keep_pieces": 0.6, "centre": 0.4, "threats": 0.4,
                     "pawn_break": 0.3},
-                   ["draw_value=0.3", "ahead_draws=True", "ahead_value=0.55", "repeat_as_draw=True",
-                    "fifty_horizon=20"]),
+                   ["tactic_depth=8", "check_extension=1", "draw_value=0.35", "ahead_draws=True",
+                    "ahead_value=0.6", "repeat_as_draw=True", "fifty_horizon=20"]),
 }
 
 
